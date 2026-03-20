@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MetaBorghi — InnTour | Frontend Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --mb-green: #00D084; --mb-green-dark: #00A86B; --mb-cyan: #00B4D8; --mb-cyan-dark: #0090AF;
+  --mb-yellow: #F0FF00; --mb-orange: #F5A623; --mb-notte: #1A1A2E;
+  --mb-terracotta: #C4622D; --mb-ocra: #D4A855; --mb-bosco: #2D5A27; --mb-cielo: #4A90C4;
+  --mb-surface: #FAFAF8; --mb-surface-alt: #F0EDE8; --mb-border: #E2DDD6;
+  --mb-text-primary: #1C1917; --mb-text-secondary: #57534E; --mb-text-muted: #A8A29E;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+}
+html { scroll-behavior: smooth; }
+body { font-family: var(--font-body); color: var(--mb-text-primary); background: var(--mb-surface); overflow-x: hidden; }
+
+@keyframes morphColors { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+@keyframes spinSlow { to { transform: rotate(360deg); } }
+@keyframes pulseRing { 0% { transform: scale(1); opacity: 0.5; } 100% { transform: scale(2.8); opacity: 0; } }
+@keyframes revealUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+@keyframes breathe { 0%,100% { opacity: 0.4; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.05); } }
+@keyframes dotDrop { 0% { transform: translateY(-20px); opacity: 0; } 60% { transform: translateY(4px); opacity: 1; } 100% { transform: translateY(0); opacity: 1; } }
+@keyframes shimmerText { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+
+.swirl-text {
+  background: linear-gradient(90deg, #F5A623, #00D084, #00B4D8, #F0FF00, #F5A623);
+  background-size: 300% 100%; -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; animation: morphColors 5s ease infinite;
+}
+.glass-card {
+  background: rgba(255,255,255,0.04); backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.noise::after {
+  content: ''; position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; opacity: 0.06; mix-blend-mode: overlay;
+}
+.reveal { opacity: 0; transform: translateY(40px); transition: all 0.8s cubic-bezier(0.25,0.46,0.45,0.94); }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal-scale { opacity: 0; transform: scale(0.92); transition: all 0.7s cubic-bezier(0.34,1.56,0.64,1); }
+.reveal-scale.visible { opacity: 1; transform: scale(1); }
+.floating-orb { position: absolute; border-radius: 50%; filter: blur(40px); pointer-events: none; animation: float 8s ease-in-out infinite; }
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #1A1A2E; }
+::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #00D084, #00B4D8); border-radius: 4px; }
+
+.borough-card { transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+.borough-card:hover { transform: translateY(-6px) scale(1.015); box-shadow: 0 24px 56px rgba(0,208,132,0.2), 0 8px 16px rgba(0,0,0,0.08) !important; }
+.borough-card:hover .card-img { transform: scale(1.08); }
+.borough-card:hover .card-arrow { transform: translateX(4px); }
+.borough-card .card-img { transition: transform 0.8s cubic-bezier(0.25,0.46,0.45,0.94); }
+.borough-card .card-arrow { transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+
+.exp-card { transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+.exp-card:hover { transform: translateY(-6px); }
+.exp-card:hover .exp-img { transform: scale(1.06); }
+.exp-card .exp-img { transition: transform 0.8s cubic-bezier(0.25,0.46,0.45,0.94); }
+
+.cta-btn { transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1); }
+.cta-btn:hover { transform: translateY(-3px) scale(1.04); }
+.cta-btn-primary { box-shadow: 0 8px 32px rgba(0,208,132,0.4); }
+.cta-btn-primary:hover { box-shadow: 0 16px 48px rgba(0,208,132,0.5); }
+.glass-feature { transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+.glass-feature:hover { transform: translateY(-4px); border-color: rgba(0,208,132,0.2) !important; }
+
+.nav-link { position: relative; }
+.nav-link::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: linear-gradient(90deg, var(--mb-green), var(--mb-cyan)); transition: width 0.3s; border-radius: 1px; }
+.nav-link:hover::after { width: 100%; }
+.nav-link:hover { color: var(--mb-green) !important; }
+
+.social-icon:hover { background: rgba(0,208,132,0.15) !important; color: var(--mb-green) !important; border-color: rgba(0,208,132,0.3) !important; }
+.footer-link:hover { color: var(--mb-green) !important; }
+.sidebar-item { transition: all 0.3s; cursor: pointer; }
+.sidebar-item:hover, .sidebar-item.active { background: linear-gradient(135deg, rgba(0,208,132,0.1), rgba(0,180,216,0.08)); border-color: rgba(0,208,132,0.25) !important; }
+.sidebar-item.active h4 { color: var(--mb-green); }
+.cat-btn { transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1); cursor: pointer; }
+.cat-btn:hover { transform: scale(1.05); }
+.cat-btn.active { transform: scale(1.05); }
+
+@media (max-width: 768px) {
+  .grid-4 { grid-template-columns: repeat(2, 1fr) !important; }
+  .grid-borghi { grid-template-columns: 1fr !important; }
+  .grid-exp { grid-template-columns: 1fr !important; }
+  .grid-map { grid-template-columns: 1fr !important; }
+  .grid-about { grid-template-columns: 1fr !important; }
+  .grid-footer { grid-template-columns: 1fr 1fr !important; }
+  .nav-links { display: none !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  .reveal, .reveal-scale { opacity: 1; transform: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════ NAVBAR ═══════════════════════════ -->
+<nav id="navbar" style="position:fixed;top:0;left:0;right:0;z-index:100;padding:20px 24px;transition:all 0.4s cubic-bezier(0.25,0.46,0.45,0.94);">
+  <div style="max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;">
+    <!-- Logo -->
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80" width="130" height="32" role="img" aria-label="InnTour">
+      <defs><linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#00D084"/><stop offset="50%" stop-color="#00B4D8"/><stop offset="100%" stop-color="#F0FF00"/></linearGradient><linearGradient id="iig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#00D084"/><stop offset="100%" stop-color="#00B4D8"/></linearGradient></defs>
+      <g transform="translate(0,8)"><rect x="10" y="20" width="10" height="36" rx="2" fill="url(#iig)"/><rect x="6" y="13" width="18" height="10" rx="3" fill="url(#iig)"/><circle cx="15" cy="10" r="4" fill="#F0FF00"/><rect x="22" y="28" width="14" height="3" rx="1.5" fill="#00B4D8" opacity="0.7"/><rect x="22" y="36" width="10" height="3" rx="1.5" fill="#00D084" opacity="0.5"/></g>
+      <text x="48" y="48" font-family="'Playfair Display',Georgia,serif" font-size="28" font-weight="700" letter-spacing="-0.5" fill="url(#ig)">Inn</text>
+      <text x="104" y="48" font-family="'Inter',system-ui,sans-serif" font-size="28" font-weight="300" fill="#FAFAF8">Tour</text>
+      <text x="48" y="64" font-family="'Inter',system-ui,sans-serif" font-size="9" font-weight="500" letter-spacing="2.5" fill="#6B7280">STARTUP INNOVATIVA</text>
+      <rect x="48" y="68" width="14" height="2" rx="1" fill="#00D084"/><rect x="64" y="68" width="14" height="2" rx="1" fill="#00B4D8"/><rect x="80" y="68" width="14" height="2" rx="1" fill="#F0FF00"/>
+    </svg>
+    <div class="nav-links" style="display:flex;gap:32;align-items:center;">
+      <a href="#borghi" class="nav-link" style="color:rgba(250,250,248,0.8);font-size:14px;font-weight:500;text-decoration:none;letter-spacing:0.3px;">Borghi</a>
+      <a href="#esperienze" class="nav-link" style="color:rgba(250,250,248,0.8);font-size:14px;font-weight:500;text-decoration:none;">Esperienze</a>
+      <a href="#mappa" class="nav-link" style="color:rgba(250,250,248,0.8);font-size:14px;font-weight:500;text-decoration:none;">Mappa</a>
+      <a href="#chi-siamo" class="nav-link" style="color:rgba(250,250,248,0.8);font-size:14px;font-weight:500;text-decoration:none;">Chi Siamo</a>
+      <a href="#contatti" class="nav-link" style="color:rgba(250,250,248,0.8);font-size:14px;font-weight:500;text-decoration:none;">Contatti</a>
+      <a href="#prenota" class="cta-btn cta-btn-primary" style="background:linear-gradient(135deg,#00D084,#00B4D8);color:#fff;font-size:14px;font-weight:600;padding:10px 24px;border-radius:9999px;text-decoration:none;">Prenota Ora</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════ HERO ═══════════════════════════ -->
+<section id="hero" style="position:relative;height:100vh;min-height:700px;overflow:hidden;background:#0A0A0A;">
+  <!-- Parallax BG -->
+  <div id="heroBg" class="noise" style="position:absolute;inset:0;background:linear-gradient(135deg,#0A1628 0%,#1A1A2E 30%,#0F1724 70%,#0A0A0A 100%);">
+    <div style="position:absolute;inset:0;opacity:0.5;background:linear-gradient(135deg,#F5A623 0%,#00D084 25%,#00B4D8 50%,#F0FF00 75%,#F5A623 100%);background-size:400% 400%;animation:gradientShift 12s ease infinite;mix-blend-mode:overlay;"></div>
+  </div>
+
+  <!-- Floating orbs -->
+  <div class="floating-orb" style="width:400px;height:400px;top:-10%;left:60%;background:radial-gradient(circle at 30% 30%,rgba(0,208,132,0.25),rgba(0,208,132,0.06),transparent 70%);"></div>
+  <div class="floating-orb" style="width:350px;height:350px;top:50%;left:-5%;background:radial-gradient(circle at 30% 30%,rgba(0,180,216,0.25),rgba(0,180,216,0.06),transparent 70%);animation-delay:2s;"></div>
+  <div class="floating-orb" style="width:300px;height:300px;top:20%;left:80%;background:radial-gradient(circle at 30% 30%,rgba(245,166,35,0.2),rgba(245,166,35,0.05),transparent 70%);animation-delay:4s;"></div>
+  <div class="floating-orb" style="width:250px;height:250px;top:70%;left:40%;background:radial-gradient(circle at 30% 30%,rgba(240,255,0,0.2),rgba(240,255,0,0.05),transparent 70%);animation-delay:1s;"></div>
+
+  <!-- Concentric rings -->
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;">
+    <div style="position:absolute;width:300px;height:300px;top:-150px;left:-150px;border:1px solid rgba(0,208,132,0.12);border-radius:50%;animation:spinSlow 30s linear infinite;"></div>
+    <div style="position:absolute;width:500px;height:500px;top:-250px;left:-250px;border:1px solid rgba(0,208,132,0.08);border-radius:50%;animation:spinSlow 40s linear infinite reverse;"></div>
+    <div style="position:absolute;width:700px;height:700px;top:-350px;left:-350px;border:1px solid rgba(0,208,132,0.05);border-radius:50%;animation:spinSlow 50s linear infinite;"></div>
+  </div>
+
+  <!-- Pulse rings -->
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;">
+    <div style="width:120px;height:120px;border-radius:50%;border:2px solid rgba(0,208,132,0.3);animation:pulseRing 3s ease-out infinite;"></div>
+    <div style="width:120px;height:120px;border-radius:50%;border:2px solid rgba(0,180,216,0.2);animation:pulseRing 3s ease-out 1s infinite;position:absolute;top:0;left:0;"></div>
+  </div>
+
+  <!-- Content -->
+  <div id="heroContent" style="position:relative;z-index:10;height:100%;display:flex;flex-direction:column;justify-content:center;padding:0 clamp(24px,6vw,96px);max-width:1280px;margin:0 auto;">
+    <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(0,208,132,0.12);border:1px solid rgba(0,208,132,0.25);backdrop-filter:blur(12px);border-radius:9999px;padding:8px 20px;margin-bottom:28px;width:fit-content;animation:revealUp 0.8s 0.2s both;">
+      <div style="width:8px;height:8px;border-radius:50%;background:#00D084;animation:breathe 2s ease infinite;"></div>
+      <span style="color:#00D084;font-size:13px;font-weight:600;letter-spacing:0.5px;">25 Borghi · Alta Irpinia</span>
+    </div>
+
+    <h1 style="font-family:var(--font-display);font-weight:800;font-size:clamp(2.8rem,2rem + 4vw,5.5rem);line-height:1.02;letter-spacing:-0.03em;color:#FAFAF8;margin-bottom:24px;max-width:800px;animation:revealUp 0.8s 0.4s both;">
+      Riscopri il <span class="swirl-text">Cuore</span> dell'Italia che non ti aspetti
+    </h1>
+
+    <p style="font-size:clamp(1rem,0.9rem + 0.5vw,1.25rem);color:rgba(250,250,248,0.7);line-height:1.7;max-width:560px;margin-bottom:40px;animation:revealUp 0.8s 0.6s both;">
+      Esperienze autentiche nei borghi dell'Alta Irpinia — tra Campania, Basilicata e Puglia. Cultura, natura, artigianato e sapori in un viaggio che ti cambia.
+    </p>
+
+    <div style="display:flex;flex-wrap:wrap;gap:16px;animation:revealUp 0.8s 0.8s both;">
+      <a href="#borghi" class="cta-btn cta-btn-primary" style="background:linear-gradient(135deg,#00D084,#00B4D8);color:#fff;font-size:16px;font-weight:600;padding:16px 36px;border-radius:9999px;text-decoration:none;">Esplora i Borghi</a>
+      <a href="#esperienze" class="cta-btn" style="background:rgba(255,255,255,0.06);backdrop-filter:blur(12px);color:#fff;font-size:16px;font-weight:600;padding:16px 36px;border-radius:9999px;text-decoration:none;border:1px solid rgba(255,255,255,0.15);">Vivi un'Esperienza</a>
+    </div>
+  </div>
+
+  <!-- Scroll indicator -->
+  <div style="position:absolute;bottom:40px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;animation:float 3s ease-in-out infinite;z-index:10;">
+    <span style="color:rgba(250,250,248,0.4);font-size:11px;letter-spacing:2px;text-transform:uppercase;">Scorri</span>
+    <div style="width:2px;height:40px;background:linear-gradient(180deg,rgba(0,208,132,0.6),transparent);border-radius:1px;"></div>
+  </div>
+
+  <!-- Bottom fade to surface -->
+  <div style="position:absolute;bottom:0;left:0;right:0;height:200px;background:linear-gradient(to top,var(--mb-surface),transparent);z-index:5;"></div>
+</section>
+
+<!-- ═══════════════════════════ STATS ═══════════════════════════ -->
+<section style="padding:60px 24px;background:var(--mb-surface);">
+  <div class="grid-4" style="max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:24px;">
+    <div class="reveal" style="text-align:center;padding:24px;">
+      <div style="font-family:var(--font-display);font-weight:800;font-size:clamp(2.5rem,2rem+2vw,4rem);background:linear-gradient(135deg,#00D084,#00B4D8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1;">25</div>
+      <div style="font-size:14px;color:var(--mb-text-secondary);font-weight:500;margin-top:8px;letter-spacing:0.5px;">Borghi</div>
+    </div>
+    <div class="reveal" style="text-align:center;padding:24px;transition-delay:100ms;">
+      <div style="font-family:var(--font-display);font-weight:800;font-size:clamp(2.5rem,2rem+2vw,4rem);background:linear-gradient(135deg,#00D084,#00B4D8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1;">6</div>
+      <div style="font-size:14px;color:var(--mb-text-secondary);font-weight:500;margin-top:8px;">Categorie</div>
+    </div>
+    <div class="reveal" style="text-align:center;padding:24px;transition-delay:200ms;">
+      <div style="font-family:var(--font-display);font-weight:800;font-size:clamp(2.5rem,2rem+2vw,4rem);background:linear-gradient(135deg,#00D084,#00B4D8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1;">15+</div>
+      <div style="font-size:14px;color:var(--mb-text-secondary);font-weight:500;margin-top:8px;">Esperienze</div>
+    </div>
+    <div class="reveal" style="text-align:center;padding:24px;transition-delay:300ms;">
+      <div style="font-family:var(--font-display);font-weight:800;font-size:clamp(2.5rem,2rem+2vw,4rem);background:linear-gradient(135deg,#00D084,#00B4D8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1;">14</div>
+      <div style="font-size:14px;color:var(--mb-text-secondary);font-weight:500;margin-top:8px;">Aziende Locali</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ BORGHI ═══════════════════════════ -->
+<section id="borghi" style="padding:clamp(60px,8vw,120px) 24px;background:var(--mb-surface);position:relative;">
+  <div class="floating-orb" style="width:500px;height:500px;top:-15%;left:-10%;background:radial-gradient(circle at 30% 30%,rgba(0,208,132,0.15),rgba(0,208,132,0.03),transparent 70%);"></div>
+
+  <div style="max-width:1280px;margin:0 auto;position:relative;z-index:1;">
+    <div class="reveal" style="text-align:center;margin-bottom:64px;">
+      <span style="display:inline-block;font-size:13px;font-weight:600;color:var(--mb-green);letter-spacing:3px;text-transform:uppercase;margin-bottom:16px;">Esplora il Territorio</span>
+      <h2 style="font-family:var(--font-display);font-weight:800;font-size:clamp(2rem,1.5rem+2.5vw,3.5rem);color:var(--mb-text-primary);line-height:1.1;letter-spacing:-0.02em;">I Borghi dell'Alta Irpinia</h2>
+      <p style="font-size:clamp(1rem,0.9rem+0.3vw,1.125rem);color:var(--mb-text-secondary);max-width:600px;margin:16px auto 0;line-height:1.7;">Venticinque gemme nascoste tra Campania, Basilicata e Puglia — ciascuna con una storia millenaria tutta da vivere.</p>
+    </div>
+
+    <div class="grid-borghi" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:28px;">
+      <!-- Cards will be generated by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ PARALLAX DIVIDER ═══════════════════════════ -->
+<section id="parallaxDivider" style="position:relative;height:500px;overflow:hidden;background:linear-gradient(135deg,var(--mb-notte),#0A1628);">
+  <div class="noise" style="position:absolute;inset:0;">
+    <div id="parallaxGradient" style="position:absolute;inset:0;background:linear-gradient(135deg,#F5A623 0%,#00D084 25%,#00B4D8 50%,#F0FF00 75%,#F5A623 100%);background-size:400% 400%;animation:gradientShift 10s ease infinite;opacity:0.15;"></div>
+  </div>
+  <div class="floating-orb" style="width:350px;height:350px;top:20%;left:10%;background:radial-gradient(circle,rgba(0,208,132,0.2),transparent 70%);"></div>
+  <div class="floating-orb" style="width:280px;height:280px;top:40%;left:70%;background:radial-gradient(circle,rgba(240,255,0,0.15),transparent 70%);animation-delay:2s;"></div>
+  <div style="position:relative;z-index:10;height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:0 24px;">
+    <div class="reveal">
+      <h2 style="font-family:var(--font-display);font-weight:800;font-size:clamp(1.8rem,1.2rem+3vw,3.5rem);color:#FAFAF8;line-height:1.15;letter-spacing:-0.02em;max-width:700px;margin-bottom:20px;">Ogni borgo è un <span class="swirl-text">universo</span> da esplorare</h2>
+    </div>
+    <div class="reveal" style="transition-delay:200ms;">
+      <p style="font-size:18px;color:rgba(250,250,248,0.65);max-width:500px;line-height:1.7;margin-bottom:32px;">Storie millenarie, sapori unici, paesaggi che tolgono il fiato — tutto a portata di click.</p>
+    </div>
+    <div class="reveal" style="transition-delay:400ms;">
+      <a href="#prenota" class="cta-btn cta-btn-primary" style="background:linear-gradient(135deg,#00D084,#00B4D8);color:#fff;font-size:16px;font-weight:600;padding:16px 40px;border-radius:9999px;text-decoration:none;">Prenota la Tua Esperienza</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ ESPERIENZE ═══════════════════════════ -->
+<section id="esperienze" style="padding:clamp(60px,8vw,120px) 24px;background:linear-gradient(180deg,var(--mb-surface),var(--mb-surface-alt));position:relative;">
+  <div class="floating-orb" style="width:400px;height:400px;top:10%;left:85%;background:radial-gradient(circle,rgba(0,180,216,0.15),transparent 70%);animation-delay:1s;"></div>
+
+  <div style="max-width:1280px;margin:0 auto;position:relative;z-index:1;">
+    <div class="reveal" style="text-align:center;margin-bottom:48px;">
+      <span style="display:inline-block;font-size:13px;font-weight:600;color:var(--mb-cyan);letter-spacing:3px;text-transform:uppercase;margin-bottom:16px;">Vivi il Territorio</span>
+      <h2 style="font-family:var(--font-display);font-weight:800;font-size:clamp(2rem,1.5rem+2.5vw,3.5rem);color:var(--mb-text-primary);line-height:1.1;letter-spacing:-0.02em;">Esperienze Autentiche</h2>
+      <p style="font-size:clamp(1rem,0.9rem+0.3vw,1.125rem);color:var(--mb-text-secondary);max-width:600px;margin:16px auto 0;line-height:1.7;">Sei categorie, infinite emozioni. Dalla ceramica al kayak, ogni esperienza è un racconto vivo del territorio.</p>
+    </div>
+
+    <!-- Category filters -->
+    <div class="reveal" style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-bottom:48px;transition-delay:100ms;" id="catFilters"></div>
+
+    <!-- Experience cards -->
+    <div class="grid-exp" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:28px;" id="expGrid"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ CHI SIAMO ═══════════════════════════ -->
+<section id="chi-siamo" style="padding:clamp(60px,8vw,120px) 24px;background:linear-gradient(135deg,var(--mb-notte),#0F1724);position:relative;overflow:hidden;">
+  <div class="noise" style="position:absolute;inset:0;"></div>
+  <div class="floating-orb" style="width:500px;height:500px;top:10%;left:70%;background:radial-gradient(circle,rgba(0,208,132,0.15),transparent 70%);"></div>
+  <div class="floating-orb" style="width:300px;height:300px;top:60%;left:-5%;background:radial-gradient(circle,rgba(245,166,35,0.12),transparent 70%);animation-delay:3s;"></div>
+
+  <div style="max-width:1280px;margin:0 auto;position:relative;z-index:1;">
+    <div class="grid-about" style="display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;">
+      <div>
+        <div class="reveal">
+          <span style="font-size:13px;font-weight:600;color:var(--mb-yellow);letter-spacing:3px;text-transform:uppercase;display:inline-block;margin-bottom:16px;">Chi Siamo</span>
+          <h2 style="font-family:var(--font-display);font-weight:800;font-size:clamp(2rem,1.5rem+2.5vw,3.5rem);color:#FAFAF8;line-height:1.1;letter-spacing:-0.02em;margin-bottom:20px;">InnTour — <span class="swirl-text">Startup Innovativa</span></h2>
+        </div>
+        <div class="reveal" style="transition-delay:200ms;">
+          <p style="font-size:16px;color:rgba(250,250,248,0.7);line-height:1.8;margin-bottom:16px;">InnTour S.r.l. nasce con una missione chiara: portare il futuro digitale nei borghi dell'entroterra italiano, partendo dall'Alta Irpinia. La piattaforma MetaBorghi connette viaggiatori curiosi con esperienze autentiche, creando un ponte tra tradizione millenaria e innovazione tecnologica.</p>
+        </div>
+        <div class="reveal" style="transition-delay:300ms;">
+          <p style="font-size:16px;color:rgba(250,250,248,0.55);line-height:1.8;">Attraverso la nostra rete di 25 borghi, 14 aziende locali e oltre 15 esperienze curate, trasformiamo ogni visita in un racconto da vivere — dal laboratorio di ceramica al sentiero dell'Ofanto, dalla degustazione in cantina alla notte sotto le stelle.</p>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" id="featureGrid"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ CTA ═══════════════════════════ -->
+<section id="prenota" style="padding:clamp(80px,10vw,140px) 24px;background:linear-gradient(135deg,#00D084 0%,#00B4D8 50%,#F0FF00 100%);position:relative;overflow:hidden;text-align:center;">
+  <div style="position:absolute;inset:0;background:radial-gradient(circle at 20% 50%,rgba(255,255,255,0.15) 0%,transparent 50%),radial-gradient(circle at 80% 50%,rgba(255,255,255,0.1) 0%,transparent 40%);animation:breathe 6s ease-in-out infinite;"></div>
+  <div style="position:relative;z-index:1;max-width:700px;margin:0 auto;">
+    <div class="reveal">
+      <h2 style="font-family:var(--font-display);font-weight:800;font-size:clamp(2rem,1.5rem+3vw,3.8rem);color:#fff;line-height:1.1;letter-spacing:-0.02em;margin-bottom:20px;text-shadow:0 2px 16px rgba(0,0,0,0.15);">Pronto a vivere l'Alta Irpinia?</h2>
+    </div>
+    <div class="reveal" style="transition-delay:200ms;">
+      <p style="font-size:18px;color:rgba(255,255,255,0.85);line-height:1.7;margin-bottom:40px;max-width:500px;margin-left:auto;margin-right:auto;">Scegli il tuo borgo, prenota un'esperienza e lasciati sorprendere dall'Italia più autentica.</p>
+    </div>
+    <div class="reveal" style="transition-delay:400ms;display:flex;justify-content:center;gap:16px;flex-wrap:wrap;">
+      <a href="#borghi" class="cta-btn" style="background:#fff;color:#00D084;font-size:16px;font-weight:700;padding:16px 40px;border-radius:9999px;text-decoration:none;box-shadow:0 8px 32px rgba(0,0,0,0.15);">Esplora i Borghi</a>
+      <a href="#esperienze" class="cta-btn" style="background:rgba(255,255,255,0.2);backdrop-filter:blur(12px);color:#fff;font-size:16px;font-weight:600;padding:16px 40px;border-radius:9999px;text-decoration:none;border:2px solid rgba(255,255,255,0.4);">Vedi Esperienze</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ FOOTER ═══════════════════════════ -->
+<footer id="contatti" style="background:var(--mb-notte);padding:64px 24px 32px;position:relative;overflow:hidden;">
+  <div class="noise" style="position:absolute;inset:0;"></div>
+  <div style="max-width:1280px;margin:0 auto;position:relative;z-index:1;">
+    <div class="grid-footer" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;margin-bottom:48px;">
+      <!-- Brand -->
+      <div>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80" width="120" height="30" role="img" aria-label="InnTour">
+          <defs><linearGradient id="fg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#00D084"/><stop offset="50%" stop-color="#00B4D8"/><stop offset="100%" stop-color="#F0FF00"/></linearGradient><linearGradient id="fig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#00D084"/><stop offset="100%" stop-color="#00B4D8"/></linearGradient></defs>
+          <g transform="translate(0,8)"><rect x="10" y="20" width="10" height="36" rx="2" fill="url(#fig)"/><rect x="6" y="13" width="18" height="10" rx="3" fill="url(#fig)"/><circle cx="15" cy="10" r="4" fill="#F0FF00"/></g>
+          <text x="48" y="48" font-family="'Playfair Display',serif" font-size="28" font-weight="700" letter-spacing="-0.5" fill="url(#fg)">Inn</text>
+          <text x="104" y="48" font-family="'Inter',sans-serif" font-size="28" font-weight="300" fill="#FAFAF8">Tour</text>
+          <rect x="48" y="68" width="14" height="2" rx="1" fill="#00D084"/><rect x="64" y="68" width="14" height="2" rx="1" fill="#00B4D8"/><rect x="80" y="68" width="14" height="2" rx="1" fill="#F0FF00"/>
+        </svg>
+        <p style="font-size:14px;color:rgba(250,250,248,0.5);line-height:1.7;margin-top:16px;max-width:280px;">La piattaforma digitale per scoprire, vivere e prenotare esperienze autentiche nei borghi dell'Alta Irpinia.</p>
+        <div style="display:flex;gap:12px;margin-top:20px;">
+          <div class="social-icon" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;color:rgba(250,250,248,0.5);font-size:11px;font-weight:600;cursor:pointer;transition:all 0.3s;">IG</div>
+          <div class="social-icon" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;color:rgba(250,250,248,0.5);font-size:11px;font-weight:600;cursor:pointer;transition:all 0.3s;">FB</div>
+          <div class="social-icon" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;color:rgba(250,250,248,0.5);font-size:11px;font-weight:600;cursor:pointer;transition:all 0.3s;">LI</div>
+          <div class="social-icon" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;color:rgba(250,250,248,0.5);font-size:11px;font-weight:600;cursor:pointer;transition:all 0.3s;">YT</div>
+        </div>
+      </div>
+      <!-- Piattaforma -->
+      <div>
+        <h4 style="font-size:13px;font-weight:600;color:rgba(250,250,248,0.4);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:20px;">Piattaforma</h4>
+        <a href="#" class="footer-link" style="display:block;font-size:14px;color:rgba(250,250,248,0.6);text-decoration:none;padding:6px 0;transition:color 0.2s;">Borghi</a>
+        <a href="#" class="footer-link" style="display:block;font-size:14px;color:rgba(250,250,248,0.6);text-decoration:none;padding:6px 0;transition:color 0.2s;">Esperienze</a>
+        <a href="#" class="footer-link" style="display:block;font-size:14px;color:rgba(250,250,248,0.6);text-decoration:none;padding:6px 0;transition:color 0.2s;">Aziende</a>
+        <a href="#" class="footer-link" style="display:block;font-size:14px;color:rgba(250,250,248,0.6);text-decoration:none;padding:6px 0;transition:color 0.2s;">Prodotti</a>
+        <a href="#" class="footer-link" style="display:block;font-size:14px;color:rgba(250,250,248,0.6);text-decoration:none;padding:6px 0;transition:color 0.2s;">Artigianato</a>
+      </div>
+      <!-- Azienda -->
+      <div>
+        <h4 style="font-size:13px;font-weight:600;color:rgba(250,250,248,0.4);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:20px;">Azienda</h4>
+        <a href="#" class="footer-link" style="display:block;font-size:14px;color:rgba(250,250,248,0.6);text-decoration:none;padding:6px 0;transition:color 0.2s;">Chi Siamo</a>
+        <a href="#" class="footer-link" style="display:block;font-size:14px;color:rgba(250,250,248,0.6);text-decoration:none;padding:6px 0;transition:color 0.2s;">Team</a>
+        <a href="#" class="footer-link" style="display:block;font-size:14px;color:rgba(250,250,248,0.6);text-decoration:none;padding:6px 0;transition:color 0.2s;">Progetti B2B</a>
+        <a href="#" class="footer-link" style="display:block;font-size:14px;color:rgba(250,250,248,0.6);text-decoration:none;padding:6px 0;transition:color 0.2s;">Stampa</a>
+        <a href="#" class="footer-link" style="display:block;font-size:14px;color:rgba(250,250,248,0.6);text-decoration:none;padding:6px 0;transition:color 0.2s;">Lavora con noi</a>
+      </div>
+      <!-- Supporto -->
+      <div>
+        <h4 style="font-size:13px;font-weight:600;color:rgba(250,250,248,0.4);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:20px;">Supporto</h4>
+        <a href="#" class="footer-link" style="display:block;font-size:14px;color:rgba(250,250,248,0.6);text-decoration:none;padding:6px 0;transition:color 0.2s;">FAQ</a>
+        <a href="#" class="footer-link" style="display:block;font-size:14px;color:rgba(250,250,248,0.6);text-decoration:none;padding:6px 0;transition:color 0.2s;">Contatti</a>
+        <a href="#" class="footer-link" style="display:block;font-size:14px;color:rgba(250,250,248,0.6);text-decoration:none;padding:6px 0;transition:color 0.2s;">Privacy Policy</a>
+        <a href="#" class="footer-link" style="display:block;font-size:14px;color:rgba(250,250,248,0.6);text-decoration:none;padding:6px 0;transition:color 0.2s;">Termini</a>
+        <a href="#" class="footer-link" style="display:block;font-size:14px;color:rgba(250,250,248,0.6);text-decoration:none;padding:6px 0;transition:color 0.2s;">Cookie</a>
+      </div>
+    </div>
+    <!-- Bottom -->
+    <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:24px;display:flex;justify-content:space-between;align-items:center;">
+      <p style="font-size:13px;color:rgba(250,250,248,0.3);">© 2026 InnTour S.r.l. — Startup Innovativa · P.IVA 03079550640</p>
+      <div style="display:flex;gap:4px;">
+        <div style="width:20px;height:3px;border-radius:2px;background:#00D084;"></div>
+        <div style="width:20px;height:3px;border-radius:2px;background:#00B4D8;"></div>
+        <div style="width:20px;height:3px;border-radius:2px;background:#F0FF00;"></div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ─── DATA ─────────────────────────────────────────────────
+const borghi = [
+  { slug:"lacedonia", name:"Lacedonia", prov:"AV", pop:2200, alt:730, desc:"Borgo millenario affacciato sulla valle del Calaggio, custode di tradizioni ancestrali e panorami che abbracciano tre regioni.", hi:["Cattedrale romanica","Castello ducale","Festa di San Gerardo"], colors:["#1A1A2E","#2D5A27","#4A90C4"] },
+  { slug:"calitri", name:"Calitri", prov:"AV", pop:4500, alt:530, desc:"La perla della ceramica irpina, dove l'arte si fonde con i vicoli in pietra e i sapori della tradizione contadina.", hi:["Ceramica artistica","Rione Castello","Carnevale"], colors:["#C4622D","#D4A855","#1A1A2E"] },
+  { slug:"bisaccia", name:"Bisaccia", prov:"AV", pop:3800, alt:860, desc:"Borgo dalla storia millenaria, la tomba principesca osca ne testimonia l'importanza strategica tra Irpinia e Daunia.", hi:["Parco archeologico","Museo civico","Boschi del Vulture"], colors:["#2D5A27","#1A1A2E","#4A90C4"] },
+  { slug:"andretta", name:"Andretta", prov:"AV", pop:1700, alt:850, desc:"Il borgo degli artisti, dove la ceramica d'autore incontra il paesaggio appenninico in un connubio unico.", hi:["Museo della Ceramica","Centro storico","Artigianato"], colors:["#D4A855","#C4622D","#1A1A2E"] },
+  { slug:"monteverde", name:"Monteverde", prov:"AV", pop:750, alt:730, desc:"Arroccato su uno sperone roccioso, offre viste mozzafiato sulla valle dell'Ofanto e conserva un castello normanno.", hi:["Castello normanno","Panorama Ofanto","Borgo medievale"], colors:["#4A90C4","#1A1A2E","#2D5A27"] },
+  { slug:"nusco", name:"Nusco", prov:"AV", pop:3800, alt:914, desc:"Il balcone dell'Irpinia, uno dei borghi più alti della Campania con una cattedrale romanica di rara bellezza.", hi:["Cattedrale romanica","Panorama 360°","Gastronomia"], colors:["#1A1A2E","#00D084","#00B4D8"] },
+  { slug:"cairano", name:"Cairano", prov:"AV", pop:350, alt:820, desc:"Il borgo più piccolo dell'Alta Irpinia, un gioiello sospeso nel tempo con vista sulla diga di Conza.", hi:["Cairano 7x","Vista lago","Arte contemporanea"], colors:["#00B4D8","#1A1A2E","#F5A623"] },
+  { slug:"aquilonia", name:"Aquilonia", prov:"AV", pop:1600, alt:740, desc:"Il borgo del Museo Etnografico più grande del Sud, dove la memoria contadina rivive in migliaia di oggetti.", hi:["Museo Etnografico","Centro storico","Tradizioni"], colors:["#2D5A27","#D4A855","#1A1A2E"] },
+  { slug:"conza", name:"Conza della Campania", prov:"AV", pop:1400, alt:580, desc:"L'antica Compsa romana, oggi oasi naturalistica con il lago artificiale più grande della Campania.", hi:["Oasi WWF","Parco archeologico","Lago di Conza"], colors:["#00D084","#4A90C4","#1A1A2E"] },
+];
+
+const esperienze = [
+  { slug:"ceramica", title:"L'Arte della Ceramica", cat:"ARTIGIANATO", borgo:"Calitri", h:3, price:45, rating:4.8, rev:42, desc:"Modella l'argilla nelle botteghe storiche di Calitri, guidato dai maestri ceramisti che custodiscono secoli di tradizione." },
+  { slug:"sentiero", title:"Sentiero dell'Ofanto", cat:"NATURA", borgo:"Monteverde", h:5, price:25, rating:4.9, rev:67, desc:"Un trekking panoramico lungo le sponde del fiume Ofanto, tra boschi appenninici e panorami che spaziano fino al Vulture." },
+  { slug:"sapori", title:"Sapori d'Irpinia", cat:"GASTRONOMIA", borgo:"Nusco", h:4, price:65, rating:4.7, rev:38, desc:"Un viaggio gastronomico tra formaggi di grotta, salumi artigianali e vini autoctoni nelle cantine storiche." },
+  { slug:"castello", title:"Notte al Castello", cat:"CULTURA", borgo:"Bisaccia", h:2, price:20, rating:4.6, rev:55, desc:"Visita guidata notturna al castello ducale di Bisaccia, tra leggende medievali e proiezioni immersive." },
+  { slug:"yoga", title:"Yoga all'Alba", cat:"BENESSERE", borgo:"Cairano", h:2, price:30, rating:4.9, rev:24, desc:"Sessioni di yoga all'alba sul belvedere di Cairano, con vista sul lago di Conza e le montagne." },
+  { slug:"kayak", title:"Kayak al Lago di Conza", cat:"AVVENTURA", borgo:"Conza", h:3, price:40, rating:4.8, rev:31, desc:"Esplora in kayak l'oasi WWF del Lago di Conza, tra aironi, falchi e paesaggi lacustri unici." },
+];
+
+const cats = {
+  GASTRONOMIA:{bg:"#C4622D",label:"Gastronomia",icon:"\u{1F377}"},
+  CULTURA:{bg:"#4A90C4",label:"Cultura",icon:"\u{1F3DB}"},
+  NATURA:{bg:"#2D5A27",label:"Natura",icon:"\u{1F33F}"},
+  ARTIGIANATO:{bg:"#D4A855",label:"Artigianato",icon:"\u{1F3FA}"},
+  BENESSERE:{bg:"#7C3AED",label:"Benessere",icon:"\u{1F486}"},
+  AVVENTURA:{bg:"#DC2626",label:"Avventura",icon:"\u26F0\uFE0F"},
+};
+
+const features = [
+  {icon:"\u{1F30D}",title:"Turismo Sostenibile",desc:"Promuoviamo un turismo lento, rispettoso delle comunità e dell'ambiente dei borghi."},
+  {icon:"\u{1F4A1}",title:"Innovazione Digitale",desc:"Tecnologia al servizio della tradizione: piattaforma smart, totem interattivi, esperienze phygital."},
+  {icon:"\u{1F91D}",title:"Comunità Locale",desc:"Ogni esperienza coinvolge direttamente artigiani, ristoratori e guide locali dell'Alta Irpinia."},
+  {icon:"\u{1F3DB}",title:"Patrimonio Culturale",desc:"Valorizziamo castelli, chiese romaniche, musei e tradizioni che rischiano di scomparire."},
+];
+
+// ─── RENDER BORGHI CARDS ─────────────────────────────────
+const borghiGrid = document.querySelector('.grid-borghi');
+borghi.forEach((b,i) => {
+  borghiGrid.innerHTML += `
+  <article class="borough-card reveal-scale" style="background:#fff;border-radius:20px;overflow:hidden;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.08);transition-delay:${i*80}ms;">
+    <div style="position:relative;height:220px;overflow:hidden;">
+      <div class="card-img" style="width:100%;height:100%;background:linear-gradient(135deg,${b.colors[0]},${b.colors[1]},${b.colors[2]});"></div>
+      <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(26,26,46,0.8) 100%);"></div>
+      <div style="position:absolute;top:12px;left:12px;background:rgba(26,26,46,0.75);backdrop-filter:blur(8px);color:#fff;font-size:12px;font-weight:500;border-radius:9999px;padding:5px 14px;">${b.alt}m slm</div>
+      <div style="position:absolute;top:12px;right:12px;background:rgba(0,208,132,0.2);backdrop-filter:blur(8px);border:1px solid rgba(0,208,132,0.3);color:#00D084;font-size:11px;font-weight:600;border-radius:9999px;padding:4px 12px;">${b.prov}</div>
+      <div style="position:absolute;bottom:16px;left:16px;right:16px;">
+        <h3 style="font-family:var(--font-display);font-weight:700;font-size:26px;color:#fff;letter-spacing:-0.02em;line-height:1.15;text-shadow:0 2px 8px rgba(0,0,0,0.4);">${b.name}</h3>
+      </div>
+    </div>
+    <div style="padding:20px;">
+      <div style="display:flex;gap:16px;margin-bottom:12px;color:var(--mb-text-muted);font-size:13px;">
+        <span>\u{1F4CD} ${b.prov}</span><span>\u{1F465} ${b.pop.toLocaleString('it-IT')} ab.</span>
+      </div>
+      <p style="font-size:14px;color:var(--mb-text-secondary);line-height:1.65;margin-bottom:16px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${b.desc}</p>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+        ${b.hi.map(h=>`<span style="background:var(--mb-surface-alt);color:var(--mb-text-secondary);font-size:12px;border-radius:9999px;padding:4px 12px;">${h}</span>`).join('')}
+      </div>
+      <div style="border-top:1px solid var(--mb-border);padding-top:16px;">
+        <span style="color:var(--mb-green);font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px;">Scopri ${b.name} <span class="card-arrow">\u2192</span></span>
+      </div>
+    </div>
+  </article>`;
+});
+
+// ─── RENDER CATEGORY FILTERS ─────────────────────────────
+let activeCat = null;
+const filtersDiv = document.getElementById('catFilters');
+function renderFilters() {
+  filtersDiv.innerHTML = `<button class="cat-btn ${!activeCat?'active':''}" onclick="filterExp(null)" style="padding:10px 22px;border-radius:9999px;border:none;font-size:13px;font-weight:600;background:${!activeCat?'#1A1A2E':'#F0EDE8'};color:${!activeCat?'#fff':'#57534E'};${!activeCat?'box-shadow:0 4px 16px rgba(26,26,46,0.3);':''}">Tutte</button>`;
+  Object.entries(cats).forEach(([k,v]) => {
+    filtersDiv.innerHTML += `<button class="cat-btn ${activeCat===k?'active':''}" onclick="filterExp('${k}')" style="padding:10px 22px;border-radius:9999px;border:none;font-size:13px;font-weight:600;background:${activeCat===k?v.bg:'#F0EDE8'};color:${activeCat===k?'#fff':'#57534E'};">${v.icon} ${v.label}</button>`;
+  });
+}
+function renderExp() {
+  const grid = document.getElementById('expGrid');
+  const list = activeCat ? esperienze.filter(e=>e.cat===activeCat) : esperienze;
+  grid.innerHTML = '';
+  list.forEach((e,i) => {
+    const c = cats[e.cat];
+    grid.innerHTML += `
+    <article class="exp-card reveal-scale" style="background:#fff;border-radius:20px;overflow:hidden;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.06);transition-delay:${i*80}ms;">
+      <div style="position:relative;aspect-ratio:16/9;overflow:hidden;">
+        <div class="exp-img" style="width:100%;height:100%;background:linear-gradient(135deg,${c.bg}90,#1A1A2E);"></div>
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(0,0,0,0.5) 100%);"></div>
+        <div style="position:absolute;top:12px;left:12px;background:${c.bg};color:#fff;font-size:12px;font-weight:600;border-radius:9999px;padding:5px 14px;backdrop-filter:blur(8px);">${c.icon} ${c.label}</div>
+        <div style="position:absolute;bottom:12px;right:12px;background:#00D084;color:#fff;font-size:15px;font-weight:700;border-radius:9999px;padding:6px 18px;">\u20AC${e.price}<span style="font-size:11px;font-weight:400;opacity:0.8;">/pers</span></div>
+      </div>
+      <div style="padding:20px;">
+        <h3 style="font-family:var(--font-display);font-weight:700;font-size:22px;color:var(--mb-text-primary);letter-spacing:-0.02em;line-height:1.2;margin-bottom:4px;">${e.title}</h3>
+        <p style="font-size:13px;color:var(--mb-text-muted);margin-bottom:12px;">${e.borgo}</p>
+        <p style="font-size:14px;color:var(--mb-text-secondary);line-height:1.65;margin-bottom:16px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${e.desc}</p>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--mb-text-muted);">
+          <div style="display:flex;gap:16px;"><span>\u{1F550} ${e.h}h</span><span>\u2B50 ${e.rating} (${e.rev})</span></div>
+          <span style="color:var(--mb-green);font-weight:600;font-size:13px;">Scopri \u2192</span>
+        </div>
+      </div>
+    </article>`;
+  });
+  // Re-observe for reveal
+  document.querySelectorAll('#expGrid .reveal-scale').forEach(el => observer.observe(el));
+}
+window.filterExp = function(cat) { activeCat = activeCat===cat ? null : cat; renderFilters(); renderExp(); };
+renderFilters();
+renderExp();
+
+// ─── RENDER FEATURES ─────────────────────────────────────
+const fGrid = document.getElementById('featureGrid');
+features.forEach((f,i) => {
+  fGrid.innerHTML += `
+  <div class="glass-card glass-feature reveal-scale" style="padding:24px;border-radius:20px;transition-delay:${i*120}ms;">
+    <div style="font-size:32px;margin-bottom:12px;">${f.icon}</div>
+    <h3 style="font-family:var(--font-display);font-size:18px;font-weight:600;color:#FAFAF8;margin-bottom:8px;">${f.title}</h3>
+    <p style="font-size:13px;color:rgba(250,250,248,0.55);line-height:1.65;">${f.desc}</p>
+  </div>`;
+});
+
+// ─── SCROLL REVEAL ───────────────────────────────────────
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if(e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }});
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal, .reveal-scale').forEach(el => observer.observe(el));
+
+// ─── PARALLAX ────────────────────────────────────────────
+window.addEventListener('scroll', () => {
+  const sy = window.scrollY;
+  // Hero parallax
+  const heroBg = document.getElementById('heroBg');
+  const heroContent = document.getElementById('heroContent');
+  if(heroBg) heroBg.style.transform = `translateY(${sy*0.35}px) scale(${1+sy*0.0003})`;
+  if(heroContent) { heroContent.style.transform = `translateY(${sy*-0.15}px)`; heroContent.style.opacity = Math.max(0,1-sy/700); }
+  // Navbar
+  const nav = document.getElementById('navbar');
+  if(sy>80) { nav.style.padding='12px 24px'; nav.style.background='rgba(26,26,46,0.85)'; nav.style.backdropFilter='blur(24px) saturate(180%)'; nav.style.borderBottom='1px solid rgba(255,255,255,0.06)'; }
+  else { nav.style.padding='20px 24px'; nav.style.background='transparent'; nav.style.backdropFilter='none'; nav.style.borderBottom='none'; }
+  // Parallax divider
+  const pg = document.getElementById('parallaxGradient');
+  if(pg) pg.style.transform = `translateY(${-sy*0.08}px)`;
+}, { passive: true });
+</script>
+</body>
+</html>
