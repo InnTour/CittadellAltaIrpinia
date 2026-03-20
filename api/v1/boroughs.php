@@ -5,6 +5,7 @@ jsonHeaders();
 $db     = getDB();
 $method = $_SERVER['REQUEST_METHOD'];
 $id     = $_GET['id'] ?? null;
+$slug   = $_GET['slug'] ?? null;
 
 // ── Helper: costruisce un borough completo con tutti gli array ──────────────
 function buildBorough(PDO $db, array $row): array {
@@ -46,9 +47,14 @@ function buildBorough(PDO $db, array $row): array {
 
 // ── GET ────────────────────────────────────────────────────────────────────
 if ($method === 'GET') {
-    if ($id) {
-        $stmt = $db->prepare("SELECT * FROM boroughs WHERE id = ?");
-        $stmt->execute([$id]);
+    if ($id || $slug) {
+        if ($slug) {
+            $stmt = $db->prepare("SELECT * FROM boroughs WHERE slug = ?");
+            $stmt->execute([$slug]);
+        } else {
+            $stmt = $db->prepare("SELECT * FROM boroughs WHERE id = ?");
+            $stmt->execute([$id]);
+        }
         $row = $stmt->fetch();
         if (!$row) { http_response_code(404); echo json_encode(['error' => 'Not found']); exit; }
         echo json_encode(buildBorough($db, $row));
