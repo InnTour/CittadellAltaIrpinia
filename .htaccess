@@ -1,0 +1,14 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Do not rewrite API requests — let PHP handle them
+  RewriteRule ^api/ - [L]
+
+  # Do not rewrite requests for existing files or directories
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+
+  # Redirect everything else to index.html (SPA fallback)
+  RewriteRule ^ index.html [L]
+</IfModule>

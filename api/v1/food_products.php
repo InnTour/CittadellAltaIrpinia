@@ -5,6 +5,7 @@ jsonHeaders();
 $db     = getDB();
 $method = $_SERVER['REQUEST_METHOD'];
 $id     = $_GET['id'] ?? null;
+$slug   = $_GET['slug'] ?? null;
 
 function buildFood(PDO $db, array $row): array {
     foreach (['weight_grams','shelf_life_days','stock_qty','min_order_qty'] as $f) {
@@ -34,9 +35,14 @@ function buildFood(PDO $db, array $row): array {
 }
 
 if ($method === 'GET') {
-    if ($id) {
-        $stmt = $db->prepare("SELECT * FROM food_products WHERE id = ?");
-        $stmt->execute([$id]);
+    if ($id || $slug) {
+        if ($slug) {
+            $stmt = $db->prepare("SELECT * FROM food_products WHERE slug = ?");
+            $stmt->execute([$slug]);
+        } else {
+            $stmt = $db->prepare("SELECT * FROM food_products WHERE id = ?");
+            $stmt->execute([$id]);
+        }
         $row = $stmt->fetch();
         if (!$row) { http_response_code(404); echo json_encode(['error' => 'Not found']); exit; }
         echo json_encode(buildFood($db, $row));
