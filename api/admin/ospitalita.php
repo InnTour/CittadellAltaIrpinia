@@ -52,6 +52,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'certifications'       => trim($_POST['certifications']       ?? ''),
         'founder_name'         => trim($_POST['founder_name']         ?? ''),
         'founder_quote'        => trim($_POST['founder_quote']        ?? ''),
+        'rating'               => (float)($_POST['rating']            ?? 0),
+        'reviews_count'        => (int)($_POST['reviews_count']       ?? 0),
         'tier'                 => $_POST['tier']                      ?? 'BASE',
         'is_verified'          => isset($_POST['is_verified'])        ? 1 : 0,
         'b2b_open_for_contact' => isset($_POST['b2b_open_for_contact']) ? 1 : 0,
@@ -69,6 +71,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $phs  = implode(',', array_fill(0, count($f), '?'));
         $db->prepare("INSERT INTO accommodations (id,$cols) VALUES (?,$phs)")->execute([$id, ...array_values($f)]);
     }
+
+    processGalleryFromPost($db, 'accommodation', $id, 'new_images');
+
     $msg = '✅ Struttura salvata.';
 }
 render:
@@ -97,17 +102,16 @@ if (isset($_GET['edit'])) {
     $stmt = $db->prepare("SELECT * FROM accommodations WHERE id=?");
     $stmt->execute([$_GET['edit']]);
     $sel = $stmt->fetch();
+    if ($sel) {
+        $sel['_images'] = fetchEntityImages($db, 'accommodation', $sel['id']);
+    }
 }
 
 $pageTitle = 'Ospitalità';
 require '_layout.php';
 ?>
 
-<?php if ($msg): ?>
-  <div class="mb-4 px-4 py-3 rounded-lg text-sm <?= str_starts_with($msg,'✅') ? 'bg-emerald-900/40 border border-emerald-600 text-emerald-300' : 'bg-red-900/40 border border-red-600 text-red-300' ?>">
-    <?= htmlspecialchars($msg) ?>
-  </div>
-<?php endif; ?>
+<?php if ($msg) echo adminMsg($msg); ?>
 
 <div class="grid md:grid-cols-3 gap-6">
   <!-- Lista -->
@@ -135,95 +139,70 @@ require '_layout.php';
     <?php if ($sel !== null || isset($_GET['edit'])): ?>
     <form method="POST" enctype="multipart/form-data" class="bg-slate-800 rounded-xl border border-slate-700 p-6 space-y-4">
       <h3 class="font-semibold text-white mb-2"><?= $sel ? 'Modifica: ' . htmlspecialchars($sel['name']) : 'Nuova struttura' ?></h3>
-      <!-- Cover Image Upload -->
-      <div>
-        <label class="block text-xs text-slate-400 mb-1">Immagine di copertina</label>
-        <?php if (!empty($sel['cover_image'])): ?>
-          <div class="mb-2"><img src="<?= htmlspecialchars($sel['cover_image']) ?>" alt="Cover" class="h-32 rounded-lg object-cover"></div>
-        <?php endif; ?>
-        <input type="file" name="cover_image" accept="image/*"
-          class="w-full bg-slate-700 text-white rounded-lg px-3 py-2 text-sm border border-slate-600 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-emerald-600 file:text-white file:text-xs file:cursor-pointer">
-      </div>
+
+      <?php echo adminCoverImage($sel); ?>
+
       <div class="grid grid-cols-2 gap-4">
         <?php
-        $inp = fn($n,$l,$t='text',$full=false) =>
-          '<div class="' . ($full?'col-span-2':'') . '">
-            <label class="block text-xs text-slate-400 mb-1">'.$l.'</label>
-            <input type="'.$t.'" name="'.$n.'" value="'.htmlspecialchars($sel[$n]??'').'"
-              class="w-full bg-slate-700 text-white rounded-lg px-3 py-2 text-sm border border-slate-600 focus:outline-none focus:border-emerald-500">
-          </div>';
-        echo $inp('id','ID');
-        echo $inp('slug','Slug');
-        echo $inp('name','Nome','text',true);
-        echo $inp('provider_id','ID Fornitore (azienda)');
-        echo $inp('borough_id','ID Borgo');
-        echo $inp('address_full','Indirizzo completo','text',true);
-        echo $inp('lat','Latitudine','number');
-        echo $inp('lng','Longitudine','number');
-        echo $inp('distance_center_km','Distanza centro km','number');
-        echo $inp('rooms_count','Camere','number');
-        echo $inp('max_guests','Max ospiti','number');
-        echo $inp('price_per_night_from','Prezzo da €/notte','number');
-        echo $inp('stars_or_category','Stelle/Categoria');
-        echo $inp('check_in_time','Check-in');
-        echo $inp('check_out_time','Check-out');
-        echo $inp('min_stay_nights','Soggiorno minimo notti','number');
-        echo $inp('languages_spoken','Lingue parlate');
-        echo $inp('contact_email','Email contatto','email');
-        echo $inp('contact_phone','Telefono contatto');
-        echo $inp('website_url','Sito web','url',true);
-        echo $inp('social_instagram','Instagram');
-        echo $inp('social_facebook','Facebook');
-        echo $inp('social_linkedin','LinkedIn');
-        echo $inp('founder_name','Fondatore');
-        echo $inp('booking_email','Email prenotazioni','email');
-        echo $inp('booking_phone','Telefono prenotazioni');
-        echo $inp('booking_url','URL prenotazione','url',true);
-        echo $inp('main_video_url','URL Video embed','text',true);
-        echo $inp('virtual_tour_url','URL Tour Virtuale embed','text',true);
+        echo adminInput('id', 'ID', $sel);
+        echo adminInput('slug', 'Slug', $sel);
+        echo adminInput('name', 'Nome', $sel, 'text', true);
+        echo adminInput('provider_id', 'ID Fornitore (azienda)', $sel);
+        echo adminInput('borough_id', 'ID Borgo', $sel);
+        echo adminInput('address_full', 'Indirizzo completo', $sel, 'text', true);
+        echo adminInput('lat', 'Latitudine', $sel, 'number', false, 'any');
+        echo adminInput('lng', 'Longitudine', $sel, 'number', false, 'any');
+        echo adminInput('distance_center_km', 'Distanza centro km', $sel, 'number', false, 'any');
+        echo adminInput('rooms_count', 'Camere', $sel, 'number');
+        echo adminInput('max_guests', 'Max ospiti', $sel, 'number');
+        echo adminInput('price_per_night_from', 'Prezzo da €/notte', $sel, 'number', false, '0.01');
+        echo adminInput('stars_or_category', 'Stelle/Categoria', $sel);
+        echo adminInput('check_in_time', 'Check-in', $sel);
+        echo adminInput('check_out_time', 'Check-out', $sel);
+        echo adminInput('min_stay_nights', 'Soggiorno minimo notti', $sel, 'number');
+        echo adminInput('languages_spoken', 'Lingue parlate', $sel);
+        echo adminInput('contact_email', 'Email contatto', $sel, 'email');
+        echo adminInput('contact_phone', 'Telefono contatto', $sel);
+        echo adminInput('website_url', 'Sito web', $sel, 'url', true);
+        echo adminInput('social_instagram', 'Instagram', $sel);
+        echo adminInput('social_facebook', 'Facebook', $sel);
+        echo adminInput('social_linkedin', 'LinkedIn', $sel);
+        echo adminInput('founder_name', 'Fondatore', $sel);
+        echo adminInput('booking_email', 'Email prenotazioni', $sel, 'email');
+        echo adminInput('booking_phone', 'Telefono prenotazioni', $sel);
+        echo adminInput('booking_url', 'URL prenotazione', $sel, 'url', true);
+        echo adminInput('main_video_url', 'URL Video embed', $sel, 'text', true);
+        echo adminInput('virtual_tour_url', 'URL Tour Virtuale embed', $sel, 'text', true);
+        echo adminInput('rating', 'Valutazione', $sel, 'number', false, '0.1');
+        echo adminInput('reviews_count', 'Numero recensioni', $sel, 'number');
+        echo adminSelect('type', 'Tipo', $sel, ['HOTEL','AGRITURISMO','MASSERIA','BED_AND_BREAKFAST','HOSTEL','APPARTAMENTO']);
+        echo adminSelect('tier', 'Tier', $sel, ['BASE','PREMIUM','PLATINUM']);
         ?>
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">Tipo</label>
-          <select name="type" class="w-full bg-slate-700 text-white rounded-lg px-3 py-2 text-sm border border-slate-600 focus:outline-none focus:border-emerald-500">
-            <?php foreach (['HOTEL','AGRITURISMO','MASSERIA','BED_AND_BREAKFAST','HOSTEL','APPARTAMENTO'] as $t): ?>
-            <option value="<?= $t ?>" <?= ($sel['type']??'')===$t?'selected':'' ?>><?= $t ?></option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">Tier</label>
-          <select name="tier" class="w-full bg-slate-700 text-white rounded-lg px-3 py-2 text-sm border border-slate-600 focus:outline-none focus:border-emerald-500">
-            <?php foreach (['BASE','PREMIUM','PLATINUM'] as $t): ?>
-            <option value="<?= $t ?>" <?= ($sel['tier']??'')===$t?'selected':'' ?>><?= $t ?></option>
-            <?php endforeach; ?>
-          </select>
-        </div>
       </div>
-      <?php foreach ([
-        ['tagline','Tagline'],
-        ['description_short','Descrizione breve'],
-        ['description_long','Descrizione completa'],
-        ['amenities','Servizi (uno per riga)'],
-        ['accessibility','Accessibilità'],
-        ['cancellation_policy','Politica cancellazione'],
-        ['founder_quote','Citazione fondatore'],
-        ['certifications','Certificazioni (una per riga)'],
-        ['b2b_interests','Interessi B2B (uno per riga)'],
-      ] as [$n,$l]): ?>
-      <div>
-        <label class="block text-xs text-slate-400 mb-1"><?= $l ?></label>
-        <textarea name="<?= $n ?>" rows="<?= in_array($n,['description_long','amenities'])?4:2 ?>"
-          class="w-full bg-slate-700 text-white rounded-lg px-3 py-2 text-sm border border-slate-600 focus:outline-none focus:border-emerald-500"><?= htmlspecialchars($sel[$n]??'') ?></textarea>
-      </div>
-      <?php endforeach; ?>
+
+      <?php
+      echo adminTextarea('tagline', 'Tagline', $sel);
+      echo adminTextarea('description_short', 'Descrizione breve', $sel);
+      echo adminTextarea('description_long', 'Descrizione completa', $sel, 4);
+      echo adminTextarea('amenities', 'Servizi (uno per riga)', $sel, 4, 'Un servizio per riga');
+      echo adminTextarea('accessibility', 'Accessibilità', $sel);
+      echo adminTextarea('cancellation_policy', 'Politica cancellazione', $sel);
+      echo adminTextarea('founder_quote', 'Citazione fondatore', $sel);
+      echo adminTextarea('certifications', 'Certificazioni (una per riga)', $sel, 3, 'Una certificazione per riga');
+      echo adminTextarea('b2b_interests', 'Interessi B2B (uno per riga)', $sel, 3);
+      ?>
+
+      <?php echo adminImageGallery('new_images', $sel['_images'] ?? [], 'Galleria immagini struttura'); ?>
+
       <div class="flex gap-4 flex-wrap text-sm">
-        <?php foreach ([['is_verified','Verificata'],['is_active','Attiva'],['is_featured','In evidenza'],['b2b_open_for_contact','Aperta B2B']] as [$n,$l]): ?>
-        <label class="flex items-center gap-2 text-slate-300">
-          <input type="checkbox" name="<?= $n ?>" <?= !empty($sel[$n])?'checked':'' ?> class="rounded">
-          <?= $l ?>
-        </label>
-        <?php endforeach; ?>
+        <?php
+        echo adminCheckbox('is_verified', 'Verificata', $sel);
+        echo adminCheckbox('is_active', 'Attiva', $sel);
+        echo adminCheckbox('is_featured', 'In evidenza', $sel);
+        echo adminCheckbox('b2b_open_for_contact', 'Aperta B2B', $sel);
+        ?>
       </div>
+
       <div class="flex gap-3 pt-2">
         <button type="submit" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg transition-colors">Salva</button>
         <?php if ($sel): ?>

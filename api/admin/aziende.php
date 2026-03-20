@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($coverPath) ensureCoverImageColumn($db, 'companies');
 
     $f = [
-        'slug'               => trim($_POST['slug']               ?? $id),
+        'slug'               => trim($_POST['slug']               ?? '') ?: $id,
         'name'               => trim($_POST['name']               ?? ''),
         'legal_name'         => trim($_POST['legal_name']         ?? ''),
         'vat_number'         => trim($_POST['vat_number']         ?? ''),
@@ -32,8 +32,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'contact_email'      => trim($_POST['contact_email']      ?? ''),
         'contact_phone'      => trim($_POST['contact_phone']      ?? ''),
         'website_url'        => trim($_POST['website_url']        ?? ''),
-        'social_instagram'   => trim($_POST['social_instagram']   ?? '#'),
-        'social_facebook'    => trim($_POST['social_facebook']    ?? '#'),
+        'social_instagram'   => trim($_POST['social_instagram']   ?? ''),
+        'social_facebook'    => trim($_POST['social_facebook']    ?? ''),
         'social_linkedin'    => trim($_POST['social_linkedin']    ?? ''),
         'tier'               => $_POST['tier']                    ?? 'BASE',
         'is_verified'        => isset($_POST['is_verified'])  ? 1 : 0,
@@ -61,6 +61,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     replaceArray($db, 'company_certifications', 'company_id', $id, $toLines($_POST['certifications']  ?? ''));
     replaceArray($db, 'company_b2b_interests',  'company_id', $id, $toLines($_POST['b2b_interests']   ?? ''));
 
+    // Awards
+    $db->prepare("DELETE FROM company_awards WHERE company_id = ?")->execute([$id]);
+    $awardYears  = $_POST['award_year']  ?? [];
+    $awardTitles = $_POST['award_title'] ?? [];
+    $awardEnts   = $_POST['award_entity'] ?? [];
+    $stmtAw = $db->prepare("INSERT INTO company_awards (company_id, year, title, entity) VALUES (?,?,?,?)");
+    for ($i = 0; $i < count($awardTitles); $i++) {
+        if (trim($awardTitles[$i] ?? '')) {
+            $stmtAw->execute([$id, (int)($awardYears[$i] ?? 0), $awardTitles[$i], $awardEnts[$i] ?? '']);
+        }
+    }
+
+    // Gallery images
+    processGalleryFromPost($db, 'company', $id, 'new_images');
+
     $msg = '✅ Azienda salvata.';
 }
 render:
@@ -70,6 +85,7 @@ if (isset($_GET['delete'])) {
     foreach (['company_certifications','company_b2b_interests','company_awards'] as $t) {
         $db->prepare("DELETE FROM `$t` WHERE company_id = ?")->execute([$did]);
     }
+    $db->prepare("DELETE FROM entity_images WHERE entity_type = 'company' AND entity_id = ?")->execute([$did]);
     $db->prepare("DELETE FROM companies WHERE id=?")->execute([$did]);
     header('Location: aziende.php');
     exit;
@@ -84,6 +100,11 @@ if (isset($_GET['edit'])) {
     if ($sel) {
         $sel['certifications'] = implode("\n", fetchArray($db, 'company_certifications', 'company_id', $sel['id']));
         $sel['b2b_interests']  = implode("\n", fetchArray($db, 'company_b2b_interests',  'company_id', $sel['id']));
+        $sel['_images'] = fetchEntityImages($db, 'company', $sel['id']);
+        // Awards
+        $stmtAw = $db->prepare("SELECT year, title, entity FROM company_awards WHERE company_id = ? ORDER BY year DESC");
+        $stmtAw->execute([$sel['id']]);
+        $sel['_awards'] = $stmtAw->fetchAll();
     }
 }
 
@@ -91,11 +112,7 @@ $pageTitle = 'Aziende';
 require '_layout.php';
 ?>
 
-<?php if ($msg): ?>
-  <div class="mb-4 px-4 py-3 rounded-lg text-sm <?= str_starts_with($msg,'✅') ? 'bg-emerald-900/40 border border-emerald-600 text-emerald-300' : 'bg-red-900/40 border border-red-600 text-red-300' ?>">
-    <?= htmlspecialchars($msg) ?>
-  </div>
-<?php endif; ?>
+<?= adminMsg($msg) ?>
 
 <div class="grid md:grid-cols-3 gap-6">
   <!-- Lista -->
@@ -123,92 +140,66 @@ require '_layout.php';
     <?php if ($sel !== null || isset($_GET['edit'])): ?>
     <form method="POST" enctype="multipart/form-data" class="bg-slate-800 rounded-xl border border-slate-700 p-6 space-y-4">
       <h3 class="font-semibold text-white mb-2"><?= $sel ? 'Modifica: ' . htmlspecialchars($sel['name']) : 'Nuova azienda' ?></h3>
-      <!-- Cover Image Upload -->
-      <div>
-        <label class="block text-xs text-slate-400 mb-1">Immagine di copertina</label>
-        <?php if (!empty($sel['cover_image'])): ?>
-          <div class="mb-2"><img src="<?= htmlspecialchars($sel['cover_image']) ?>" alt="Cover" class="h-32 rounded-lg object-cover"></div>
-        <?php endif; ?>
-        <input type="file" name="cover_image" accept="image/*"
-          class="w-full bg-slate-700 text-white rounded-lg px-3 py-2 text-sm border border-slate-600 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-emerald-600 file:text-white file:text-xs file:cursor-pointer">
-      </div>
+
+      <?= adminCoverImage($sel) ?>
+
       <div class="grid grid-cols-2 gap-4">
-        <?php
-        $inp = fn($n,$l,$t='text',$full=false) =>
-          '<div class="' . ($full?'col-span-2':'') . '">
-            <label class="block text-xs text-slate-400 mb-1">'.$l.'</label>
-            <input type="'.$t.'" name="'.$n.'" value="'.htmlspecialchars($sel[$n]??'').'"
-              class="w-full bg-slate-700 text-white rounded-lg px-3 py-2 text-sm border border-slate-600 focus:outline-none focus:border-emerald-500">
-          </div>';
-        echo $inp('id','ID');
-        echo $inp('name','Nome');
-        echo $inp('legal_name','Ragione Sociale');
-        echo $inp('vat_number','P.IVA');
-        echo $inp('borough_id','ID Borgo');
-        echo $inp('founding_year','Anno fondazione','number');
-        echo $inp('employees_count','Dipendenti','number');
-        echo $inp('contact_email','Email','email');
-        echo $inp('contact_phone','Telefono');
-        echo $inp('lat','Latitudine','number');
-        echo $inp('lng','Longitudine','number');
-        echo $inp('address_full','Indirizzo completo','text',true);
-        echo $inp('website_url','Sito web','url',true);
-        echo $inp('social_instagram','Instagram');
-        echo $inp('social_facebook','Facebook');
-        echo $inp('social_linkedin','LinkedIn');
-        echo $inp('founder_name','Fondatore');
-        echo $inp('hero_image_index','Indice immagine','number');
-        echo $inp('main_video_url','URL Video embed','text',true);
-        echo $inp('virtual_tour_url','URL Tour Virtuale embed','text',true);
-        ?>
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">Tipo</label>
-          <select name="type" class="w-full bg-slate-700 text-white rounded-lg px-3 py-2 text-sm border border-slate-600 focus:outline-none focus:border-emerald-500">
-            <?php foreach (['PRODUTTORE_FOOD','MISTO','AGRITURISMO'] as $t): ?>
-            <option value="<?= $t ?>" <?= ($sel['type']??'')===$t?'selected':'' ?>><?= $t ?></option>
-            <?php endforeach; ?>
-          </select>
+        <?= adminInput('id', 'ID', $sel) ?>
+        <?= adminInput('slug', 'Slug', $sel) ?>
+        <?= adminInput('name', 'Nome', $sel, 'text', true) ?>
+        <?= adminInput('legal_name', 'Ragione Sociale', $sel) ?>
+        <?= adminInput('vat_number', 'P.IVA', $sel) ?>
+        <?= adminInput('borough_id', 'ID Borgo', $sel) ?>
+        <?= adminInput('founding_year', 'Anno fondazione', $sel, 'number') ?>
+        <?= adminInput('employees_count', 'Dipendenti', $sel, 'number') ?>
+        <?= adminInput('contact_email', 'Email', $sel, 'email') ?>
+        <?= adminInput('contact_phone', 'Telefono', $sel) ?>
+        <?= adminInput('lat', 'Latitudine', $sel, 'number', false, 'any') ?>
+        <?= adminInput('lng', 'Longitudine', $sel, 'number', false, 'any') ?>
+        <?= adminInput('address_full', 'Indirizzo completo', $sel, 'text', true) ?>
+        <?= adminInput('website_url', 'Sito web', $sel, 'url', true) ?>
+        <?= adminInput('social_instagram', 'Instagram', $sel) ?>
+        <?= adminInput('social_facebook', 'Facebook', $sel) ?>
+        <?= adminInput('social_linkedin', 'LinkedIn', $sel) ?>
+        <?= adminInput('founder_name', 'Fondatore', $sel) ?>
+        <?= adminInput('hero_image_index', 'Indice immagine hero', $sel, 'number') ?>
+        <?= adminInput('hero_image_alt', 'Alt immagine hero', $sel, 'text', true) ?>
+        <?= adminInput('main_video_url', 'URL Video embed', $sel, 'text', true) ?>
+        <?= adminInput('virtual_tour_url', 'URL Tour Virtuale', $sel, 'text', true) ?>
+        <?= adminSelect('type', 'Tipo', $sel, ['PRODUTTORE_FOOD','ARTIGIANO','MISTO','AGRITURISMO','RISTORANTE','GUIDA_TURISTICA','COOPERATIVA']) ?>
+        <?= adminSelect('tier', 'Tier', $sel, ['BASE','PREMIUM','PLATINUM']) ?>
+        <?= adminImageGallery('new_images', $sel['_images'] ?? [], 'Galleria immagini azienda') ?>
+      </div>
+
+      <?= adminInput('tagline', 'Tagline', $sel, 'text', true) ?>
+      <?= adminTextarea('description_short', 'Descrizione breve', $sel, 2) ?>
+      <?= adminTextarea('description_long', 'Descrizione completa', $sel, 4) ?>
+      <?= adminTextarea('founder_quote', 'Citazione fondatore', $sel, 2) ?>
+      <?= adminTextarea('certifications', 'Certificazioni (una per riga)', $sel, 3) ?>
+      <?= adminTextarea('b2b_interests', 'Interessi B2B (uno per riga)', $sel, 3) ?>
+
+      <!-- Awards -->
+      <div>
+        <label class="block text-xs text-slate-400 mb-2">Premi e riconoscimenti</label>
+        <div id="awards-container" class="space-y-2">
+          <?php foreach ($sel['_awards'] ?? [] as $aw): ?>
+          <div class="flex gap-2 items-center award-row">
+            <input type="number" name="award_year[]" value="<?= (int)$aw['year'] ?>" placeholder="Anno" class="w-20 bg-slate-700 text-white rounded-lg px-2 py-2 text-sm border border-slate-600">
+            <input type="text" name="award_title[]" value="<?= htmlspecialchars($aw['title']) ?>" placeholder="Titolo premio" class="flex-1 bg-slate-700 text-white rounded-lg px-3 py-2 text-sm border border-slate-600">
+            <input type="text" name="award_entity[]" value="<?= htmlspecialchars($aw['entity']) ?>" placeholder="Ente" class="w-32 bg-slate-700 text-white rounded-lg px-3 py-2 text-sm border border-slate-600">
+            <button type="button" onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-300 text-sm px-2">&times;</button>
+          </div>
+          <?php endforeach; ?>
         </div>
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">Tier</label>
-          <select name="tier" class="w-full bg-slate-700 text-white rounded-lg px-3 py-2 text-sm border border-slate-600 focus:outline-none focus:border-emerald-500">
-            <?php foreach (['BASE','PREMIUM','PLATINUM'] as $t): ?>
-            <option value="<?= $t ?>" <?= ($sel['tier']??'')===$t?'selected':'' ?>><?= $t ?></option>
-            <?php endforeach; ?>
-          </select>
-        </div>
+        <button type="button" onclick="addAwardRow()" class="mt-2 text-xs text-emerald-400 hover:text-emerald-300">+ Aggiungi premio</button>
       </div>
-      <div>
-        <label class="block text-xs text-slate-400 mb-1">Tagline</label>
-        <input type="text" name="tagline" value="<?= htmlspecialchars($sel['tagline']??'') ?>"
-          class="w-full bg-slate-700 text-white rounded-lg px-3 py-2 text-sm border border-slate-600 focus:outline-none focus:border-emerald-500">
+
+      <div class="flex gap-4 flex-wrap text-sm">
+        <?= adminCheckbox('is_verified', 'Verificata', $sel) ?>
+        <?= adminCheckbox('is_active', 'Attiva', $sel) ?>
+        <?= adminCheckbox('b2b_open_for_contact', 'Aperta B2B', $sel) ?>
       </div>
-      <div>
-        <label class="block text-xs text-slate-400 mb-1">Descrizione breve</label>
-        <textarea name="description_short" rows="2" class="w-full bg-slate-700 text-white rounded-lg px-3 py-2 text-sm border border-slate-600 focus:outline-none focus:border-emerald-500"><?= htmlspecialchars($sel['description_short']??'') ?></textarea>
-      </div>
-      <div>
-        <label class="block text-xs text-slate-400 mb-1">Descrizione completa</label>
-        <textarea name="description_long" rows="4" class="w-full bg-slate-700 text-white rounded-lg px-3 py-2 text-sm border border-slate-600 focus:outline-none focus:border-emerald-500"><?= htmlspecialchars($sel['description_long']??'') ?></textarea>
-      </div>
-      <div>
-        <label class="block text-xs text-slate-400 mb-1">Citazione fondatore</label>
-        <textarea name="founder_quote" rows="2" class="w-full bg-slate-700 text-white rounded-lg px-3 py-2 text-sm border border-slate-600 focus:outline-none focus:border-emerald-500"><?= htmlspecialchars($sel['founder_quote']??'') ?></textarea>
-      </div>
-      <?php foreach ([['certifications','Certificazioni (una per riga)'],['b2b_interests','Interessi B2B (uno per riga)']] as [$n,$l]): ?>
-      <div>
-        <label class="block text-xs text-slate-400 mb-1"><?= $l ?></label>
-        <textarea name="<?= $n ?>" rows="3" class="w-full bg-slate-700 text-white rounded-lg px-3 py-2 text-sm border border-slate-600 focus:outline-none focus:border-emerald-500"><?= htmlspecialchars($sel[$n]??'') ?></textarea>
-      </div>
-      <?php endforeach; ?>
-      <div class="flex gap-3 flex-wrap text-sm">
-        <?php foreach ([['is_verified','Verificata'],['is_active','Attiva'],['b2b_open_for_contact','Aperta B2B']] as [$n,$l]): ?>
-        <label class="flex items-center gap-2 text-slate-300">
-          <input type="checkbox" name="<?= $n ?>" <?= !empty($sel[$n])?'checked':'' ?> class="rounded">
-          <?= $l ?>
-        </label>
-        <?php endforeach; ?>
-      </div>
+
       <div class="flex gap-3 pt-2">
         <button type="submit" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg transition-colors">Salva</button>
         <?php if ($sel): ?>
@@ -219,6 +210,19 @@ require '_layout.php';
         <a href="aziende.php" class="px-6 py-2.5 bg-slate-600 hover:bg-slate-500 text-white text-sm rounded-lg transition-colors">Annulla</a>
       </div>
     </form>
+
+    <script>
+    function addAwardRow() {
+      const c = document.getElementById('awards-container');
+      const div = document.createElement('div');
+      div.className = 'flex gap-2 items-center award-row';
+      div.innerHTML = '<input type="number" name="award_year[]" placeholder="Anno" class="w-20 bg-slate-700 text-white rounded-lg px-2 py-2 text-sm border border-slate-600">'
+        + '<input type="text" name="award_title[]" placeholder="Titolo premio" class="flex-1 bg-slate-700 text-white rounded-lg px-3 py-2 text-sm border border-slate-600">'
+        + '<input type="text" name="award_entity[]" placeholder="Ente" class="w-32 bg-slate-700 text-white rounded-lg px-3 py-2 text-sm border border-slate-600">'
+        + '<button type="button" onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-300 text-sm px-2">&times;</button>';
+      c.appendChild(div);
+    }
+    </script>
     <?php else: ?>
     <div class="bg-slate-800 rounded-xl border border-slate-700 p-12 text-center">
       <div class="text-4xl mb-3">🏢</div>

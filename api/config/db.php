@@ -171,3 +171,210 @@ function replaceArray(PDO $db, string $table, string $fk, string $id, array $val
         $stmt->execute([$id, $v, $i]);
     }
 }
+
+// ============================================================
+// Entity Images — Gestione gallery per ogni entità
+// ============================================================
+
+function ensureEntityImagesTable(PDO $db): void {
+    static $done = false;
+    if ($done) return;
+    $done = true;
+    $db->exec("CREATE TABLE IF NOT EXISTS `entity_images` (
+        `id` INT AUTO_INCREMENT PRIMARY KEY,
+        `entity_type` VARCHAR(50) NOT NULL,
+        `entity_id` VARCHAR(100) NOT NULL,
+        `src` VARCHAR(500) NOT NULL,
+        `alt` VARCHAR(500) DEFAULT '',
+        `sort_order` INT DEFAULT 0,
+        INDEX idx_entity (`entity_type`, `entity_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+}
+
+function fetchEntityImages(PDO $db, string $entityType, string $entityId): array {
+    ensureEntityImagesTable($db);
+    $stmt = $db->prepare("SELECT src, alt FROM entity_images WHERE entity_type = ? AND entity_id = ? ORDER BY sort_order ASC");
+    $stmt->execute([$entityType, $entityId]);
+    return $stmt->fetchAll();
+}
+
+function saveEntityImages(PDO $db, string $entityType, string $entityId, array $images): void {
+    ensureEntityImagesTable($db);
+    $db->prepare("DELETE FROM entity_images WHERE entity_type = ? AND entity_id = ?")->execute([$entityType, $entityId]);
+    $stmt = $db->prepare("INSERT INTO entity_images (entity_type, entity_id, src, alt, sort_order) VALUES (?, ?, ?, ?, ?)");
+    foreach ($images as $i => $img) {
+        $src = is_array($img) ? ($img['src'] ?? '') : $img;
+        $alt = is_array($img) ? ($img['alt'] ?? '') : '';
+        if ($src) $stmt->execute([$entityType, $entityId, $src, $alt, $i]);
+    }
+}
+
+function handleMultipleImageUpload(string $inputName, string $entityType, string $entityId): array {
+    $paths = [];
+    if (!isset($_FILES[$inputName])) return $paths;
+    $files = $_FILES[$inputName];
+    if (!is_array($files['name'])) return $paths;
+
+    $allowedExt = ['jpg' => 'jpg', 'jpeg' => 'jpg', 'png' => 'png', 'gif' => 'gif', 'webp' => 'webp'];
+    $destDir = __DIR__ . '/../uploads/';
+    if (!is_dir($destDir)) @mkdir($destDir, 0755, true);
+    $safeId = preg_replace('/[^a-z0-9_-]/', '', strtolower($entityId));
+
+    for ($i = 0; $i < count($files['name']); $i++) {
+        if ($files['error'][$i] !== UPLOAD_ERR_OK || empty($files['tmp_name'][$i])) continue;
+        $origExt = strtolower(pathinfo($files['name'][$i], PATHINFO_EXTENSION));
+        if (!isset($allowedExt[$origExt])) continue;
+        $ext = $allowedExt[$origExt];
+        $filename = $entityType . '_' . $safeId . '_' . time() . '_' . $i . '.' . $ext;
+        $dest = $destDir . $filename;
+        if (@move_uploaded_file($files['tmp_name'][$i], $dest)) {
+            $paths[] = '/api/uploads/' . $filename;
+        }
+    }
+    return $paths;
+}
+
+// Recupera borough_name da borough_id
+function getBoroughName(PDO $db, ?string $boroughId): string {
+    if (!$boroughId) return '';
+    static $cache = [];
+    if (isset($cache[$boroughId])) return $cache[$boroughId];
+    $stmt = $db->prepare("SELECT name FROM boroughs WHERE id = ?");
+    $stmt->execute([$boroughId]);
+    $row = $stmt->fetch();
+    $cache[$boroughId] = $row ? $row['name'] : ucwords(str_replace('-', ' ', $boroughId));
+    return $cache[$boroughId];
+}
+
+// Costruisce oggetto coordinates da lat/lng
+function buildCoordinates($row): ?array {
+    $lat = (float)($row['lat'] ?? 0);
+    $lng = (float)($row['lng'] ?? 0);
+    if ($lat == 0 && $lng == 0) return null;
+    return ['lat' => $lat, 'lng' => $lng];
+}
+
+// Converte stringa separata da virgola/newline in array
+function parseTextToArray(string $text, string $separator = "\n"): array {
+    return array_values(array_filter(array_map('trim', explode($separator, $text))));
+}
+
+// Converte stringa JSON o testo separato in array
+function parseJsonOrText(?string $value, string $separator = ','): array {
+    if (!$value || trim($value) === '') return [];
+    $decoded = json_decode($value, true);
+    if (is_array($decoded)) return $decoded;
+    return array_values(array_filter(array_map('trim', explode($separator, $value))));
+}
+
+// ============================================================
+// Admin Form Helpers — Componenti UI riutilizzabili
+// ============================================================
+
+function adminInput(string $name, string $label, ?array $sel, string $type = 'text', bool $full = false, string $step = ''): string {
+    $value = htmlspecialchars($sel[$name] ?? '');
+    $cls = $full ? 'col-span-2' : '';
+    $stepAttr = $step ? " step=\"$step\"" : ($type === 'number' ? ' step="any"' : '');
+    return "<div class=\"$cls\">
+        <label class=\"block text-xs text-slate-400 mb-1\">$label</label>
+        <input type=\"$type\" name=\"$name\" value=\"$value\"$stepAttr
+          class=\"w-full bg-slate-700 text-white rounded-lg px-3 py-2 text-sm border border-slate-600 focus:outline-none focus:border-emerald-500\">
+    </div>";
+}
+
+function adminTextarea(string $name, string $label, ?array $sel, int $rows = 3, string $help = ''): string {
+    $value = htmlspecialchars($sel[$name] ?? '');
+    $helpHtml = $help ? "<p class=\"text-xs text-slate-500 mt-1\">$help</p>" : '';
+    return "<div>
+        <label class=\"block text-xs text-slate-400 mb-1\">$label</label>
+        <textarea name=\"$name\" rows=\"$rows\"
+          class=\"w-full bg-slate-700 text-white rounded-lg px-3 py-2 text-sm border border-slate-600 focus:outline-none focus:border-emerald-500\">$value</textarea>
+        $helpHtml
+    </div>";
+}
+
+function adminSelect(string $name, string $label, ?array $sel, array $options): string {
+    $current = $sel[$name] ?? '';
+    $html = "<div>
+        <label class=\"block text-xs text-slate-400 mb-1\">$label</label>
+        <select name=\"$name\" class=\"w-full bg-slate-700 text-white rounded-lg px-3 py-2 text-sm border border-slate-600 focus:outline-none focus:border-emerald-500\">";
+    foreach ($options as $val => $lbl) {
+        if (is_int($val)) { $val = $lbl; }
+        $selected = $current === $val ? ' selected' : '';
+        $html .= "<option value=\"" . htmlspecialchars($val) . "\"$selected>" . htmlspecialchars($lbl) . "</option>";
+    }
+    $html .= "</select></div>";
+    return $html;
+}
+
+function adminCheckbox(string $name, string $label, ?array $sel): string {
+    $checked = !empty($sel[$name]) ? ' checked' : '';
+    return "<label class=\"flex items-center gap-2 text-slate-300 text-sm\">
+        <input type=\"checkbox\" name=\"$name\"$checked class=\"rounded\"> $label
+    </label>";
+}
+
+function adminCoverImage(?array $sel): string {
+    $html = '<div>
+        <label class="block text-xs text-slate-400 mb-1">Immagine di copertina</label>';
+    if (!empty($sel['cover_image'])) {
+        $src = htmlspecialchars($sel['cover_image']);
+        $html .= "<div class=\"mb-2\"><img src=\"$src\" alt=\"Cover\" class=\"h-32 rounded-lg object-cover\"></div>";
+    }
+    $html .= '<input type="file" name="cover_image" accept="image/*"
+        class="w-full bg-slate-700 text-white rounded-lg px-3 py-2 text-sm border border-slate-600 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-emerald-600 file:text-white file:text-xs file:cursor-pointer">
+    </div>';
+    return $html;
+}
+
+function adminImageGallery(string $inputName, array $images, string $label = 'Galleria immagini'): string {
+    $html = "<div class=\"col-span-2\">
+        <label class=\"block text-xs text-slate-400 mb-2\">$label</label>
+        <div class=\"grid grid-cols-4 gap-2 mb-3\" id=\"gallery-preview\">";
+    foreach ($images as $i => $img) {
+        $src = htmlspecialchars($img['src'] ?? '');
+        $alt = htmlspecialchars($img['alt'] ?? '');
+        $html .= "<div class=\"relative group\">
+            <img src=\"$src\" alt=\"$alt\" class=\"h-24 w-full object-cover rounded-lg\">
+            <input type=\"hidden\" name=\"existing_images_src[]\" value=\"$src\">
+            <input type=\"text\" name=\"existing_images_alt[]\" value=\"$alt\" placeholder=\"Alt text\" class=\"w-full mt-1 bg-slate-600 text-white rounded px-2 py-1 text-xs border border-slate-500\">
+            <label class=\"absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity\">
+                <input type=\"checkbox\" name=\"remove_images[]\" value=\"$i\" class=\"hidden\"> &times;
+            </label>
+        </div>";
+    }
+    $html .= "</div>
+        <input type=\"file\" name=\"{$inputName}[]\" multiple accept=\"image/*\"
+            class=\"w-full bg-slate-700 text-white rounded-lg px-3 py-2 text-sm border border-slate-600 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-emerald-600 file:text-white file:text-xs file:cursor-pointer\">
+        <p class=\"text-xs text-slate-500 mt-1\">Puoi selezionare più immagini. Le nuove si aggiungono a quelle esistenti.</p>
+    </div>";
+    return $html;
+}
+
+function adminMsg(string $msg): string {
+    if (!$msg) return '';
+    $cls = str_starts_with($msg, '✅') ? 'bg-emerald-900/40 border border-emerald-600 text-emerald-300' : 'bg-red-900/40 border border-red-600 text-red-300';
+    return "<div class=\"mb-4 px-4 py-3 rounded-lg text-sm $cls\">" . htmlspecialchars($msg) . "</div>";
+}
+
+// Processa gallery images dal form POST
+function processGalleryFromPost(PDO $db, string $entityType, string $entityId, string $inputName = 'new_images'): void {
+    $images = [];
+    $removeIndexes = array_map('intval', $_POST['remove_images'] ?? []);
+
+    // Mantieni immagini esistenti (non rimosse)
+    $existingSrc = $_POST['existing_images_src'] ?? [];
+    $existingAlt = $_POST['existing_images_alt'] ?? [];
+    foreach ($existingSrc as $i => $src) {
+        if (in_array($i, $removeIndexes)) continue;
+        $images[] = ['src' => $src, 'alt' => $existingAlt[$i] ?? ''];
+    }
+
+    // Aggiungi nuove immagini uploadate
+    $newPaths = handleMultipleImageUpload($inputName, $entityType, $entityId);
+    foreach ($newPaths as $path) {
+        $images[] = ['src' => $path, 'alt' => ''];
+    }
+
+    saveEntityImages($db, $entityType, $entityId, $images);
+}

@@ -24,11 +24,34 @@ function buildFood(PDO $db, array $row): array {
     }
 
     // Add borough_name
-    if (!isset($row['borough_name']) && isset($row['borough_id'])) {
-        $bs = $db->prepare("SELECT name FROM boroughs WHERE id = ?");
-        $bs->execute([$row['borough_id']]);
-        $br = $bs->fetch();
-        $row['borough_name'] = $br ? $br['name'] : $row['borough_id'];
+    $row['borough_name'] = getBoroughName($db, $row['borough_id'] ?? null);
+
+    // Images from entity_images table
+    $row['images'] = fetchEntityImages($db, 'food_product', $row['id']);
+
+    // Rating and reviews
+    $row['rating'] = isset($row['rating']) ? (float)$row['rating'] : 0.0;
+    $row['reviews_count'] = isset($row['reviews_count']) ? (int)$row['reviews_count'] : 0;
+
+    // Traceability chain (stored as JSON)
+    if (isset($row['traceability_chain']) && is_string($row['traceability_chain'])) {
+        $row['traceability_chain'] = json_decode($row['traceability_chain'], true) ?? [];
+    } else {
+        $row['traceability_chain'] = [];
+    }
+
+    // Tags
+    if (isset($row['tags']) && is_string($row['tags'])) {
+        $row['tags'] = json_decode($row['tags'], true) ?? [];
+    } else {
+        $row['tags'] = [];
+    }
+
+    // Certifications
+    if (isset($row['certifications']) && is_string($row['certifications'])) {
+        $row['certifications'] = json_decode($row['certifications'], true) ?? [];
+    } else {
+        $row['certifications'] = [];
     }
 
     return $row;
