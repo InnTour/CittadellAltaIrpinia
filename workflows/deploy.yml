@@ -1,0 +1,83 @@
+name: Build & Deploy to Hostinger Cloud
+
+on:
+  push:
+    branches: [main]
+    paths: ['platform/**']
+  pull_request:
+    branches: [main]
+    paths: ['platform/**']
+
+defaults:
+  run:
+    working-directory: platform
+
+jobs:
+  quality:
+    name: Lint, Typecheck & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: platform/package-lock.json
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test:run
+
+  build:
+    name: Build Next.js
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: platform/package-lock.json
+
+      - run: npm ci
+      - run: npm run build
+
+      - name: Upload build artifact
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: nextjs-build
+          path: |
+            platform/.next/standalone
+            platform/.next/static
+            platform/public
+
+  deploy:
+    name: Deploy to Hostinger Cloud
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: nextjs-build
+          path: build
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.HOSTINGER_HOST }}
+          username: ${{ secrets.HOSTINGER_USER }}
+          key: ${{ secrets.HOSTINGER_SSH_KEY }}
+          script: |
+            cd /var/www/metaborghi/platform
+            git pull origin main
+            npm ci --production
+            npm run build
+            pm2 reload metaborghi || pm2 start ecosystem.config.js --env production
