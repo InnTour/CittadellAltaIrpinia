@@ -42,6 +42,18 @@ function buildBorough(PDO $db, array $row): array {
     }
     $row['area_km2'] = isset($row['area_km2']) ? (float)$row['area_km2'] : null;
 
+    // Images from entity_images table
+    $row['images'] = fetchEntityImages($db, 'borough', $bid);
+
+    // Hero image object for frontend
+    $heroIdx = $row['hero_image_index'] ?? 0;
+    $images = $row['images'];
+    if (!empty($images[$heroIdx])) {
+        $row['hero_image'] = ['src' => $images[$heroIdx]['src'], 'alt' => $row['hero_image_alt'] ?? $row['name']];
+    } elseif (!empty($row['cover_image'])) {
+        $row['hero_image'] = ['src' => $row['cover_image'], 'alt' => $row['hero_image_alt'] ?? $row['name']];
+    }
+
     return $row;
 }
 

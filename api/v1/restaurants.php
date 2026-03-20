@@ -5,43 +5,79 @@ jsonHeaders();
 $db     = getDB();
 $method = $_SERVER['REQUEST_METHOD'];
 $id     = $_GET['id'] ?? null;
+$slug   = $_GET['slug'] ?? null;
 
+// ── Helper: builds a complete restaurant object for the frontend ──────────
 function buildRestaurant(PDO $db, array $row): array {
-    foreach (['seats_indoor','seats_outdoor','max_group_size'] as $f) {
-        if (isset($row[$f])) $row[$f] = (int)$row[$f];
+    $out = [];
+
+    // Scalar string fields (pass through)
+    foreach ([
+        'id', 'slug', 'name', 'type', 'borough_id',
+        'address_full', 'description_short', 'description_long', 'tagline',
+        'cuisine_type', 'price_range',
+        'opening_hours', 'closing_day',
+        'website_url', 'booking_url',
+        'founder_name', 'founder_quote', 'tier', 'cover_image',
+    ] as $f) {
+        $out[$f] = $row[$f] ?? null;
     }
-    $row['coordinates']        = ['lat' => (float)($row['lat'] ?? 0), 'lng' => (float)($row['lng'] ?? 0)];
-    unset($row['lat'], $row['lng']);
-    $row['accepts_groups']      = (bool)($row['accepts_groups'] ?? false);
-    $row['b2b_open_for_contact']= (bool)($row['b2b_open_for_contact'] ?? false);
-    $row['is_active']           = (bool)($row['is_active'] ?? true);
-    $row['is_featured']         = (bool)($row['is_featured'] ?? false);
-    $row['is_verified']         = (bool)($row['is_verified'] ?? false);
-    // Parse JSON fields
-    foreach (['specialties','menu_highlights','certifications','b2b_interests'] as $jf) {
-        if (isset($row[$jf]) && is_string($row[$jf])) {
-            $row[$jf] = json_decode($row[$jf], true) ?? [];
-        } elseif (!isset($row[$jf])) {
-            $row[$jf] = [];
-        }
+
+    // borough_name lookup
+    $out['borough_name'] = getBoroughName($db, $row['borough_id'] ?? null);
+
+    // coordinates as {lat, lng} object
+    $out['coordinates'] = buildCoordinates($row);
+
+    // Integer fields
+    foreach (['seats_indoor', 'seats_outdoor', 'max_group_size'] as $f) {
+        $out[$f] = isset($row[$f]) ? (int)$row[$f] : null;
     }
-    // Add borough_name via join if not already present
-    if (!isset($row['borough_name']) && isset($row['borough_id'])) {
-        $bs = $db->prepare("SELECT name FROM boroughs WHERE id = ?");
-        $bs->execute([$row['borough_id']]);
-        $br = $bs->fetch();
-        $row['borough_name'] = $br ? $br['name'] : $row['borough_id'];
-    }
-    // Default rating/reviews for frontend compatibility
-    $row['rating'] = (float)($row['rating'] ?? 0);
-    $row['reviews_count'] = (int)($row['reviews_count'] ?? 0);
-    return $row;
+
+    // Rating & reviews — proper numeric types
+    $out['rating']        = (float)($row['rating'] ?? 0);
+    $out['reviews_count'] = (int)($row['reviews_count'] ?? 0);
+
+    // Boolean fields
+    $out['accepts_groups']       = (bool)($row['accepts_groups'] ?? false);
+    $out['b2b_open_for_contact'] = (bool)($row['b2b_open_for_contact'] ?? false);
+    $out['is_active']            = (bool)($row['is_active'] ?? true);
+    $out['is_featured']          = (bool)($row['is_featured'] ?? false);
+    $out['is_verified']          = (bool)($row['is_verified'] ?? false);
+
+    // Array fields — stored as delimited strings in DB
+    $out['specialties']      = parseJsonOrText($row['specialties'] ?? null, ',');
+    $out['menu_highlights']  = parseJsonOrText($row['menu_highlights'] ?? null, '|');
+    $out['certifications']   = parseJsonOrText($row['certifications'] ?? null, "\n");
+    $out['b2b_interests']    = parseJsonOrText($row['b2b_interests'] ?? null, ',');
+
+    // Contact fields — mapped from DB column names
+    $out['email'] = $row['contact_email'] ?? null;
+    $out['phone'] = $row['contact_phone'] ?? null;
+
+    // Social links object
+    $out['social_links'] = [
+        'instagram' => $row['social_instagram'] ?? null,
+        'facebook'  => $row['social_facebook'] ?? null,
+        'linkedin'  => $row['social_linkedin'] ?? null,
+    ];
+
+    // Images from entity_images table
+    $out['images'] = fetchEntityImages($db, 'restaurant', $row['id']);
+
+    return $out;
 }
 
+// ── GET ────────────────────────────────────────────────────────────────────
 if ($method === 'GET') {
-    if ($id) {
-        $stmt = $db->prepare("SELECT * FROM restaurants WHERE id = ?");
-        $stmt->execute([$id]);
+    if ($id || $slug) {
+        if ($slug) {
+            $stmt = $db->prepare("SELECT * FROM restaurants WHERE slug = ?");
+            $stmt->execute([$slug]);
+        } else {
+            $stmt = $db->prepare("SELECT * FROM restaurants WHERE id = ?");
+            $stmt->execute([$id]);
+        }
         $row = $stmt->fetch();
         if (!$row) { http_response_code(404); echo json_encode(['error' => 'Not found']); exit; }
         echo json_encode(buildRestaurant($db, $row));
@@ -58,6 +94,7 @@ if ($method === 'GET') {
     exit;
 }
 
+// ── POST / PUT / DELETE — require authentication ───────────────────────────
 requireAuth();
 $body = getJsonBody();
 

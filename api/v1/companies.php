@@ -47,6 +47,26 @@ function buildCompany(PDO $db, array $row): array {
     foreach (['is_verified','is_active','b2b_open_for_contact'] as $f) {
         if (isset($row[$f])) $row[$f] = (bool)$row[$f];
     }
+
+    // Images from entity_images table
+    $row['images'] = fetchEntityImages($db, 'company', $cid);
+
+    // Hero image and founder image objects for frontend
+    $images = $row['images'];
+    $heroIdx = $row['hero_image_index'] ?? 0;
+    if (!empty($images[$heroIdx])) {
+        $row['hero_image'] = ['src' => $images[$heroIdx]['src'], 'alt' => $row['hero_image_alt'] ?? $row['name']];
+    } elseif (!empty($row['cover_image'])) {
+        $row['hero_image'] = ['src' => $row['cover_image'], 'alt' => $row['hero_image_alt'] ?? $row['name']];
+    }
+
+    // Founder image (first image or cover as fallback)
+    if (!empty($images[1])) {
+        $row['founder_image'] = ['src' => $images[1]['src'], 'alt' => $row['founder_name'] ?? $row['name']];
+    } elseif (!empty($row['cover_image'])) {
+        $row['founder_image'] = ['src' => $row['cover_image'], 'alt' => $row['founder_name'] ?? $row['name']];
+    }
+
     return $row;
 }
 

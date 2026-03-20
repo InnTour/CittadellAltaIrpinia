@@ -25,14 +25,6 @@ function buildCraft(PDO $db, array $row): array {
     $stmt->execute([$cid]);
     $row['process_steps'] = $stmt->fetchAll();
 
-    // Add borough_name
-    if (!isset($row['borough_name']) && isset($row['borough_id'])) {
-        $bs = $db->prepare("SELECT name FROM boroughs WHERE id = ?");
-        $bs->execute([$row['borough_id']]);
-        $br = $bs->fetch();
-        $row['borough_name'] = $br ? $br['name'] : $row['borough_id'];
-    }
-
     foreach (['lead_time_days','weight_grams','production_series_qty','reviews_count','stock_qty'] as $f) {
         if (isset($row[$f])) $row[$f] = (int)$row[$f];
     }
@@ -41,6 +33,13 @@ function buildCraft(PDO $db, array $row): array {
     $row['is_custom_order_available'] = (bool)$row['is_custom_order_available'];
     $row['is_unique_piece']           = (bool)$row['is_unique_piece'];
     $row['is_active']                 = (bool)$row['is_active'];
+
+    // Images from entity_images table
+    $row['images'] = fetchEntityImages($db, 'craft', $cid);
+
+    // Use getBoroughName helper
+    $row['borough_name'] = getBoroughName($db, $row['borough_id'] ?? null);
+
     return $row;
 }
 

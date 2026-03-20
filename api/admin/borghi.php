@@ -2,7 +2,6 @@
 require_once __DIR__ . '/../config/db.php';
 requireAdminSession();
 $db = getDB();
-
 $msg = '';
 
 // ── Salvataggio ────────────────────────────────────────────
@@ -17,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($coverPath) ensureCoverImageColumn($db, 'boroughs');
 
     $fields = [
-        'slug'             => trim($_POST['slug']             ?? $id),
+        'slug'             => trim($_POST['slug'] ?? '') ?: $id,
         'name'             => trim($_POST['name']             ?? ''),
         'province'         => trim($_POST['province']         ?? ''),
         'region'           => trim($_POST['region']           ?? 'Campania'),
@@ -51,6 +50,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     replaceArray($db, 'borough_notable_experiences',   'borough_id', $id, $toLines($_POST['notable_experiences'] ?? ''));
     replaceArray($db, 'borough_notable_restaurants',   'borough_id', $id, $toLines($_POST['notable_restaurants'] ?? ''));
 
+    // Gallery images
+    processGalleryFromPost($db, 'borough', $id, 'new_images');
+
     $msg = '✅ Borgo salvato.';
 }
 
@@ -62,6 +64,9 @@ if (isset($_GET['delete'])) {
               'borough_notable_restaurants','borough_gallery_images'] as $t) {
         $db->prepare("DELETE FROM `$t` WHERE borough_id = ?")->execute([$did]);
     }
+    // Remove entity images
+    ensureEntityImagesTable($db);
+    $db->prepare("DELETE FROM entity_images WHERE entity_type = ? AND entity_id = ?")->execute(['borough', $did]);
     $db->prepare("DELETE FROM boroughs WHERE id=?")->execute([$did]);
     header('Location: borghi.php');
     exit;
@@ -81,6 +86,7 @@ if (isset($_GET['edit'])) {
         $sel['notable_products']    = implode("\n", fetchArray($db, 'borough_notable_products',      'borough_id', $sel['id']));
         $sel['notable_experiences'] = implode("\n", fetchArray($db, 'borough_notable_experiences',   'borough_id', $sel['id']));
         $sel['notable_restaurants'] = implode("\n", fetchArray($db, 'borough_notable_restaurants',   'borough_id', $sel['id']));
+        $sel['_images']             = fetchEntityImages($db, 'borough', $sel['id']);
     }
 }
 
@@ -88,11 +94,7 @@ $pageTitle = 'Borghi';
 require '_layout.php';
 ?>
 
-<?php if ($msg): ?>
-  <div class="mb-4 px-4 py-3 rounded-lg text-sm <?= str_starts_with($msg,'✅') ? 'bg-emerald-900/40 border border-emerald-600 text-emerald-300' : 'bg-red-900/40 border border-red-600 text-red-300' ?>">
-    <?= htmlspecialchars($msg) ?>
-  </div>
-<?php endif; ?>
+<?= adminMsg($msg) ?>
 
 <div class="grid md:grid-cols-3 gap-6">
 
@@ -124,58 +126,35 @@ require '_layout.php';
     <form method="POST" enctype="multipart/form-data" class="bg-slate-800 rounded-xl border border-slate-700 p-6 space-y-4">
       <h3 class="font-semibold text-white mb-2"><?= $sel ? 'Modifica: ' . htmlspecialchars($sel['name']) : 'Nuovo borgo' ?></h3>
 
-      <!-- Cover Image Upload -->
-      <div>
-        <label class="block text-xs text-slate-400 mb-1">Immagine di copertina</label>
-        <?php if (!empty($sel['cover_image'])): ?>
-          <div class="mb-2"><img src="<?= htmlspecialchars($sel['cover_image']) ?>" alt="Cover" class="h-32 rounded-lg object-cover"></div>
-        <?php endif; ?>
-        <input type="file" name="cover_image" accept="image/*"
-          class="w-full bg-slate-700 text-white rounded-lg px-3 py-2 text-sm border border-slate-600 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-emerald-600 file:text-white file:text-xs file:cursor-pointer">
-      </div>
+      <?= adminCoverImage($sel) ?>
 
       <div class="grid grid-cols-2 gap-4">
         <?php
-        $f = fn($name, $label, $type='text', $full=false) =>
-          '<div class="' . ($full ? 'col-span-2' : '') . '">
-            <label class="block text-xs text-slate-400 mb-1">' . $label . '</label>
-            <input type="' . $type . '" name="' . $name . '" value="' . htmlspecialchars($sel[$name] ?? '') . '"
-              class="w-full bg-slate-700 text-white rounded-lg px-3 py-2 text-sm border border-slate-600 focus:outline-none focus:border-emerald-500">
-          </div>';
-        echo $f('id', 'ID (slug univoco)');
-        echo $f('name', 'Nome');
-        echo $f('province', 'Provincia');
-        echo $f('region', 'Regione');
-        echo $f('population', 'Popolazione', 'number');
-        echo $f('altitude_meters', 'Altitudine (m)', 'number');
-        echo $f('area_km2', 'Area (km²)', 'number');
-        echo $f('lat', 'Latitudine', 'number');
-        echo $f('lng', 'Longitudine', 'number');
-        echo $f('hero_image_index', 'Indice immagine hero (0-24)', 'number');
-        echo $f('hero_image_alt', 'Alt immagine hero', 'text', true);
-        echo $f('main_video_url', 'URL Video YouTube embed', 'text', true);
-        echo $f('virtual_tour_url', 'URL Tour Virtuale embed', 'text', true);
+        echo adminInput('id', 'ID (slug univoco)', $sel);
+        echo adminInput('slug', 'Slug (auto da ID se vuoto)', $sel);
+        echo adminInput('name', 'Nome', $sel);
+        echo adminInput('province', 'Provincia', $sel);
+        echo adminInput('region', 'Regione', $sel);
+        echo adminInput('population', 'Popolazione', $sel, 'number');
+        echo adminInput('altitude_meters', 'Altitudine (m)', $sel, 'number');
+        echo adminInput('area_km2', 'Area (km²)', $sel, 'number', false, 'any');
+        echo adminInput('lat', 'Latitudine', $sel, 'number', false, 'any');
+        echo adminInput('lng', 'Longitudine', $sel, 'number', false, 'any');
+        echo adminInput('companies_count', 'N. aziende', $sel, 'number');
+        echo adminInput('hero_image_index', 'Indice immagine hero (0-24)', $sel, 'number');
+        echo adminInput('hero_image_alt', 'Alt immagine hero', $sel, 'text', true);
+        echo adminInput('main_video_url', 'URL Video YouTube embed', $sel, 'text', true);
+        echo adminInput('virtual_tour_url', 'URL Tour Virtuale embed', $sel, 'text', true);
         ?>
       </div>
 
-      <div>
-        <label class="block text-xs text-slate-400 mb-1">Descrizione</label>
-        <textarea name="description" rows="4"
-          class="w-full bg-slate-700 text-white rounded-lg px-3 py-2 text-sm border border-slate-600 focus:outline-none focus:border-emerald-500"><?= htmlspecialchars($sel['description'] ?? '') ?></textarea>
-      </div>
+      <?= adminTextarea('description', 'Descrizione', $sel, 4) ?>
+      <?= adminTextarea('highlights', 'Highlights (una per riga)', $sel, 3, 'Una voce per riga') ?>
+      <?= adminTextarea('notable_products', 'Prodotti tipici (uno per riga)', $sel, 3, 'Un prodotto per riga') ?>
+      <?= adminTextarea('notable_experiences', 'Esperienze (una per riga)', $sel, 3, 'Una esperienza per riga') ?>
+      <?= adminTextarea('notable_restaurants', 'Ristoranti (uno per riga)', $sel, 3, 'Un ristorante per riga') ?>
 
-      <?php foreach ([
-        ['highlights',          'Highlights (una per riga)'],
-        ['notable_products',    'Prodotti tipici (uno per riga)'],
-        ['notable_experiences', 'Esperienze (una per riga)'],
-        ['notable_restaurants', 'Ristoranti (uno per riga)'],
-      ] as [$name, $label]): ?>
-      <div>
-        <label class="block text-xs text-slate-400 mb-1"><?= $label ?></label>
-        <textarea name="<?= $name ?>" rows="3"
-          class="w-full bg-slate-700 text-white rounded-lg px-3 py-2 text-sm border border-slate-600 focus:outline-none focus:border-emerald-500"><?= htmlspecialchars($sel[$name] ?? '') ?></textarea>
-      </div>
-      <?php endforeach; ?>
+      <?= adminImageGallery('new_images', $sel['_images'] ?? [], 'Galleria immagini borgo') ?>
 
       <div class="flex gap-3 pt-2">
         <button type="submit" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg transition-colors">Salva</button>

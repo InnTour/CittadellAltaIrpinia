@@ -9,34 +9,40 @@ $slug   = $_GET['slug'] ?? null;
 
 function buildExperience(PDO $db, array $row): array {
     $eid = $row['id'];
+
+    // Images gallery
+    $row['images'] = fetchEntityImages($db, 'experience', $eid);
+
+    // 1-to-many arrays
     $row['languages_available'] = fetchArray($db, 'experience_languages', 'experience_id', $eid, 'lang');
     $row['includes']            = fetchArray($db, 'experience_includes',  'experience_id', $eid);
     $row['excludes']            = fetchArray($db, 'experience_excludes',  'experience_id', $eid);
     $row['what_to_bring']       = fetchArray($db, 'experience_bring',     'experience_id', $eid);
     $row['seasonal_tags']       = fetchArray($db, 'experience_seasonal_tags', 'experience_id', $eid);
 
-    $stmt = $db->prepare("SELECT time_slot, title, description, icon FROM experience_timeline
+    // Timeline steps
+    $stmt = $db->prepare("SELECT time_slot AS time, title, description FROM experience_timeline
                           WHERE experience_id = ? ORDER BY sort_order ASC");
     $stmt->execute([$eid]);
     $row['timeline_steps'] = $stmt->fetchAll();
 
-    $row['coordinates'] = ['lat' => (float)($row['lat'] ?? 0), 'lng' => (float)($row['lng'] ?? 0)];
+    // Coordinates
+    $row['coordinates'] = buildCoordinates($row);
     unset($row['lat'], $row['lng']);
 
-    // Add borough_name
-    if (!isset($row['borough_name']) && isset($row['borough_id'])) {
-        $bs = $db->prepare("SELECT name FROM boroughs WHERE id = ?");
-        $bs->execute([$row['borough_id']]);
-        $br = $bs->fetch();
-        $row['borough_name'] = $br ? $br['name'] : $row['borough_id'];
-    }
+    // Borough name
+    $row['borough_name'] = getBoroughName($db, $row['borough_id'] ?? null);
 
-    foreach (['duration_minutes','max_participants','min_participants','reviews_count'] as $f) {
+    // Numeric casts
+    foreach (['duration_minutes', 'max_participants', 'min_participants', 'reviews_count'] as $f) {
         if (isset($row[$f])) $row[$f] = (int)$row[$f];
     }
     $row['price_per_person'] = isset($row['price_per_person']) ? (float)$row['price_per_person'] : null;
     $row['rating']           = isset($row['rating'])           ? (float)$row['rating']           : 0.0;
-    $row['is_active']        = (bool)$row['is_active'];
+
+    // Boolean casts
+    $row['is_active'] = (bool)($row['is_active'] ?? false);
+
     return $row;
 }
 
