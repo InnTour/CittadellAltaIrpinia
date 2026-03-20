@@ -4,8 +4,38 @@ session_start();
 
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if ($_POST['username'] === ADMIN_USER && $_POST['password'] === ADMIN_PASS) {
+    $inputUser = trim($_POST['username'] ?? '');
+    $inputPass = $_POST['password'] ?? '';
+    $authenticated = false;
+    $sessionRole = 'admin';
+    $sessionUserId = null;
+    $sessionUserName = null;
+
+    // 1. Prova autenticazione via admin_users table (bcrypt)
+    $db = getDB();
+    ensureAdminUsersTable($db);
+    $stmt = $db->prepare("SELECT * FROM admin_users WHERE (email = ? OR id = ?) AND is_active = 1 AND role IN ('admin','operatore')");
+    $stmt->execute([$inputUser, $inputUser]);
+    $dbUser = $stmt->fetch();
+    if ($dbUser && password_verify($inputPass, $dbUser['password_hash'])) {
+        $authenticated = true;
+        $sessionRole = $dbUser['role'];
+        $sessionUserId = $dbUser['id'];
+        $sessionUserName = $dbUser['name'];
+        $db->prepare("UPDATE admin_users SET last_login_at = NOW() WHERE id = ?")->execute([$dbUser['id']]);
+    }
+
+    // 2. Fallback: credenziali statiche legacy (solo admin)
+    if (!$authenticated && $inputUser === ADMIN_USER && $inputPass === ADMIN_PASS) {
+        $authenticated = true;
+        $sessionRole = 'admin';
+    }
+
+    if ($authenticated) {
         $_SESSION['admin_logged_in'] = true;
+        $_SESSION['admin_role'] = $sessionRole;
+        $_SESSION['admin_user_id'] = $sessionUserId;
+        $_SESSION['admin_user_name'] = $sessionUserName;
         header('Location: /api/admin/');
         exit;
     }
@@ -32,8 +62,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="bg-red-500/20 border border-red-500 text-red-300 rounded-lg px-4 py-3 text-sm"><?= htmlspecialchars($error) ?></div>
       <?php endif; ?>
       <div>
-        <label class="block text-slate-300 text-sm font-medium mb-1">Username</label>
-        <input type="text" name="username" required autofocus
+        <label class="block text-slate-300 text-sm font-medium mb-1">Email o Username</label>
+        <input type="text" name="username" required autofocus placeholder="admin@metaborghi.org"
           class="w-full bg-slate-700 text-white rounded-lg px-4 py-2.5 text-sm border border-slate-600 focus:outline-none focus:border-emerald-500">
       </div>
       <div>

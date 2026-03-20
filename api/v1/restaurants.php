@@ -95,7 +95,7 @@ if ($method === 'GET') {
 }
 
 // ── POST / PUT / DELETE — require authentication ───────────────────────────
-requireAuth();
+requireWriteAccess();
 $body = getJsonBody();
 
 if ($method === 'POST') {

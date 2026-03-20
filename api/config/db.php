@@ -13,6 +13,10 @@ define('DB_CHARSET',  'utf8mb4');
 // Token API per autenticazione endpoint di scrittura e export
 define('API_TOKEN',   'kshdfertwyuejmfhdgetw285&%$£9WED');
 
+// JWT Secret — used for user authentication tokens
+define('JWT_SECRET',  'mb_jwt_s3cr3t_k3y_2024!@#InnTour');
+define('JWT_EXPIRY',  86400 * 7); // 7 giorni
+
 // Credenziali admin panel
 define('ADMIN_USER',  'admin');
 define('ADMIN_PASS',  '8TTusangol!');
@@ -72,6 +76,140 @@ function requireAuth(): void {
     }
 }
 
+// ============================================================
+// JWT — Autenticazione utenti frontend
+// ============================================================
+
+function jwtEncode(array $payload): string {
+    $header = base64url_encode(json_encode(['alg' => 'HS256', 'typ' => 'JWT']));
+    $payload['iat'] = $payload['iat'] ?? time();
+    $payload['exp'] = $payload['exp'] ?? time() + JWT_EXPIRY;
+    $payloadB64 = base64url_encode(json_encode($payload));
+    $sig = base64url_encode(hash_hmac('sha256', "$header.$payloadB64", JWT_SECRET, true));
+    return "$header.$payloadB64.$sig";
+}
+
+function jwtDecode(string $token): ?array {
+    $parts = explode('.', $token);
+    if (count($parts) !== 3) return null;
+    [$header, $payload, $sig] = $parts;
+    $expectedSig = base64url_encode(hash_hmac('sha256', "$header.$payload", JWT_SECRET, true));
+    if (!hash_equals($expectedSig, $sig)) return null;
+    $data = json_decode(base64url_decode($payload), true);
+    if (!$data || !isset($data['exp']) || $data['exp'] < time()) return null;
+    return $data;
+}
+
+function base64url_encode(string $data): string {
+    return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
+}
+
+function base64url_decode(string $data): string {
+    return base64_decode(strtr($data, '-_', '+/') . str_repeat('=', 3 - (3 + strlen($data)) % 4));
+}
+
+// Estrae il JWT dal header Authorization (se presente)
+// Ritorna i dati utente o null
+function getAuthUser(): ?array {
+    $headers = getallheaders();
+    $auth = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+    if (!str_starts_with($auth, 'Bearer ')) return null;
+    $token = substr($auth, 7);
+    // Skip if it's the static API token
+    if ($token === API_TOKEN) return null;
+    return jwtDecode($token);
+}
+
+// Richiede un utente autenticato via JWT, ritorna i dati dal token
+function requireJwtAuth(): array {
+    $user = getAuthUser();
+    if (!$user) {
+        http_response_code(401);
+        die(json_encode(['error' => 'Autenticazione richiesta']));
+    }
+    return $user;
+}
+
+// Richiede un ruolo specifico (o superiore)
+// Gerarchia: admin > operatore > registrato > visitatore
+function requireRole(string ...$allowedRoles): array {
+    $user = requireJwtAuth();
+    $role = $user['role'] ?? 'visitatore';
+    // Admin ha sempre accesso
+    if ($role === 'admin') return $user;
+    if (!in_array($role, $allowedRoles, true)) {
+        http_response_code(403);
+        die(json_encode(['error' => 'Permessi insufficienti', 'required' => $allowedRoles]));
+    }
+    return $user;
+}
+
+// Verifica che l'utente sia admin O abbia il vecchio Bearer token statico
+// Usato per mantenere retrocompatibilità con le API v1 esistenti
+function requireWriteAccess(): array|bool {
+    $headers = getallheaders();
+    $auth = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+    // Legacy: static API token
+    if ($auth === 'Bearer ' . API_TOKEN) return true;
+    // New: JWT with admin or operatore role
+    return requireRole('admin', 'operatore');
+}
+
+// Verifica che un operatore possa modificare una specifica entità
+function requireEntityAccess(string $entityType, ?string $boroughId = null, ?string $companyId = null): array {
+    $user = requireWriteAccess();
+    // Static API token or admin → full access
+    if ($user === true) return ['role' => 'admin'];
+    if (($user['role'] ?? '') === 'admin') return $user;
+    // Operatore: verifica assegnazione
+    $uid = $user['sub'] ?? '';
+    $db = getDB();
+    if ($boroughId) {
+        $stmt = $db->prepare("SELECT id FROM user_borough_assignments WHERE user_id = ? AND borough_id = ?");
+        $stmt->execute([$uid, $boroughId]);
+        if (!$stmt->fetch()) {
+            http_response_code(403);
+            die(json_encode(['error' => 'Non hai accesso a questo borgo']));
+        }
+    }
+    if ($companyId) {
+        $stmt = $db->prepare("SELECT id FROM user_company_assignments WHERE user_id = ? AND company_id = ?");
+        $stmt->execute([$uid, $companyId]);
+        if (!$stmt->fetch()) {
+            http_response_code(403);
+            die(json_encode(['error' => 'Non hai accesso a questa azienda']));
+        }
+    }
+    return $user;
+}
+
+// Assicura che la tabella admin_users esista
+function ensureAdminUsersTable(PDO $db): void {
+    static $done = false;
+    if ($done) return;
+    $done = true;
+    $db->exec("CREATE TABLE IF NOT EXISTS `admin_users` (
+      `id`            VARCHAR(40)   NOT NULL,
+      `name`          VARCHAR(200)  NOT NULL,
+      `email`         VARCHAR(200)  NOT NULL,
+      `password_hash` VARCHAR(255)  NOT NULL DEFAULT '',
+      `role`          ENUM('visitatore','registrato','operatore','admin') NOT NULL DEFAULT 'registrato',
+      `borough_id`    VARCHAR(100)  DEFAULT NULL,
+      `company_id`    VARCHAR(100)  DEFAULT NULL,
+      `phone`         VARCHAR(50)   DEFAULT NULL,
+      `bio`           TEXT          DEFAULT NULL,
+      `avatar_url`    TEXT          DEFAULT NULL,
+      `is_active`     TINYINT(1)    NOT NULL DEFAULT 1,
+      `email_verified` TINYINT(1)   NOT NULL DEFAULT 0,
+      `last_login_at` TIMESTAMP     NULL DEFAULT NULL,
+      `created_at`    TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      `updated_at`    TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (`id`),
+      UNIQUE KEY `email` (`email`),
+      KEY `role` (`role`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+}
+
 // Verifica sessione admin panel
 function requireAdminSession(): void {
     if (session_status() === PHP_SESSION_NONE) {
@@ -80,6 +218,37 @@ function requireAdminSession(): void {
     if (empty($_SESSION['admin_logged_in'])) {
         header('Location: /api/admin/login.php');
         exit;
+    }
+}
+
+// Ritorna il ruolo della sessione admin corrente
+function getAdminSessionRole(): string {
+    return $_SESSION['admin_role'] ?? 'admin';
+}
+
+// Ritorna le info dell'utente della sessione admin corrente
+function getAdminSessionUser(): array {
+    return [
+        'id'   => $_SESSION['admin_user_id'] ?? null,
+        'name' => $_SESSION['admin_user_name'] ?? ADMIN_USER,
+        'role' => $_SESSION['admin_role'] ?? 'admin',
+    ];
+}
+
+// Verifica che la sessione admin abbia il ruolo richiesto
+function requireAdminRole(string ...$roles): void {
+    $role = getAdminSessionRole();
+    if ($role === 'admin') return; // admin ha sempre accesso
+    if (!in_array($role, $roles, true)) {
+        http_response_code(403);
+        die('<!DOCTYPE html><html><head><meta charset="UTF-8">
+<script src="https://cdn.tailwindcss.com"></script><style>body{background:#0f172a}</style></head>
+<body class="min-h-screen flex items-center justify-center p-8">
+<div class="max-w-lg w-full bg-red-900/40 border border-red-600 rounded-2xl p-8 text-red-200 font-mono text-sm">
+<p class="text-xl font-bold text-red-400 mb-4">Accesso negato</p>
+<p class="mb-4">Il tuo ruolo (' . htmlspecialchars($role) . ') non ha i permessi per questa sezione.</p>
+<a href="/api/admin/" class="mt-6 inline-block text-red-400 hover:text-white underline">← Torna alla dashboard</a>
+</div></body></html>');
     }
 }
 
