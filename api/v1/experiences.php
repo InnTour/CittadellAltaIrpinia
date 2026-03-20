@@ -78,7 +78,7 @@ if ($method === 'GET') {
     exit;
 }
 
-requireAuth();
+requireWriteAccess();
 $body = getJsonBody();
 
 if ($method === 'POST') {
