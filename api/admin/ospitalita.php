@@ -4,6 +4,26 @@ requireAdminSession();
 $db = getDB();
 $msg = '';
 
+// Assicura che le colonne aggiunte dopo la migrazione iniziale esistano
+ensureTableColumns($db, 'accommodations', [
+    'contact_email'        => "VARCHAR(200) DEFAULT NULL",
+    'contact_phone'        => "VARCHAR(50) DEFAULT NULL",
+    'website_url'          => "TEXT DEFAULT NULL",
+    'social_instagram'     => "TEXT DEFAULT NULL",
+    'social_facebook'      => "TEXT DEFAULT NULL",
+    'social_linkedin'      => "TEXT DEFAULT NULL",
+    'certifications'       => "TEXT DEFAULT NULL",
+    'founder_name'         => "VARCHAR(200) DEFAULT NULL",
+    'founder_quote'        => "TEXT DEFAULT NULL",
+    'rating'               => "DECIMAL(3,2) DEFAULT 0",
+    'reviews_count'        => "INT DEFAULT 0",
+    'tier'                 => "VARCHAR(20) DEFAULT 'BASE'",
+    'is_verified'          => "TINYINT(1) DEFAULT 0",
+    'b2b_open_for_contact' => "TINYINT(1) DEFAULT 0",
+    'b2b_interests'        => "TEXT DEFAULT NULL",
+    'cover_image'          => "VARCHAR(500) DEFAULT NULL",
+]);
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id = trim($_POST['id'] ?? '');
     if (!$id) { $msg = '❌ ID obbligatorio.'; goto render; }

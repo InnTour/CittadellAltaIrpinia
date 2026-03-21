@@ -332,6 +332,25 @@ function ensureCoverImageColumn(PDO $db, string $table): void {
     }
 }
 
+// Assicura che le colonne specificate esistano nella tabella
+// $columns = ['col_name' => 'VARCHAR(200) DEFAULT NULL', ...]
+function ensureTableColumns(PDO $db, string $table, array $columns): void {
+    static $checked = [];
+    $key = $table;
+    if (isset($checked[$key])) return;
+    $checked[$key] = true;
+    // Prendi lista colonne esistenti
+    $existing = [];
+    foreach ($db->query("SHOW COLUMNS FROM `$table`") as $row) {
+        $existing[] = strtolower($row['Field']);
+    }
+    foreach ($columns as $col => $def) {
+        if (!in_array(strtolower($col), $existing, true)) {
+            $db->exec("ALTER TABLE `$table` ADD COLUMN `$col` $def");
+        }
+    }
+}
+
 // Sostituisce array 1-to-many
 function replaceArray(PDO $db, string $table, string $fk, string $id, array $values, string $col = 'value'): void {
     $db->prepare("DELETE FROM `$table` WHERE `$fk` = ?")->execute([$id]);
