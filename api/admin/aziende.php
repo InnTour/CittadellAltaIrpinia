@@ -96,7 +96,7 @@ $sel = null;
 if (isset($_GET['edit'])) {
     $stmt = $db->prepare("SELECT * FROM companies WHERE id=?");
     $stmt->execute([$_GET['edit']]);
-    $sel = $stmt->fetch();
+    $sel = $stmt->fetch() ?: null;
     if ($sel) {
         $sel['certifications'] = implode("\n", fetchArray($db, 'company_certifications', 'company_id', $sel['id']));
         $sel['b2b_interests']  = implode("\n", fetchArray($db, 'company_b2b_interests',  'company_id', $sel['id']));

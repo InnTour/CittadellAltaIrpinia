@@ -121,7 +121,7 @@ $sel  = null;
 if (isset($_GET['edit'])) {
     $stmt = $db->prepare("SELECT * FROM accommodations WHERE id=?");
     $stmt->execute([$_GET['edit']]);
-    $sel = $stmt->fetch();
+    $sel = $stmt->fetch() ?: null;
     if ($sel) {
         $sel['_images'] = fetchEntityImages($db, 'accommodation', $sel['id']);
     }

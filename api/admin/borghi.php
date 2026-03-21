@@ -80,7 +80,7 @@ $sel = null;
 if (isset($_GET['edit'])) {
     $stmt = $db->prepare("SELECT * FROM boroughs WHERE id=?");
     $stmt->execute([$_GET['edit']]);
-    $sel = $stmt->fetch();
+    $sel = $stmt->fetch() ?: null;
     if ($sel) {
         $sel['highlights']          = implode("\n", fetchArray($db, 'borough_highlights',            'borough_id', $sel['id']));
         $sel['notable_products']    = implode("\n", fetchArray($db, 'borough_notable_products',      'borough_id', $sel['id']));

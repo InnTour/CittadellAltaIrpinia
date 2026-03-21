@@ -113,7 +113,7 @@ $sel  = null;
 if (isset($_GET['edit'])) {
     $stmt = $db->prepare("SELECT * FROM food_products WHERE id=?");
     $stmt->execute([$_GET['edit']]);
-    $sel = $stmt->fetch();
+    $sel = $stmt->fetch() ?: null;
     if ($sel) {
         /* Image gallery */
         $sel['_images'] = fetchEntityImages($db, 'food_product', $sel['id']);

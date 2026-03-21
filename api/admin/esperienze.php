@@ -106,7 +106,7 @@ $sel = null;
 if (isset($_GET['edit'])) {
     $stmt = $db->prepare("SELECT * FROM experiences WHERE id=?");
     $stmt->execute([$_GET['edit']]);
-    $sel = $stmt->fetch();
+    $sel = $stmt->fetch() ?: null;
     if ($sel) {
         // Array fields
         $langs = fetchArray($db, 'experience_languages', 'experience_id', $sel['id'], 'lang');

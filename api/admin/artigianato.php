@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $cNames  = $_POST['cust_name']  ?? [];
     $cValues = $_POST['cust_values'] ?? [];
     $cPrices = $_POST['cust_price']  ?? [];
-    $stmtCust = $db->prepare("INSERT INTO craft_customization_options (craft_id, name, `values`, price_modifier) VALUES (?, ?, ?, ?)");
+    $stmtCust = $db->prepare("INSERT INTO craft_customization_options (craft_id, name, `values_json`, price_modifier) VALUES (?, ?, ?, ?)");
     foreach ($cNames as $i => $cn) {
         $cn = trim($cn);
         $cv = trim($cValues[$i] ?? '');
@@ -97,7 +97,7 @@ $sel = null;
 if (isset($_GET['edit'])) {
     $stmt = $db->prepare("SELECT * FROM craft_products WHERE id=?");
     $stmt->execute([$_GET['edit']]);
-    $sel = $stmt->fetch();
+    $sel = $stmt->fetch() ?: null;
     if ($sel) {
         /* Material types */
         $sel['material_type'] = implode("\n", fetchArray($db, 'craft_material_types', 'craft_id', $sel['id']));
@@ -111,7 +111,7 @@ if (isset($_GET['edit'])) {
         $sel['_process_steps'] = $stPs->fetchAll();
 
         /* Customization options */
-        $stCo = $db->prepare("SELECT name, `values`, price_modifier FROM craft_customization_options WHERE craft_id = ? ORDER BY rowid ASC");
+        $stCo = $db->prepare("SELECT name, `values_json` AS `values`, price_modifier FROM craft_customization_options WHERE craft_id = ? ORDER BY id ASC");
         $stCo->execute([$sel['id']]);
         $sel['_customizations'] = $stCo->fetchAll();
     }
