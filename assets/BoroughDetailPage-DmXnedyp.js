@@ -4276,7 +4276,7 @@ function ge() {
         initial: n ? void 0 : { opacity: 0, y: 30 },
         animate: { opacity: 1, y: 0 },
         transition: { duration: 0.7 },
-        className: "max-w-4xl mx-auto px-4 py-12 text-center",
+        className: "max-w-7xl mx-auto px-8 md:px-16 lg:px-24 py-12 text-center",
         children: e.jsxs("div", {
           children: [
             e.jsx("span", {
@@ -4288,7 +4288,7 @@ function ge() {
               children: s.name,
             }),
             e.jsx("p", {
-              className: "text-lg md:text-xl text-warm-700 mb-6 max-w-2xl mx-auto italic leading-relaxed",
+              className: "text-lg md:text-xl text-warm-700 mb-6 max-w-4xl mx-auto italic leading-relaxed",
               children: s.description,
             }),
             e.jsxs("div", {
@@ -4658,35 +4658,27 @@ function ge() {
               ],
             }),
           e.jsxs("section", {
-            className: "mb-12 py-16 md:py-24",
-            "aria-labelledby": "accommodations-title",
+            className: "mb-12",
             children: [
-              e.jsx(Q, {
-                title: `Dove dormire a ${s.name}`,
-                subtitle: "Scopri gli alloggi partner del borgo e le migliori strutture della zona",
-                accent: "Ospitalit\u00e0 autentica",
-              }),
               e.jsxs("div", {
-                className: "glass-ambra rounded-2xl p-8 md:p-10 text-center mb-10 max-w-2xl mx-auto",
+                className: "flex items-center justify-between mb-6",
                 children: [
-                  e.jsx("div", {
-                    className: "flex items-center justify-center w-16 h-16 rounded-2xl bg-ambra-100 text-ambra-600 mx-auto mb-5",
-                    children: e.jsx(H, { size: 32, weight: "duotone" }),
+                  e.jsxs("h2", {
+                    className: "font-display text-2xl font-bold text-warm-900",
+                    children: ["Dove mangiare a ", s.name],
                   }),
-                  e.jsx("h3", {
-                    className: "font-display text-xl font-bold text-warm-900 mb-3",
-                    children: "Prenotazione diretta disponibile a breve",
-                  }),
-                  e.jsx("p", {
-                    className: "text-warm-600 text-sm leading-relaxed",
-                    children: "Il sistema di prenotazione diretta \u00e8 in fase di attivazione. Presto potrai prenotare il tuo soggiorno direttamente dalla piattaforma.",
-                  }),
+                  p.filter((r) => r.type === "ristorante" || r.type === "ristorazione" || r.type === "agriturismo").length > 6 &&
+                    e.jsxs(L, {
+                      to: `${Z.COMPANIES}?borough=${s.id}&type=ristorazione`,
+                      className: "text-sm text-ambra-600 hover:text-ambra-700 font-medium",
+                      children: ["Vedi tutti (", p.filter((r) => r.type === "ristorante" || r.type === "ristorazione" || r.type === "agriturismo").length, ")"],
+                    }),
                 ],
               }),
-              p.filter((r) => r.type === "alloggio" || r.type === "b&b" || r.type === "hotel" || r.type === "agriturismo_alloggio").length > 0
-                ? e.jsx("div", {
-                    className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6",
-                    children: p.filter((r) => r.type === "alloggio" || r.type === "b&b" || r.type === "hotel" || r.type === "agriturismo_alloggio").map((r) =>
+              e.jsx("div", {
+                className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6",
+                children: p.filter((r) => r.type === "ristorante" || r.type === "ristorazione" || r.type === "agriturismo").length > 0
+                  ? p.filter((r) => r.type === "ristorante" || r.type === "ristorazione" || r.type === "agriturismo").slice(0, 6).map((r) =>
                       e.jsxs(L, {
                         to: `${Z.COMPANIES}/${r.slug}`,
                         className: "block glass-strong rounded-xl overflow-hidden hover:shadow-glass-hover transition-shadow",
@@ -4715,161 +4707,139 @@ function ge() {
                           }),
                         ],
                       }, r.id)
-                    ),
-                  })
-                : e.jsxs("div", {
-                    className: "text-center py-8",
-                    children: [
-                      e.jsx("p", {
-                        className: "text-warm-500 text-lg mb-2",
-                        children: "Strutture ricettive in arrivo",
-                      }),
-                      e.jsx("p", {
-                        className: "text-warm-400 text-sm",
-                        children: "Stiamo selezionando le migliori strutture ricettive del borgo. Prossimamente disponibili.",
-                      }),
-                    ],
-                  }),
-            ],
-          }),
-          e.jsxs("section", {
-            className: "py-16 md:py-24",
-            "aria-labelledby": "restaurants-title",
-            children: [
-              e.jsx(Q, {
-                title: `Dove mangiare a ${s.name}`,
-                subtitle:
-                  "Scopri i ristoranti e le attività di ristorazione del borgo",
-                accent: "Sapori autentici",
-              }),
-              e.jsx("div", {
-                className:
-                  "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8",
-                children:
-                  p.filter(
-                    (r) =>
-                      r.type === "ristorante" ||
-                      r.type === "ristorazione" ||
-                      r.type === "agriturismo",
-                  ).length > 0
-                    ? p
-                        .filter(
-                          (r) =>
-                            r.type === "ristorante" ||
-                            r.type === "ristorazione" ||
-                            r.type === "agriturismo",
-                        )
-                        .map((r) =>
-                          e.jsxs(
-                            L,
-                            {
-                              to: `${Z.COMPANIES}/${r.slug}`,
-                              className:
-                                "block glass-strong rounded-xl overflow-hidden hover:shadow-glass-hover transition-shadow",
-                              children: [
-                                e.jsx("img", {
-                                  src: r.hero_image?.src,
-                                  alt: r.hero_image?.alt,
-                                  className: "w-full aspect-video object-cover",
-                                }),
-                                e.jsxs("div", {
-                                  className: "p-4",
-                                  children: [
-                                    e.jsx("h3", {
-                                      className:
-                                        "font-semibold text-warm-900 mb-1",
-                                      children: r.name,
-                                    }),
-                                    e.jsx("p", {
-                                      className:
-                                        "text-xs text-ambra-600 font-medium mb-2 uppercase",
-                                      children: r.type.replace("_", " "),
-                                    }),
-                                    e.jsx("p", {
-                                      className:
-                                        "text-sm text-warm-700 line-clamp-2",
-                                      children: r.description_short,
-                                    }),
-                                  ],
-                                }),
-                              ],
-                            },
-                            r.id,
-                          ),
-                        )
-                    : s.notable_restaurants && s.notable_restaurants.length > 0
-                      ? e.jsx("ul", {
-                          className:
-                            "col-span-full grid grid-cols-1 sm:grid-cols-2 gap-3",
-                          children: s.notable_restaurants.map((r, idx) =>
-                            e.jsxs(
-                              "li",
-                              {
-                                className:
-                                  "flex items-center gap-3 p-4 bg-warm-50 rounded-xl border border-warm-200",
-                                children: [
-                                  e.jsx("span", {
-                                    className:
-                                      "text-natura-500 font-bold text-xl",
-                                    children: "🍽",
-                                  }),
-                                  e.jsx("span", {
-                                    className: "text-warm-800 font-medium",
-                                    children: r,
-                                  }),
-                                ],
-                              },
-                              idx,
-                            ),
-                          ),
-                        })
-                      : e.jsxs("div", {
-                          className: "col-span-full text-center py-12",
-                          children: [
-                            e.jsx("p", {
-                              className: "text-warm-500 text-lg mb-2",
-                              children: "Sezione in arrivo",
-                            }),
-                            e.jsx("p", {
-                              className: "text-warm-400 text-sm",
-                              children:
-                                "Stiamo selezionando i migliori ristoranti del borgo. Prossimamente disponibili.",
-                            }),
-                          ],
+                    )
+                  : [e.jsxs("div", {
+                      className: "col-span-full text-center py-8 glass-strong rounded-xl",
+                      children: [
+                        e.jsx("p", {
+                          className: "text-warm-500 mb-1",
+                          children: "Nessun ristorante ancora disponibile",
                         }),
+                        e.jsx("p", {
+                          className: "text-warm-400 text-sm",
+                          children: "I ristoranti del borgo saranno disponibili a breve.",
+                        }),
+                      ],
+                    })],
               }),
             ],
           }),
           e.jsxs("section", {
-            className: "mb-12 py-16 md:py-24",
+            className: "mb-12",
             children: [
-              e.jsx(Q, {
-                title: `Come arrivare a ${s.name}`,
-                subtitle: "Voli, transfer privati e noleggio auto per raggiungere il borgo",
-                accent: "Organizza il viaggio",
-              }),
               e.jsxs("div", {
-                className: "glass-strong rounded-2xl p-10 md:p-14 text-center max-w-2xl mx-auto",
+                className: "flex items-center justify-between mb-6",
                 children: [
-                  e.jsx("div", {
-                    className: "flex items-center justify-center w-16 h-16 rounded-2xl bg-natura-100 text-natura-600 mx-auto mb-5",
-                    children: e.jsx(V0, { size: 32, weight: "duotone" }),
+                  e.jsxs("h2", {
+                    className: "font-display text-2xl font-bold text-warm-900",
+                    children: ["Dove dormire a ", s.name],
                   }),
-                  e.jsx("h3", {
-                    className: "font-display text-xl font-bold text-warm-900 mb-3",
-                    children: "Disponibile prossimamente",
-                  }),
-                  e.jsx("p", {
-                    className: "text-warm-600 text-sm leading-relaxed mb-6",
-                    children: "Stiamo preparando le migliori opzioni di viaggio per raggiungere il borgo. Prossimamente disponibili voli, transfer privati e noleggio auto.",
-                  }),
-                  e.jsx("span", {
-                    className: "inline-flex items-center gap-2 px-6 py-3 bg-natura-50 text-natura-600 font-semibold rounded-full text-sm border border-natura-200",
-                    children: "In arrivo",
-                  }),
+                  p.filter((r) => r.type === "alloggio" || r.type === "b&b" || r.type === "hotel" || r.type === "agriturismo_alloggio").length > 6 &&
+                    e.jsxs(L, {
+                      to: `${Z.COMPANIES}?borough=${s.id}&type=alloggio`,
+                      className: "text-sm text-ambra-600 hover:text-ambra-700 font-medium",
+                      children: ["Vedi tutti (", p.filter((r) => r.type === "alloggio" || r.type === "b&b" || r.type === "hotel" || r.type === "agriturismo_alloggio").length, ")"],
+                    }),
                 ],
               }),
+              e.jsx("div", {
+                className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6",
+                children: p.filter((r) => r.type === "alloggio" || r.type === "b&b" || r.type === "hotel" || r.type === "agriturismo_alloggio").length > 0
+                  ? p.filter((r) => r.type === "alloggio" || r.type === "b&b" || r.type === "hotel" || r.type === "agriturismo_alloggio").slice(0, 6).map((r) =>
+                      e.jsxs(L, {
+                        to: `${Z.COMPANIES}/${r.slug}`,
+                        className: "block glass-strong rounded-xl overflow-hidden hover:shadow-glass-hover transition-shadow",
+                        children: [
+                          e.jsx("img", {
+                            src: r.hero_image?.src,
+                            alt: r.hero_image?.alt,
+                            className: "w-full aspect-video object-cover",
+                          }),
+                          e.jsxs("div", {
+                            className: "p-4",
+                            children: [
+                              e.jsx("h3", {
+                                className: "font-semibold text-warm-900 mb-1",
+                                children: r.name,
+                              }),
+                              e.jsx("p", {
+                                className: "text-xs text-ambra-600 font-medium mb-2 uppercase",
+                                children: r.type.replace("_", " "),
+                              }),
+                              e.jsx("p", {
+                                className: "text-sm text-warm-700 line-clamp-2",
+                                children: r.description_short,
+                              }),
+                            ],
+                          }),
+                        ],
+                      }, r.id)
+                    )
+                  : [e.jsxs("div", {
+                      className: "col-span-full text-center py-8 glass-strong rounded-xl",
+                      children: [
+                        e.jsx("p", {
+                          className: "text-warm-500 mb-1",
+                          children: "Nessuna struttura ricettiva ancora disponibile",
+                        }),
+                        e.jsx("p", {
+                          className: "text-warm-400 text-sm",
+                          children: "Le strutture ricettive del borgo saranno disponibili a breve.",
+                        }),
+                      ],
+                    })],
+              }),
             ],
+          }),
+          e.jsx("section", {
+            className: "mb-12",
+            children: e.jsxs("div", {
+              className: "grid md:grid-cols-2 gap-8",
+              children: [
+                e.jsxs("div", {
+                  className: "glass-strong rounded-2xl p-8 md:p-10 text-center border-2 border-dashed border-ambra-200",
+                  children: [
+                    e.jsx("div", {
+                      className: "flex items-center justify-center w-14 h-14 rounded-2xl bg-ambra-100 text-ambra-600 mx-auto mb-4",
+                      children: e.jsx(H, { size: 28, weight: "duotone" }),
+                    }),
+                    e.jsx("h3", {
+                      className: "font-display text-lg font-bold text-warm-900 mb-2",
+                      children: "Prenota il tuo soggiorno",
+                    }),
+                    e.jsx("p", {
+                      className: "text-warm-500 text-sm mb-4",
+                      children: "Prenotazione diretta con le strutture del borgo",
+                    }),
+                    e.jsx("span", {
+                      className: "inline-flex items-center gap-2 px-5 py-2.5 bg-ambra-50 text-ambra-600 font-semibold rounded-full text-sm border border-ambra-200",
+                      children: "Presto disponibile",
+                    }),
+                  ],
+                }),
+                e.jsxs("div", {
+                  className: "glass-strong rounded-2xl p-8 md:p-10 text-center border-2 border-dashed border-natura-200",
+                  children: [
+                    e.jsx("div", {
+                      className: "flex items-center justify-center w-14 h-14 rounded-2xl bg-natura-100 text-natura-600 mx-auto mb-4",
+                      children: e.jsx(V0, { size: 28, weight: "duotone" }),
+                    }),
+                    e.jsx("h3", {
+                      className: "font-display text-lg font-bold text-warm-900 mb-2",
+                      children: "Organizza il viaggio",
+                    }),
+                    e.jsx("p", {
+                      className: "text-warm-500 text-sm mb-4",
+                      children: "Voli, transfer e noleggio auto per il borgo",
+                    }),
+                    e.jsx("span", {
+                      className: "inline-flex items-center gap-2 px-5 py-2.5 bg-natura-50 text-natura-600 font-semibold rounded-full text-sm border border-natura-200",
+                      children: "Presto disponibile",
+                    }),
+                  ],
+                }),
+              ],
+            }),
           }),
           h.length > 0 &&
             e.jsxs("section", {
