@@ -4186,7 +4186,8 @@ function ge() {
     [apiRestaurants, setApiRestaurants] = a.useState([]),
     [apiAccommodations, setApiAccommodations] = a.useState([]),
     [apiCrafts, setApiCrafts] = a.useState([]),
-    [apiFoodProducts, setApiFoodProducts] = a.useState([]);
+    [apiFoodProducts, setApiFoodProducts] = a.useState([]),
+    [apiExperiences, setApiExperiences] = a.useState([]);
   a.useEffect(() => {
     if (!t) return;
     fetch(`/api/v1/boroughs.php?slug=${encodeURIComponent(t)}`)
@@ -4290,6 +4291,13 @@ function ge() {
         setApiFoodProducts(arr);
       })
       .catch(() => {});
+    fetch(`/api/v1/experiences.php?borough=${encodeURIComponent(s.id)}`)
+      .then((r) => r.json())
+      .then((data) => {
+        const arr = Array.isArray(data) ? data : [];
+        setApiExperiences(arr);
+      })
+      .catch(() => {});
   }, [s]);
   if (me)
     return e.jsx("div", {
@@ -4306,7 +4314,8 @@ function ge() {
     c = [...apiFoodProducts.filter((r) => r.is_active !== false && r.is_active !== 0), ...M0.filter(
       (r) => U.find((u) => u.id === r.producer_id)?.borough_id === s.id && !apiFoodIds.has(r.id),
     )],
-    o = _0.filter((r) => r.borough_id === s.id),
+    apiExpIds = new Set(apiExperiences.map((r) => r.id)),
+    o = [...apiExperiences.filter((r) => r.is_active !== false && r.is_active !== 0), ..._0.filter((r) => r.borough_id === s.id && !apiExpIds.has(r.id))],
     apiCraftIds = new Set(apiCrafts.map((r) => r.id)),
     h = [...apiCrafts.filter((r) => r.is_active !== false && r.is_active !== 0), ...L0.filter((r) => r.borough_id === s.id && !apiCraftIds.has(r.id))];
   return e.jsxs("main", {

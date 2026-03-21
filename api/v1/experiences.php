@@ -56,6 +56,12 @@ if ($method === 'GET') {
             $stmt->execute([$id]);
         }
         $row = $stmt->fetch();
+        // Fallback: if slug lookup fails, try by id (covers slug/id mismatch in static data)
+        if (!$row && $slug) {
+            $stmt2 = $db->prepare("SELECT * FROM experiences WHERE id = ?");
+            $stmt2->execute([$slug]);
+            $row = $stmt2->fetch();
+        }
         if (!$row) { http_response_code(404); echo json_encode(['error' => 'Not found']); exit; }
         echo json_encode(buildExperience($db, $row));
     } else {
