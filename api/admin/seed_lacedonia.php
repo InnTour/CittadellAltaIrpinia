@@ -419,7 +419,7 @@ seedRun($db, 'Prodotto Food Caciocavallo 18m', function(PDO $db) {
         ON DUPLICATE KEY UPDATE
         name=VALUES(name), description_long=VALUES(description_long), updated_at=CURRENT_TIMESTAMP")
     ->execute([
-        'caciocavallo-podolico-18m', 'caciocavallo-podolico-18m',
+        'caciocavallo-podolico-18m', 'caciocavallo-podolico-18-mesi',
         'Caciocavallo Podolico 18 Mesi',
         'caciocavalleria', 'lacedonia', 'FORMAGGI',
         'Il re dei formaggi irpini: Caciocavallo Podolico stagionato 18 mesi in grotta di tufo.',
@@ -432,6 +432,66 @@ seedRun($db, 'Prodotto Food Caciocavallo 18m', function(PDO $db) {
         'Latte crudo di vacca Podolica, caglio naturale, sale',
         25, 1, 1, 'Spedizione in confezione isotermica',
         1, 1,
+    ]);
+}, $results, $errors);
+
+// ─────────────────────────────────────────────────────────────
+// 5b. PRODOTTO FOOD — Caciocavallo Podolico 6 Mesi
+// ─────────────────────────────────────────────────────────────
+seedRun($db, 'Prodotto Food Caciocavallo 6m', function(PDO $db) {
+    $db->prepare("INSERT INTO food_products
+        (id, slug, name, producer_id, borough_id, category,
+         description_short, description_long, tagline, pairing_suggestions,
+         price, unit, weight_grams, shelf_life_days, storage_instructions,
+         allergens, ingredients,
+         stock_qty, min_order_qty, is_shippable, shipping_notes,
+         is_active, is_featured)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        ON DUPLICATE KEY UPDATE
+        name=VALUES(name), description_long=VALUES(description_long), updated_at=CURRENT_TIMESTAMP")
+    ->execute([
+        'caciocavallo-podolico-6m', 'caciocavallo-podolico-6-mesi',
+        'Caciocavallo Podolico Giovane 6 Mesi',
+        'caciocavalleria', 'lacedonia', 'FORMAGGI',
+        'Versione giovane del caciocavallo: dolce, delicato, perfetto da tavola.',
+        'Il Caciocavallo Podolico giovane ha una stagionatura di 6 mesi che regala un formaggio dalla pasta morbida e compatta, dal sapore dolce e delicato con leggere note erbacee. Ideale da gustare a temperatura ambiente con miele di castagno e pane casereccio.',
+        'Freschezza e dolcezza irpina',
+        'Miele di castagno, pane casereccio, vino bianco',
+        18.00, 'pezzo (ca. 0.8 kg)', 800, 90,
+        'Conservare in luogo fresco e asciutto, avvolto in carta alimentare',
+        'Latte', 'Latte crudo di vacca Podolica, caglio naturale, sale',
+        35, 1, 1, 'Spedizione in confezione isotermica',
+        1, 0,
+    ]);
+}, $results, $errors);
+
+// ─────────────────────────────────────────────────────────────
+// 5c. PRODOTTO FOOD — Scamorza Affumicata Podolica
+// ─────────────────────────────────────────────────────────────
+seedRun($db, 'Prodotto Food Scamorza Affumicata', function(PDO $db) {
+    $db->prepare("INSERT INTO food_products
+        (id, slug, name, producer_id, borough_id, category,
+         description_short, description_long, tagline, pairing_suggestions,
+         price, unit, weight_grams, shelf_life_days, storage_instructions,
+         allergens, ingredients,
+         stock_qty, min_order_qty, is_shippable, shipping_notes,
+         is_active, is_featured)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        ON DUPLICATE KEY UPDATE
+        name=VALUES(name), description_long=VALUES(description_long), updated_at=CURRENT_TIMESTAMP")
+    ->execute([
+        'scamorza-affumicata', 'scamorza-affumicata-podolica',
+        'Scamorza Affumicata Podolica',
+        'caciocavalleria', 'lacedonia', 'FORMAGGI',
+        'Scamorza a pasta filata affumicata con legno di faggio irpino.',
+        'La Scamorza Affumicata della Caciocavalleria De D. è prodotta con latte di vacca Podolica e affumicata naturalmente con legno di faggio dei boschi irpini. Il processo di affumicatura a freddo dura 6 ore, conferendo al formaggio una crosta dorata e un aroma avvolgente di bosco. Perfetta alla piastra o come antipasto con confettura di peperoncino.',
+        'Il profumo del bosco irpino nel formaggio',
+        'Confettura di peperoncino, miele millefiori, verdure grigliate',
+        9.50, 'pezzo (ca. 300g)', 300, 30,
+        'Conservare in frigorifero tra 0-4°C',
+        'Latte', 'Latte di vacca Podolica, caglio, sale. Affumicatura naturale con legno di faggio.',
+        70, 1, 1, 'Spedizione in confezione isotermica refrigerata',
+        1, 0,
     ]);
 }, $results, $errors);
 
