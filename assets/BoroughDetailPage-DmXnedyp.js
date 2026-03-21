@@ -4221,6 +4221,19 @@ function ge() {
           } catch {
             be.coordinates = {};
           }
+          if (be.coordinates.main_video_url && !be.main_video_url) {
+            be.main_video_url = be.coordinates.main_video_url;
+          }
+          if (be.coordinates.virtual_tour_url && !be.virtual_tour_url) {
+            be.virtual_tour_url = be.coordinates.virtual_tour_url;
+          }
+          if (!be.main_video_url) be.main_video_url = "";
+          if (!be.virtual_tour_url) be.virtual_tour_url = "";
+          if (!be.highlights) be.highlights = [];
+          if (!be.notable_products) be.notable_products = [];
+          if (!be.notable_experiences) be.notable_experiences = [];
+          if (!be.notable_restaurants) be.notable_restaurants = [];
+          if (!be.gallery_images) be.gallery_images = [];
           try {
             be.events =
               typeof be.events === "string"
