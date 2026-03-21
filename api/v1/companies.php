@@ -70,6 +70,223 @@ function buildCompany(PDO $db, array $row): array {
     return $row;
 }
 
+// ── Fallback: normalize a restaurant row to company-like format ──────────
+function restaurantAsCompany(PDO $db, array $row): array {
+    $out = [
+        'id'                  => $row['id'],
+        'slug'                => $row['slug'],
+        'name'                => $row['name'],
+        'type'                => strtolower($row['type'] ?? 'ristorante'),
+        '_entity_type'        => 'restaurant',
+        'legal_name'          => null,
+        'vat_number'          => null,
+        'tagline'             => $row['tagline'] ?? null,
+        'description_short'   => $row['description_short'] ?? null,
+        'description_long'    => $row['description_long'] ?? null,
+        'founding_year'       => null,
+        'employees_count'     => null,
+        'borough_id'          => $row['borough_id'] ?? null,
+        'borough_name'        => getBoroughName($db, $row['borough_id'] ?? null),
+        'address_full'        => $row['address_full'] ?? null,
+        'coordinates'         => buildCoordinates($row),
+        'contact_email'       => $row['contact_email'] ?? null,
+        'contact_phone'       => $row['contact_phone'] ?? null,
+        'website_url'         => $row['website_url'] ?? null,
+        'booking_url'         => $row['booking_url'] ?? null,
+        'social_links'        => [
+            'instagram' => $row['social_instagram'] ?? null,
+            'facebook'  => $row['social_facebook'] ?? null,
+            'linkedin'  => $row['social_linkedin'] ?? null,
+        ],
+        'tier'                => $row['tier'] ?? 'BASE',
+        'is_verified'         => (bool)($row['is_verified'] ?? false),
+        'is_active'           => (bool)($row['is_active'] ?? true),
+        'b2b_open_for_contact' => (bool)($row['b2b_open_for_contact'] ?? false),
+        'founder_name'        => $row['founder_name'] ?? null,
+        'founder_quote'       => $row['founder_quote'] ?? null,
+        'main_video_url'      => null,
+        'virtual_tour_url'    => null,
+        'cover_image'         => $row['cover_image'] ?? null,
+        'hero_image_index'    => 0,
+        'hero_image_alt'      => null,
+        'certifications'      => parseJsonOrText($row['certifications'] ?? null, "\n"),
+        'b2b_interests'       => parseJsonOrText($row['b2b_interests'] ?? null, ','),
+        'awards'              => [],
+        'rating'              => (float)($row['rating'] ?? 0),
+        'reviews_count'       => (int)($row['reviews_count'] ?? 0),
+        // Restaurant-specific fields
+        'cuisine_type'        => $row['cuisine_type'] ?? null,
+        'price_range'         => $row['price_range'] ?? null,
+        'opening_hours'       => $row['opening_hours'] ?? null,
+        'closing_day'         => $row['closing_day'] ?? null,
+        'specialties'         => parseJsonOrText($row['specialties'] ?? null, ','),
+        'menu_highlights'     => parseJsonOrText($row['menu_highlights'] ?? null, '|'),
+    ];
+    // Images
+    $images = fetchEntityImages($db, 'restaurant', $row['id']);
+    $out['images'] = $images;
+    if (!empty($images[0])) {
+        $out['hero_image'] = ['src' => $images[0]['src'], 'alt' => $out['name']];
+    } elseif (!empty($out['cover_image'])) {
+        $out['hero_image'] = ['src' => $out['cover_image'], 'alt' => $out['name']];
+    }
+    if (!empty($images[1])) {
+        $out['founder_image'] = ['src' => $images[1]['src'], 'alt' => $out['founder_name'] ?? $out['name']];
+    } elseif (!empty($out['cover_image'])) {
+        $out['founder_image'] = ['src' => $out['cover_image'], 'alt' => $out['founder_name'] ?? $out['name']];
+    }
+    return $out;
+}
+
+// ── Fallback: normalize an accommodation row to company-like format ─────
+function accommodationAsCompany(PDO $db, array $row): array {
+    $out = [
+        'id'                  => $row['id'],
+        'slug'                => $row['slug'],
+        'name'                => $row['name'],
+        'type'                => strtolower($row['type'] ?? 'alloggio'),
+        '_entity_type'        => 'accommodation',
+        'legal_name'          => null,
+        'vat_number'          => null,
+        'tagline'             => $row['tagline'] ?? null,
+        'description_short'   => $row['description_short'] ?? null,
+        'description_long'    => $row['description_long'] ?? null,
+        'founding_year'       => null,
+        'employees_count'     => null,
+        'borough_id'          => $row['borough_id'] ?? null,
+        'borough_name'        => getBoroughName($db, $row['borough_id'] ?? null),
+        'address_full'        => $row['address_full'] ?? null,
+        'coordinates'         => buildCoordinates($row),
+        'contact_email'       => $row['contact_email'] ?? null,
+        'contact_phone'       => $row['contact_phone'] ?? null,
+        'website_url'         => $row['website_url'] ?? null,
+        'booking_url'         => $row['booking_url'] ?? null,
+        'social_links'        => [
+            'instagram' => $row['social_instagram'] ?? null,
+            'facebook'  => $row['social_facebook'] ?? null,
+            'linkedin'  => $row['social_linkedin'] ?? null,
+        ],
+        'tier'                => $row['tier'] ?? 'BASE',
+        'is_verified'         => (bool)($row['is_verified'] ?? false),
+        'is_active'           => (bool)($row['is_active'] ?? true),
+        'b2b_open_for_contact' => (bool)($row['b2b_open_for_contact'] ?? false),
+        'founder_name'        => $row['founder_name'] ?? null,
+        'founder_quote'       => $row['founder_quote'] ?? null,
+        'main_video_url'      => $row['main_video_url'] ?? null,
+        'virtual_tour_url'    => $row['virtual_tour_url'] ?? null,
+        'cover_image'         => $row['cover_image'] ?? null,
+        'hero_image_index'    => 0,
+        'hero_image_alt'      => null,
+        'certifications'      => parseJsonOrText($row['certifications'] ?? null, "\n"),
+        'b2b_interests'       => parseJsonOrText($row['b2b_interests'] ?? null, ','),
+        'awards'              => [],
+        'rating'              => (float)($row['rating'] ?? 0),
+        'reviews_count'       => (int)($row['reviews_count'] ?? 0),
+        // Accommodation-specific fields
+        'rooms'               => isset($row['rooms_count']) ? (int)$row['rooms_count'] : null,
+        'max_guests'          => isset($row['max_guests']) ? (int)$row['max_guests'] : null,
+        'price_min'           => isset($row['price_per_night_from']) ? (float)$row['price_per_night_from'] : null,
+        'stars'               => $row['stars_or_category'] ?? null,
+        'amenities'           => parseJsonOrText($row['amenities'] ?? null, ','),
+    ];
+    // Images
+    $images = fetchEntityImages($db, 'accommodation', $row['id']);
+    $out['images'] = $images;
+    if (!empty($images[0])) {
+        $out['hero_image'] = ['src' => $images[0]['src'], 'alt' => $out['name']];
+    } elseif (!empty($out['cover_image'])) {
+        $out['hero_image'] = ['src' => $out['cover_image'], 'alt' => $out['name']];
+    }
+    if (!empty($images[1])) {
+        $out['founder_image'] = ['src' => $images[1]['src'], 'alt' => $out['founder_name'] ?? $out['name']];
+    } elseif (!empty($out['cover_image'])) {
+        $out['founder_image'] = ['src' => $out['cover_image'], 'alt' => $out['founder_name'] ?? $out['name']];
+    }
+    return $out;
+}
+
+// ── Fallback: normalize an experience row to company-like format ────────
+function experienceAsCompany(PDO $db, array $row): array {
+    $out = [
+        'id'                  => $row['id'],
+        'slug'                => $row['slug'],
+        'name'                => $row['title'] ?? $row['name'] ?? '',
+        'type'                => 'esperienza',
+        '_entity_type'        => 'experience',
+        'legal_name'          => null,
+        'vat_number'          => null,
+        'tagline'             => $row['tagline'] ?? null,
+        'description_short'   => $row['description_short'] ?? null,
+        'description_long'    => $row['description_long'] ?? null,
+        'founding_year'       => null,
+        'employees_count'     => null,
+        'borough_id'          => $row['borough_id'] ?? null,
+        'borough_name'        => getBoroughName($db, $row['borough_id'] ?? null),
+        'address_full'        => null,
+        'coordinates'         => buildCoordinates($row),
+        'contact_email'       => null,
+        'contact_phone'       => null,
+        'website_url'         => null,
+        'booking_url'         => null,
+        'social_links'        => ['instagram' => null, 'facebook' => null, 'linkedin' => null],
+        'tier'                => 'BASE',
+        'is_verified'         => false,
+        'is_active'           => (bool)($row['is_active'] ?? true),
+        'b2b_open_for_contact' => false,
+        'founder_name'        => null,
+        'founder_quote'       => null,
+        'main_video_url'      => null,
+        'virtual_tour_url'    => null,
+        'cover_image'         => $row['cover_image'] ?? null,
+        'hero_image_index'    => 0,
+        'hero_image_alt'      => null,
+        'certifications'      => [],
+        'b2b_interests'       => [],
+        'awards'              => [],
+        'rating'              => (float)($row['rating'] ?? 0),
+        'reviews_count'       => (int)($row['reviews_count'] ?? 0),
+        // Experience-specific fields
+        'category'            => $row['category'] ?? null,
+        'duration_minutes'    => isset($row['duration_minutes']) ? (int)$row['duration_minutes'] : null,
+        'price_per_person'    => isset($row['price_per_person']) ? (float)$row['price_per_person'] : null,
+        'difficulty_level'    => $row['difficulty_level'] ?? null,
+    ];
+    // Images
+    $images = fetchEntityImages($db, 'experience', $row['id']);
+    $out['images'] = $images;
+    if (!empty($images[0])) {
+        $out['hero_image'] = ['src' => $images[0]['src'], 'alt' => $out['name']];
+    } elseif (!empty($out['cover_image'])) {
+        $out['hero_image'] = ['src' => $out['cover_image'], 'alt' => $out['name']];
+    }
+    return $out;
+}
+
+// ── Fallback slug lookup across all entity tables ───────────────────────
+function findEntityBySlug(PDO $db, string $lookup, string $field = 'slug'): ?array {
+    $col = $field === 'id' ? 'id' : 'slug';
+
+    // 1. restaurants
+    $stmt = $db->prepare("SELECT * FROM restaurants WHERE `$col` = ?");
+    $stmt->execute([$lookup]);
+    $row = $stmt->fetch();
+    if ($row) return restaurantAsCompany($db, $row);
+
+    // 2. accommodations
+    $stmt = $db->prepare("SELECT * FROM accommodations WHERE `$col` = ?");
+    $stmt->execute([$lookup]);
+    $row = $stmt->fetch();
+    if ($row) return accommodationAsCompany($db, $row);
+
+    // 3. experiences
+    $stmt = $db->prepare("SELECT * FROM experiences WHERE `$col` = ?");
+    $stmt->execute([$lookup]);
+    $row = $stmt->fetch();
+    if ($row) return experienceAsCompany($db, $row);
+
+    return null;
+}
+
 if ($method === 'GET') {
     if ($id || $slug) {
         if ($slug) {
@@ -80,8 +297,19 @@ if ($method === 'GET') {
             $stmt->execute([$id]);
         }
         $row = $stmt->fetch();
-        if (!$row) { http_response_code(404); echo json_encode(['error' => 'Not found']); exit; }
-        echo json_encode(buildCompany($db, $row));
+        if ($row) {
+            echo json_encode(buildCompany($db, $row));
+            exit;
+        }
+        // Fallback: search in restaurants, accommodations, experiences
+        $fallback = findEntityBySlug($db, $slug ?? $id, $slug ? 'slug' : 'id');
+        if ($fallback) {
+            echo json_encode($fallback);
+            exit;
+        }
+        http_response_code(404);
+        echo json_encode(['error' => 'Not found']);
+        exit;
     } else {
         $borough = $_GET['borough'] ?? null;
         if ($borough) {
