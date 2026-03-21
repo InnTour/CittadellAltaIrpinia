@@ -4181,7 +4181,10 @@ function ge() {
   const { slug: t } = v0(),
     n = V(),
     [s, pe] = a.useState(void 0),
-    [me, fe] = a.useState(!0);
+    [me, fe] = a.useState(!0),
+    [apiCompanies, setApiCompanies] = a.useState([]),
+    [apiRestaurants, setApiRestaurants] = a.useState([]),
+    [apiAccommodations, setApiAccommodations] = a.useState([]);
   a.useEffect(() => {
     if (!t) return;
     fetch(`/api/v1/boroughs.php?slug=${encodeURIComponent(t)}`)
@@ -4248,6 +4251,30 @@ function ge() {
       })
       .catch(() => fe(!1));
   }, [t]);
+  a.useEffect(() => {
+    if (!s || !s.id) return;
+    fetch(`/api/v1/companies.php?borough=${encodeURIComponent(s.id)}`)
+      .then((r) => r.json())
+      .then((data) => {
+        const arr = Array.isArray(data) ? data : [];
+        setApiCompanies(arr);
+      })
+      .catch(() => {});
+    fetch(`/api/v1/restaurants.php?borough=${encodeURIComponent(s.id)}`)
+      .then((r) => r.json())
+      .then((data) => {
+        const arr = Array.isArray(data) ? data : [];
+        setApiRestaurants(arr);
+      })
+      .catch(() => {});
+    fetch(`/api/v1/accommodations.php?borough=${encodeURIComponent(s.id)}`)
+      .then((r) => r.json())
+      .then((data) => {
+        const arr = Array.isArray(data) ? data : [];
+        setApiAccommodations(arr);
+      })
+      .catch(() => {});
+  }, [s]);
   if (me)
     return e.jsx("div", {
       className: "min-h-screen flex items-center justify-center",
@@ -4257,7 +4284,8 @@ function ge() {
       }),
     });
   if (!s) return e.jsx(w0, { to: Z.BOROUGHS, replace: !0 });
-  const p = U.filter((r) => r.borough_id === s.id && r.is_active),
+  const apiIds = new Set(apiCompanies.map((r) => r.id)),
+    p = [...apiCompanies.filter((r) => r.is_active !== false && r.is_active !== 0), ...U.filter((r) => r.borough_id === s.id && r.is_active && !apiIds.has(r.id))],
     c = M0.filter(
       (r) => U.find((u) => u.id === r.producer_id)?.borough_id === s.id,
     ),
@@ -4302,7 +4330,7 @@ function ge() {
         className: "max-w-7xl mx-auto px-4 py-8",
         children: [
           e.jsxs("div", {
-            className: "grid lg:grid-cols-2 gap-10 items-start mb-12",
+            className: "grid lg:grid-cols-2 gap-10 items-center mb-12",
             children: [
               e.jsx(A.div, {
                 initial: n ? void 0 : { opacity: 0, y: 30 },
@@ -4718,26 +4746,33 @@ function ge() {
                     className: "font-display text-2xl font-bold text-warm-900",
                     children: ["Dove mangiare a ", s.name],
                   }),
-                  p.filter((r) => r.type === "ristorante" || r.type === "ristorazione" || r.type === "agriturismo").length > 6 &&
+                  apiRestaurants.length > 6 &&
                     e.jsxs(L, {
                       to: `${Z.COMPANIES}?borough=${s.id}&type=ristorazione`,
                       className: "text-sm text-ambra-600 hover:text-ambra-700 font-medium",
-                      children: ["Vedi tutti (", p.filter((r) => r.type === "ristorante" || r.type === "ristorazione" || r.type === "agriturismo").length, ")"],
+                      children: ["Vedi tutti (", apiRestaurants.length, ")"],
                     }),
                 ],
               }),
               e.jsx("div", {
                 className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6",
-                children: p.filter((r) => r.type === "ristorante" || r.type === "ristorazione" || r.type === "agriturismo").length > 0
-                  ? p.filter((r) => r.type === "ristorante" || r.type === "ristorazione" || r.type === "agriturismo").slice(0, 6).map((r) =>
+                children: apiRestaurants.length > 0
+                  ? apiRestaurants.slice(0, 6).map((r) =>
                       e.jsxs(L, {
                         to: `${Z.COMPANIES}/${r.slug}`,
                         className: "block glass-strong rounded-xl overflow-hidden hover:shadow-glass-hover transition-shadow",
                         children: [
-                          e.jsx("img", {
-                            src: r.hero_image?.src,
-                            alt: r.hero_image?.alt,
+                          r.cover_image ? e.jsx("img", {
+                            src: r.cover_image,
+                            alt: r.name,
                             className: "w-full aspect-video object-cover",
+                          }) : r.hero_image?.src ? e.jsx("img", {
+                            src: r.hero_image.src,
+                            alt: r.hero_image.alt || r.name,
+                            className: "w-full aspect-video object-cover",
+                          }) : e.jsx("div", {
+                            className: "w-full aspect-video bg-gradient-to-br from-ambra-100 to-ambra-200 flex items-center justify-center",
+                            children: e.jsx("span", { className: "text-4xl", children: "\uD83C\uDF7D\uFE0F" }),
                           }),
                           e.jsxs("div", {
                             className: "p-4",
@@ -4748,11 +4783,11 @@ function ge() {
                               }),
                               e.jsx("p", {
                                 className: "text-xs text-ambra-600 font-medium mb-2 uppercase",
-                                children: r.type.replace("_", " "),
+                                children: (r.type || "").replace("_", " "),
                               }),
                               e.jsx("p", {
                                 className: "text-sm text-warm-700 line-clamp-2",
-                                children: r.description_short,
+                                children: r.description_short || r.tagline,
                               }),
                             ],
                           }),
@@ -4785,26 +4820,33 @@ function ge() {
                     className: "font-display text-2xl font-bold text-warm-900",
                     children: ["Dove dormire a ", s.name],
                   }),
-                  p.filter((r) => r.type === "alloggio" || r.type === "b&b" || r.type === "hotel" || r.type === "agriturismo_alloggio").length > 6 &&
+                  apiAccommodations.length > 6 &&
                     e.jsxs(L, {
                       to: `${Z.COMPANIES}?borough=${s.id}&type=alloggio`,
                       className: "text-sm text-ambra-600 hover:text-ambra-700 font-medium",
-                      children: ["Vedi tutti (", p.filter((r) => r.type === "alloggio" || r.type === "b&b" || r.type === "hotel" || r.type === "agriturismo_alloggio").length, ")"],
+                      children: ["Vedi tutti (", apiAccommodations.length, ")"],
                     }),
                 ],
               }),
               e.jsx("div", {
                 className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6",
-                children: p.filter((r) => r.type === "alloggio" || r.type === "b&b" || r.type === "hotel" || r.type === "agriturismo_alloggio").length > 0
-                  ? p.filter((r) => r.type === "alloggio" || r.type === "b&b" || r.type === "hotel" || r.type === "agriturismo_alloggio").slice(0, 6).map((r) =>
+                children: apiAccommodations.length > 0
+                  ? apiAccommodations.slice(0, 6).map((r) =>
                       e.jsxs(L, {
                         to: `${Z.COMPANIES}/${r.slug}`,
                         className: "block glass-strong rounded-xl overflow-hidden hover:shadow-glass-hover transition-shadow",
                         children: [
-                          e.jsx("img", {
-                            src: r.hero_image?.src,
-                            alt: r.hero_image?.alt,
+                          r.cover_image ? e.jsx("img", {
+                            src: r.cover_image,
+                            alt: r.name,
                             className: "w-full aspect-video object-cover",
+                          }) : r.hero_image?.src ? e.jsx("img", {
+                            src: r.hero_image.src,
+                            alt: r.hero_image.alt || r.name,
+                            className: "w-full aspect-video object-cover",
+                          }) : e.jsx("div", {
+                            className: "w-full aspect-video bg-gradient-to-br from-ambra-100 to-ambra-200 flex items-center justify-center",
+                            children: e.jsx("span", { className: "text-4xl", children: "\uD83C\uDFE8" }),
                           }),
                           e.jsxs("div", {
                             className: "p-4",
@@ -4815,11 +4857,15 @@ function ge() {
                               }),
                               e.jsx("p", {
                                 className: "text-xs text-ambra-600 font-medium mb-2 uppercase",
-                                children: r.type.replace("_", " "),
+                                children: (r.type || "").replace("_", " "),
+                              }),
+                              r.price_min && e.jsxs("p", {
+                                className: "text-sm text-warm-600 mb-1",
+                                children: ["Da \u20AC", r.price_min, " / notte"],
                               }),
                               e.jsx("p", {
                                 className: "text-sm text-warm-700 line-clamp-2",
-                                children: r.description_short,
+                                children: r.description_short || r.tagline,
                               }),
                             ],
                           }),
