@@ -266,23 +266,30 @@ function experienceAsCompany(PDO $db, array $row): array {
 function findEntityBySlug(PDO $db, string $lookup, string $field = 'slug'): ?array {
     $col = $field === 'id' ? 'id' : 'slug';
 
+    // Helper: try by $col first, then by id as fallback (covers slug/id mismatches)
+    $tryTable = function(string $table, string $col, string $lookup, callable $builder) use ($db): ?array {
+        $stmt = $db->prepare("SELECT * FROM `$table` WHERE `$col` = ?");
+        $stmt->execute([$lookup]);
+        $row = $stmt->fetch();
+        if (!$row && $col === 'slug') {
+            $stmt2 = $db->prepare("SELECT * FROM `$table` WHERE id = ?");
+            $stmt2->execute([$lookup]);
+            $row = $stmt2->fetch();
+        }
+        return $row ? $builder($db, $row) : null;
+    };
+
     // 1. restaurants
-    $stmt = $db->prepare("SELECT * FROM restaurants WHERE `$col` = ?");
-    $stmt->execute([$lookup]);
-    $row = $stmt->fetch();
-    if ($row) return restaurantAsCompany($db, $row);
+    $result = $tryTable('restaurants', $col, $lookup, 'restaurantAsCompany');
+    if ($result) return $result;
 
     // 2. accommodations
-    $stmt = $db->prepare("SELECT * FROM accommodations WHERE `$col` = ?");
-    $stmt->execute([$lookup]);
-    $row = $stmt->fetch();
-    if ($row) return accommodationAsCompany($db, $row);
+    $result = $tryTable('accommodations', $col, $lookup, 'accommodationAsCompany');
+    if ($result) return $result;
 
     // 3. experiences
-    $stmt = $db->prepare("SELECT * FROM experiences WHERE `$col` = ?");
-    $stmt->execute([$lookup]);
-    $row = $stmt->fetch();
-    if ($row) return experienceAsCompany($db, $row);
+    $result = $tryTable('experiences', $col, $lookup, 'experienceAsCompany');
+    if ($result) return $result;
 
     return null;
 }
@@ -297,6 +304,12 @@ if ($method === 'GET') {
             $stmt->execute([$id]);
         }
         $row = $stmt->fetch();
+        // Fallback: if slug lookup fails in companies, try by id
+        if (!$row && $slug) {
+            $stmt2 = $db->prepare("SELECT * FROM companies WHERE id = ?");
+            $stmt2->execute([$slug]);
+            $row = $stmt2->fetch();
+        }
         if ($row) {
             echo json_encode(buildCompany($db, $row));
             exit;
