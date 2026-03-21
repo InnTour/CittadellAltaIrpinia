@@ -4325,10 +4325,13 @@ function ge() {
       e.jsxs("section", {
         className: "relative h-[70vh] overflow-hidden",
         children: [
-          e.jsx("img", {
-            src: s.hero_image?.src,
-            alt: s.hero_image?.alt,
+          s.hero_image?.src ? e.jsx("img", {
+            src: s.hero_image.src,
+            alt: s.hero_image.alt || s.name,
             className: "absolute inset-0 w-full h-full object-cover",
+            onError: (ev) => { ev.target.style.display = "none"; },
+          }) : e.jsx("div", {
+            className: "absolute inset-0 w-full h-full bg-gradient-to-br from-ambra-200 to-warm-300",
           }),
           e.jsx("div", {
             className:
@@ -4699,10 +4702,17 @@ function ge() {
                         className:
                           "block glass-strong rounded-2xl overflow-hidden hover:shadow-glass-hover transition-shadow",
                         children: [
-                          e.jsx("img", {
+                          r.images?.[0]?.src ? e.jsx("img", {
                             src: r.images[0].src,
-                            alt: r.images[0].alt,
+                            alt: r.images[0].alt || r.name,
                             className: "w-full aspect-square object-cover",
+                          }) : r.cover_image ? e.jsx("img", {
+                            src: r.cover_image,
+                            alt: r.name,
+                            className: "w-full aspect-square object-cover",
+                          }) : e.jsx("div", {
+                            className: "w-full aspect-square bg-warm-200 flex items-center justify-center",
+                            children: e.jsx("span", { className: "text-warm-500 text-4xl", children: "\u{1F3FA}" }),
                           }),
                           e.jsxs("div", {
                             className: "p-4",
