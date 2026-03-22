@@ -43,6 +43,11 @@ function buildExperience(PDO $db, array $row): array {
     // Boolean casts
     $row['is_active'] = (bool)($row['is_active'] ?? false);
 
+    // Scalar text fields (nullable)
+    foreach (['main_video_url', 'virtual_tour_url'] as $f) {
+        $row[$f] = $row[$f] ?? null;
+    }
+
     return $row;
 }
 
@@ -92,8 +97,9 @@ if ($method === 'POST') {
         (id, slug, title, tagline, description_short, description_long, category,
          provider_id, borough_id, lat, lng, duration_minutes, max_participants,
          min_participants, price_per_person, cancellation_policy, difficulty_level,
-         accessibility_info, rating, reviews_count, is_active, cover_image)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+         accessibility_info, rating, reviews_count, is_active, cover_image,
+         main_video_url, virtual_tour_url)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
     ->execute(_expValues($body));
     _saveExpArrays($db, $body);
     http_response_code(201);
@@ -106,7 +112,8 @@ if ($method === 'PUT' && $id) {
         slug=?, title=?, tagline=?, description_short=?, description_long=?, category=?,
         provider_id=?, borough_id=?, lat=?, lng=?, duration_minutes=?, max_participants=?,
         min_participants=?, price_per_person=?, cancellation_policy=?, difficulty_level=?,
-        accessibility_info=?, rating=?, reviews_count=?, is_active=?, cover_image=? WHERE id=?")
+        accessibility_info=?, rating=?, reviews_count=?, is_active=?, cover_image=?,
+        main_video_url=?, virtual_tour_url=? WHERE id=?")
     ->execute(array_merge(array_slice(_expValues($body), 1), [$id]));
     _saveExpArrays($db, array_merge($body, ['id' => $id]));
     echo json_encode(['ok' => true]);
@@ -140,6 +147,8 @@ function _expValues(array $b): array {
         $b['rating'] ?? 0, $b['reviews_count'] ?? 0,
         $b['is_active'] ?? 1,
         $b['cover_image'] ?? null,
+        $b['main_video_url'] ?? null,
+        $b['virtual_tour_url'] ?? null,
     ];
 }
 
