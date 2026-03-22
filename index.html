@@ -255,40 +255,6 @@
           animation-iteration-count: 1 !important;
           transition-duration: .01ms !important;
         }
-        .mb-cursor, .mb-cursor-dot, .mb-float-orb, #mb-swirl-bg { display: none !important; }
-      }
-
-      /* ══════════════════════════════════════════════════════════════════
-         SEZIONE D — CUSTOM CURSOR
-         ══════════════════════════════════════════════════════════════════ */
-      .mb-cursor {
-        position: fixed;
-        width: 36px; height: 36px;
-        border: 2px solid var(--mb-green);
-        border-radius: 50%;
-        pointer-events: none;
-        z-index: var(--z-cursor);
-        transform: translate(-50%, -50%);
-        transition: width .25s var(--ease-out), height .25s var(--ease-out),
-                    border-color .25s, background .25s, opacity .25s;
-        will-change: transform, left, top;
-      }
-      .mb-cursor-dot {
-        position: fixed;
-        width: 6px; height: 6px;
-        background: var(--mb-green);
-        border-radius: 50%;
-        pointer-events: none;
-        z-index: calc(var(--z-cursor) + 1);
-        transform: translate(-50%, -50%);
-        transition: background .2s;
-        will-change: transform, left, top;
-      }
-      body:has(a:hover) .mb-cursor,
-      body:has(button:hover) .mb-cursor {
-        width: 56px; height: 56px;
-        background: rgba(0,208,132,.12);
-        border-color: var(--mb-cyan);
       }
 
       /* ══════════════════════════════════════════════════════════════════
@@ -305,34 +271,6 @@
       }
 
       /* ══════════════════════════════════════════════════════════════════
-         SEZIONE F — SWIRL BACKGROUND
-         ══════════════════════════════════════════════════════════════════ */
-      #mb-swirl-bg {
-        position: fixed; inset: 0;
-        pointer-events: none; z-index: 0; overflow: hidden;
-      }
-      #mb-swirl-bg::before {
-        content: '';
-        position: absolute;
-        width: 120vmax; height: 120vmax;
-        top: -30vmax; left: -30vmax;
-        background: var(--grad-logo-swirl);
-        opacity: .022;
-        animation: spin-slow 80s linear infinite;
-        border-radius: 50%;
-      }
-      #mb-swirl-bg::after {
-        content: '';
-        position: absolute;
-        width: 80vmax; height: 80vmax;
-        bottom: -20vmax; right: -20vmax;
-        background: conic-gradient(from 180deg, #00D084, #00B4D8, #F0FF00, #00D084);
-        opacity: .018;
-        animation: spin-slow 120s linear infinite reverse;
-        border-radius: 50%;
-      }
-
-      /* ══════════════════════════════════════════════════════════════════
          SEZIONE G — KEYFRAME LIBRARY
          ══════════════════════════════════════════════════════════════════ */
       @keyframes spin-slow { to { transform: rotate(360deg); } }
@@ -340,42 +278,14 @@
         0%, 100% { background-position: 0% 50%; }
         50%      { background-position: 100% 50%; }
       }
-      @keyframes float {
-        0%, 100% { transform: translateY(0); }
-        50%      { transform: translateY(-12px); }
-      }
       @keyframes pulse-ring {
         0%   { transform: scale(1);   opacity: .7; }
         100% { transform: scale(2.4); opacity: 0; }
-      }
-      @keyframes shimmer {
-        from { background-position: -200% 0; }
-        to   { background-position:  200% 0; }
-      }
-      @keyframes reveal-up {
-        from { opacity: 0; transform: translateY(40px); }
-        to   { opacity: 1; transform: translateY(0); }
-      }
-      @keyframes reveal-left {
-        from { opacity: 0; transform: translateX(-36px); }
-        to   { opacity: 1; transform: translateX(0); }
-      }
-      @keyframes reveal-scale {
-        from { opacity: 0; transform: scale(.92); }
-        to   { opacity: 1; transform: scale(1); }
       }
       @keyframes dot-cascade {
         0%   { transform: translateY(-16px); opacity: 0; }
         60%  { transform: translateY(3px);   opacity: 1; }
         100% { transform: translateY(0);     opacity: 1; }
-      }
-      @keyframes neon-pulse {
-        0%, 100% { box-shadow: 0 8px 24px rgba(0,208,132,.28); }
-        50%      { box-shadow: 0 0 40px rgba(0,208,132,.5), 0 0 80px rgba(0,208,132,.2); }
-      }
-      @keyframes swirl-in {
-        from { transform: rotate(-180deg) scale(0); opacity: 0; }
-        to   { transform: rotate(0) scale(1); opacity: 1; }
       }
       @keyframes morph-border {
         0%,100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
@@ -916,56 +826,6 @@
       }
 
       /* ══════════════════════════════════════════════════════════════════
-         SEZIONE R — ANIMATION UTILITIES (scroll reveal)
-         ══════════════════════════════════════════════════════════════════ */
-      .reveal-pending {
-        opacity: 0;
-        transform: translateY(40px);
-        transition: opacity .7s var(--ease-out), transform .7s var(--ease-out);
-      }
-      .reveal-pending.revealed {
-        opacity: 1;
-        transform: translateY(0);
-      }
-      .reveal-left-pending {
-        opacity: 0;
-        transform: translateX(-40px);
-        transition: opacity .7s var(--ease-out), transform .7s var(--ease-out);
-      }
-      .reveal-left-pending.revealed {
-        opacity: 1;
-        transform: translateX(0);
-      }
-      .reveal-right-pending {
-        opacity: 0;
-        transform: translateX(40px);
-        transition: opacity .7s var(--ease-out), transform .7s var(--ease-out);
-      }
-      .reveal-right-pending.revealed {
-        opacity: 1;
-        transform: translateX(0);
-      }
-      .reveal-scale-pending {
-        opacity: 0;
-        transform: scale(.92);
-        transition: opacity .7s var(--ease-out), transform .7s var(--ease-out);
-      }
-      .reveal-scale-pending.revealed {
-        opacity: 1;
-        transform: scale(1);
-      }
-      .reveal-tilt-pending {
-        opacity: 0;
-        transform: perspective(600px) rotateY(6deg) translateX(-20px);
-        transition: opacity .8s var(--ease-out), transform .8s var(--ease-out);
-      }
-      .reveal-tilt-pending.revealed {
-        opacity: 1;
-        transform: perspective(600px) rotateY(0) translateX(0);
-      }
-      .stagger-item { transition-delay: calc(var(--i, 0) * 90ms); }
-
-      /* ══════════════════════════════════════════════════════════════════
          SEZIONE S — NOISE TEXTURE
          ══════════════════════════════════════════════════════════════════ */
       body::before {
@@ -1030,33 +890,6 @@
       #mb-loader .loader-ring:nth-child(3) { animation-delay: 1.2s; }
 
       /* ══════════════════════════════════════════════════════════════════
-         SEZIONE U — FLOATING ORBS
-         ══════════════════════════════════════════════════════════════════ */
-      .mb-float-orb {
-        position: fixed; border-radius: 50%;
-        pointer-events: none; opacity: .08;
-        filter: blur(60px);
-        animation: float 12s ease-in-out infinite;
-        z-index: 0;
-        will-change: transform;
-      }
-      .mb-float-orb.orb-1 {
-        width: 40vw; height: 40vw; max-width: 600px; max-height: 600px;
-        background: radial-gradient(circle, var(--mb-green) 0%, transparent 70%);
-        top: -10vw; right: -10vw; animation-duration: 15s;
-      }
-      .mb-float-orb.orb-2 {
-        width: 30vw; height: 30vw; max-width: 400px; max-height: 400px;
-        background: radial-gradient(circle, var(--mb-cyan) 0%, transparent 70%);
-        bottom: 20vh; left: -8vw; animation-duration: 20s; animation-delay: -7s;
-      }
-      .mb-float-orb.orb-3 {
-        width: 20vw; height: 20vw; max-width: 300px; max-height: 300px;
-        background: radial-gradient(circle, var(--it-yellow) 0%, transparent 70%);
-        top: 40vh; right: 5vw; animation-duration: 18s; animation-delay: -3s;
-      }
-
-      /* ══════════════════════════════════════════════════════════════════
          SEZIONE V — INNTOUR DOTS
          ══════════════════════════════════════════════════════════════════ */
       .it-dots {
@@ -1081,7 +914,6 @@
         background: var(--grad-brand) !important;
         border-radius: 50% !important;
         box-shadow: var(--shadow-green) !important;
-        animation: neon-pulse 3s ease-in-out infinite;
       }
       .badge-brand {
         background: var(--grad-brand);
@@ -1099,7 +931,6 @@
         border-radius: var(--r-full);
         font-weight: 800;
         padding: .2rem .7rem;
-        animation: neon-pulse 2.5s ease-in-out infinite;
       }
 
       /* Section divider */
@@ -1147,51 +978,6 @@
         transition: filter .4s var(--ease-out), transform .8s var(--ease-out) !important;
       }
 
-      /* ── Section parallax layers ─────────────────────────── */
-      .mb-parallax-section {
-        will-change: transform;
-        transition: transform .1s linear;
-      }
-
-      /* ── Decorative section divider wave ─────────────────── */
-      .mb-wave-divider {
-        height: 60px;
-        background: linear-gradient(135deg, rgba(0,208,132,.06), rgba(0,180,216,.06));
-        clip-path: polygon(0 60%, 25% 0%, 50% 50%, 75% 10%, 100% 40%, 100% 100%, 0 100%);
-        margin: -1px 0;
-      }
-
-      /* ── Hover tilt effect on cards ──────────────────────── */
-      .mb-tilt-hover {
-        transition: transform .4s var(--ease-out), box-shadow .4s;
-        will-change: transform;
-      }
-
-      /* ── Text gradient shimmer on headings ───────────────── */
-      .mb-heading-shimmer {
-        position: relative;
-        display: inline-block;
-      }
-      .mb-heading-shimmer::after {
-        content: '';
-        position: absolute; inset: 0;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,.4), transparent);
-        background-size: 200% 100%;
-        -webkit-mask: linear-gradient(#000, #000);
-        mask: linear-gradient(#000, #000);
-        animation: shimmer 4s ease-in-out infinite;
-        pointer-events: none;
-      }
-
-      /* ── Animated border on focused sections ─────────────── */
-      .mb-glow-border {
-        box-shadow: inset 0 0 0 1px rgba(0,208,132,.15);
-        transition: box-shadow .5s var(--ease-out);
-      }
-      .mb-glow-border:hover {
-        box-shadow: inset 0 0 0 2px rgba(0,208,132,.3), 0 0 20px rgba(0,208,132,.1);
-      }
-
       /* Selection color */
       ::selection {
         background-color: rgba(0,208,132,.25);
@@ -1219,18 +1005,6 @@
 
     <!-- Scroll progress bar -->
     <div id="mb-scroll-bar" role="progressbar" aria-hidden="true"></div>
-
-    <!-- Swirl background decorativo -->
-    <div id="mb-swirl-bg" aria-hidden="true"></div>
-
-    <!-- Floating orbs -->
-    <div class="mb-float-orb orb-1" aria-hidden="true"></div>
-    <div class="mb-float-orb orb-2" aria-hidden="true"></div>
-    <div class="mb-float-orb orb-3" aria-hidden="true"></div>
-
-    <!-- Custom cursor -->
-    <div class="mb-cursor" id="mb-cursor" aria-hidden="true"></div>
-    <div class="mb-cursor-dot" id="mb-cursor-dot" aria-hidden="true"></div>
 
     <!-- Loading screen -->
     <div id="mb-loader" role="status" aria-label="Caricamento MetaBorghi">
@@ -1267,48 +1041,6 @@
         }, { passive: true });
 
         /* ═══════════════════════════════════════════════════════════
-           CUSTOM CURSOR (lerp RAF)
-           ═══════════════════════════════════════════════════════════ */
-        var cursor = document.getElementById('mb-cursor');
-        var cursorDot = document.getElementById('mb-cursor-dot');
-        var mouseX = 0, mouseY = 0;
-        var dotX = 0, dotY = 0, curX = 0, curY = 0;
-
-        document.addEventListener('mousemove', function (e) {
-          mouseX = e.clientX; mouseY = e.clientY;
-        });
-
-        (function animateCursor() {
-          curX += (mouseX - curX) * .12;
-          curY += (mouseY - curY) * .12;
-          dotX += (mouseX - dotX) * .6;
-          dotY += (mouseY - dotY) * .6;
-          if (cursor) { cursor.style.left = curX + 'px'; cursor.style.top = curY + 'px'; }
-          if (cursorDot) { cursorDot.style.left = dotX + 'px'; cursorDot.style.top = dotY + 'px'; }
-          requestAnimationFrame(animateCursor);
-        })();
-
-        /* Cursor hover state */
-        document.addEventListener('mouseover', function (e) {
-          if (e.target.closest('a, button, [role="button"], input, select, textarea')) {
-            if (cursor) cursor.style.borderColor = 'var(--mb-yellow)';
-            if (cursorDot) cursorDot.style.background = 'var(--mb-yellow)';
-          }
-        });
-        document.addEventListener('mouseout', function (e) {
-          if (e.target.closest('a, button, [role="button"], input, select, textarea')) {
-            if (cursor) cursor.style.borderColor = 'var(--mb-green)';
-            if (cursorDot) cursorDot.style.background = 'var(--mb-green)';
-          }
-        });
-        /* Hide native cursor */
-        document.addEventListener('DOMContentLoaded', function () {
-          var s = document.createElement('style');
-          s.textContent = 'a,button,[role="button"],input,select,textarea{cursor:none!important}';
-          document.head.appendChild(s);
-        });
-
-        /* ═══════════════════════════════════════════════════════════
            LOADING SCREEN
            ═══════════════════════════════════════════════════════════ */
         var loader = document.getElementById('mb-loader');
@@ -1327,95 +1059,6 @@
           if (r) loadObserver.observe(r, { childList: true, subtree: false });
         }, 0);
         setTimeout(hideLoader, 6000);
-
-        /* ═══════════════════════════════════════════════════════════
-           SCROLL-TRIGGERED REVEALS (multi-direction, stagger)
-           ═══════════════════════════════════════════════════════════ */
-        function initReveal() {
-          /* Categorie di elementi da rivelare */
-          var headings = document.querySelectorAll('h1, h2, h3, h4');
-          var cards = document.querySelectorAll('[class*="card"], [class*="Card"], article');
-          var features = document.querySelectorAll('[class*="feature"], [class*="Feature"], aside');
-          var sections = document.querySelectorAll('[class*="section"] > *, [class*="grid"] > *, [class*="flex"][class*="gap"] > *');
-
-          var delay = 0;
-
-          function tagElement(el, cls) {
-            if (el.hasAttribute('data-reveal')) return;
-            el.setAttribute('data-reveal', '1');
-            el.classList.add(cls);
-            el.style.setProperty('--i', String(delay % 10));
-            el.classList.add('stagger-item');
-            delay++;
-          }
-
-          headings.forEach(function (el) { tagElement(el, 'reveal-pending'); });
-
-          cards.forEach(function (el, i) {
-            /* Alternate reveal direction per le card */
-            if (i % 3 === 0) tagElement(el, 'reveal-pending');
-            else if (i % 3 === 1) tagElement(el, 'reveal-left-pending');
-            else tagElement(el, 'reveal-right-pending');
-          });
-
-          features.forEach(function (el) { tagElement(el, 'reveal-scale-pending'); });
-
-          sections.forEach(function (el) {
-            if (!el.hasAttribute('data-reveal') &&
-                !el.matches('script, style, link, meta, br, hr')) {
-              tagElement(el, 'reveal-pending');
-            }
-          });
-
-          /* IntersectionObserver con soglie multiple per fluidità */
-          var io = new IntersectionObserver(function (entries) {
-            entries.forEach(function (entry) {
-              if (entry.isIntersecting) {
-                entry.target.classList.add('revealed');
-                io.unobserve(entry.target);
-              }
-            });
-          }, { threshold: [0.08, 0.15], rootMargin: '0px 0px -50px 0px' });
-
-          document.querySelectorAll('[data-reveal]').forEach(function (el) {
-            if (!el.classList.contains('revealed')) io.observe(el);
-          });
-        }
-
-        /* ═══════════════════════════════════════════════════════════
-           PARALLAX ON SCROLL (orbs + hero images)
-           ═══════════════════════════════════════════════════════════ */
-        function initParallax() {
-          var orbs = document.querySelectorAll('.mb-float-orb');
-          var parallaxTicking = false;
-
-          window.addEventListener('scroll', function () {
-            if (!parallaxTicking) {
-              requestAnimationFrame(function () {
-                var sy = window.scrollY;
-                orbs.forEach(function (orb, i) {
-                  var speed = (i + 1) * 0.06;
-                  orb.style.transform = 'translateY(' + (sy * speed) + 'px)';
-                });
-
-                /* Parallax su hero images */
-                var heroImgs = document.querySelectorAll('[class*="hero"] img, [class*="hero"] video, [class*="Hero"] img');
-                heroImgs.forEach(function (img) {
-                  var parent = img.closest('[class*="hero"], [class*="Hero"]');
-                  if (!parent) return;
-                  var rect = parent.getBoundingClientRect();
-                  if (rect.bottom > 0 && rect.top < window.innerHeight) {
-                    var progress = (window.innerHeight - rect.top) / (window.innerHeight + rect.height);
-                    img.style.transform = 'translateY(' + (progress * 30 - 15) + 'px) scale(1.04)';
-                  }
-                });
-
-                parallaxTicking = false;
-              });
-              parallaxTicking = true;
-            }
-          }, { passive: true });
-        }
 
         /* ═══════════════════════════════════════════════════════════
            NAVBAR SCROLL EFFECT (transparency → glass on scroll)
@@ -1480,95 +1123,6 @@
         /* ═══════════════════════════════════════════════════════════
            SECTION PARALLAX (leggero spostamento Y al scroll)
            ═══════════════════════════════════════════════════════════ */
-        function initSectionParallax() {
-          var sectionTicking = false;
-          var allSections = document.querySelectorAll('section, [class*="section"], [class*="py-"]');
-
-          allSections.forEach(function (sec) {
-            if (!sec.closest('.leaflet-container')) {
-              sec.classList.add('mb-parallax-section');
-            }
-          });
-
-          window.addEventListener('scroll', function () {
-            if (!sectionTicking) {
-              requestAnimationFrame(function () {
-                var sy = window.scrollY;
-                allSections.forEach(function (sec) {
-                  if (sec.closest('.leaflet-container')) return;
-                  var rect = sec.getBoundingClientRect();
-                  if (rect.bottom > -100 && rect.top < window.innerHeight + 100) {
-                    var offset = (rect.top / window.innerHeight - 0.5) * -8;
-                    sec.style.transform = 'translateY(' + offset + 'px)';
-                  }
-                });
-                sectionTicking = false;
-              });
-              sectionTicking = true;
-            }
-          }, { passive: true });
-        }
-
-        /* ═══════════════════════════════════════════════════════════
-           CARD TILT EFFECT (3D hover su card)
-           ═══════════════════════════════════════════════════════════ */
-        function initCardTilt() {
-          document.addEventListener('mousemove', function (e) {
-            var cards = document.querySelectorAll('[class*="card"]:not(.leaflet-container), [class*="Card"]:not(.leaflet-container), article');
-            cards.forEach(function (card) {
-              var rect = card.getBoundingClientRect();
-              if (e.clientX >= rect.left && e.clientX <= rect.right &&
-                  e.clientY >= rect.top && e.clientY <= rect.bottom) {
-                var centerX = rect.left + rect.width / 2;
-                var centerY = rect.top + rect.height / 2;
-                var rotateY = ((e.clientX - centerX) / rect.width) * 4;
-                var rotateX = ((centerY - e.clientY) / rect.height) * 4;
-                card.style.transform = 'perspective(800px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg) translateY(-4px)';
-              }
-            });
-          });
-          document.addEventListener('mouseleave', function () {
-            var cards = document.querySelectorAll('[class*="card"], [class*="Card"], article');
-            cards.forEach(function (card) {
-              card.style.transform = '';
-            });
-          }, true);
-        }
-
-        /* ═══════════════════════════════════════════════════════════
-           HEADING SHIMMER (effetto luce su titoli visibili)
-           ═══════════════════════════════════════════════════════════ */
-        function initHeadingShimmer() {
-          var headingIO = new IntersectionObserver(function (entries) {
-            entries.forEach(function (entry) {
-              if (entry.isIntersecting) {
-                entry.target.classList.add('mb-heading-shimmer');
-                headingIO.unobserve(entry.target);
-              }
-            });
-          }, { threshold: 0.3 });
-          document.querySelectorAll('h1, h2').forEach(function (h) {
-            headingIO.observe(h);
-          });
-        }
-
-        /* ═══════════════════════════════════════════════════════════
-           GLOW BORDER on sections entering viewport
-           ═══════════════════════════════════════════════════════════ */
-        function initGlowBorders() {
-          var glowIO = new IntersectionObserver(function (entries) {
-            entries.forEach(function (entry) {
-              if (entry.isIntersecting) {
-                entry.target.classList.add('mb-glow-border');
-              } else {
-                entry.target.classList.remove('mb-glow-border');
-              }
-            });
-          }, { threshold: 0.1 });
-          document.querySelectorAll('[class*="rounded-2xl"]:not(.leaflet-container), [class*="rounded-xl"]:not(.leaflet-container)').forEach(function (el) {
-            glowIO.observe(el);
-          });
-        }
 
         /* ═══════════════════════════════════════════════════════════
            RE-APPLY ON ROUTE CHANGE (SPA)
@@ -1577,10 +1131,7 @@
         var routeObserver = new MutationObserver(function () {
           clearTimeout(routeDebounce);
           routeDebounce = setTimeout(function () {
-            initReveal();
             initCounterAnimation();
-            initHeadingShimmer();
-            initGlowBorders();
           }, 150);
         });
 
@@ -1588,15 +1139,8 @@
            BOOTSTRAP
            ═══════════════════════════════════════════════════════════ */
         function bootstrap() {
-          initReveal();
-          initParallax();
-          initSectionParallax();
           initNavbarEffect();
           initCounterAnimation();
-          initCardTilt();
-          initHeadingShimmer();
-          initGlowBorders();
-
           /* Osserva future mutazioni del DOM per SPA routing */
           var root = document.getElementById('root');
           if (root) routeObserver.observe(root, { childList: true, subtree: true });
