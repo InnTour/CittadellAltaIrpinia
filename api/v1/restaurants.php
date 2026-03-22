@@ -19,6 +19,7 @@ function buildRestaurant(PDO $db, array $row): array {
         'opening_hours', 'closing_day',
         'website_url', 'booking_url',
         'founder_name', 'founder_quote', 'tier', 'cover_image',
+        'main_video_url', 'virtual_tour_url',
     ] as $f) {
         $out[$f] = $row[$f] ?? null;
     }
@@ -113,11 +114,12 @@ if ($method === 'POST') {
          opening_hours, closing_day, specialties, menu_highlights,
          contact_email, contact_phone, website_url,
          social_instagram, social_facebook, social_linkedin, booking_url,
+         main_video_url, virtual_tour_url,
          accepts_groups, max_group_size,
          b2b_open_for_contact, b2b_interests,
          certifications, founder_name, founder_quote, tier, is_verified,
          is_active, is_featured, cover_image)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
     ->execute(_restValues($body));
     http_response_code(201);
     echo json_encode(['ok' => true, 'id' => $body['id']]);
@@ -133,6 +135,7 @@ if ($method === 'PUT' && $id) {
         opening_hours=?, closing_day=?, specialties=?, menu_highlights=?,
         contact_email=?, contact_phone=?, website_url=?,
         social_instagram=?, social_facebook=?, social_linkedin=?, booking_url=?,
+        main_video_url=?, virtual_tour_url=?,
         accepts_groups=?, max_group_size=?,
         b2b_open_for_contact=?, b2b_interests=?,
         certifications=?, founder_name=?, founder_quote=?, tier=?, is_verified=?,
@@ -168,6 +171,7 @@ function _restValues(array $b): array {
         $b['social_instagram'] ?? null, $b['social_facebook'] ?? null,
         $b['social_linkedin'] ?? null,
         $b['booking_url'] ?? null,
+        $b['main_video_url'] ?? null, $b['virtual_tour_url'] ?? null,
         ($b['accepts_groups'] ?? false) ? 1 : 0, $b['max_group_size'] ?? null,
         ($b['b2b_open_for_contact'] ?? false) ? 1 : 0, $b['b2b_interests'] ?? null,
         $b['certifications'] ?? null, $b['founder_name'] ?? null,
