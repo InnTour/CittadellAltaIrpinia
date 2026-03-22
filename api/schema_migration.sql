@@ -151,3 +151,7 @@ CREATE TABLE IF NOT EXISTS `restaurants` (
 -- Add virtual_tour_url and main_video_url to restaurants if missing (migration)
 ALTER TABLE `restaurants` ADD COLUMN IF NOT EXISTS `main_video_url` TEXT DEFAULT NULL AFTER `booking_url`;
 ALTER TABLE `restaurants` ADD COLUMN IF NOT EXISTS `virtual_tour_url` TEXT DEFAULT NULL AFTER `main_video_url`;
+
+-- Add virtual_tour_url and main_video_url to experiences if missing (migration)
+ALTER TABLE `experiences` ADD COLUMN IF NOT EXISTS `main_video_url` TEXT DEFAULT NULL AFTER `cover_image`;
+ALTER TABLE `experiences` ADD COLUMN IF NOT EXISTS `virtual_tour_url` TEXT DEFAULT NULL AFTER `main_video_url`;

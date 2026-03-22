@@ -4,6 +4,12 @@ requireAdminSession();
 $db = getDB();
 $msg = '';
 
+// Assicura che le colonne aggiunte dopo la migrazione iniziale esistano
+ensureTableColumns($db, 'experiences', [
+    'main_video_url'   => "TEXT DEFAULT NULL",
+    'virtual_tour_url' => "TEXT DEFAULT NULL",
+]);
+
 // ============================================================
 // POST — Salvataggio esperienza
 // ============================================================
@@ -38,6 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'rating'              => (float)($_POST['rating']           ?? 0),
         'reviews_count'       => (int)($_POST['reviews_count']      ?? 0),
         'is_active'           => isset($_POST['is_active']) ? 1 : 0,
+        'main_video_url'      => trim($_POST['main_video_url']      ?? '') ?: null,
+        'virtual_tour_url'    => trim($_POST['virtual_tour_url']    ?? '') ?: null,
     ];
     if ($coverPath) $f['cover_image'] = $coverPath;
 
@@ -195,6 +203,12 @@ require '_layout.php';
       <?= adminTextarea('excludes', 'Non include (uno per riga)', $sel, 3, 'Inserisci un elemento per riga') ?>
       <?= adminTextarea('what_to_bring', 'Cosa portare (uno per riga)', $sel, 3, 'Inserisci un elemento per riga') ?>
       <?= adminTextarea('seasonal_tags', 'Tag stagionali (uno per riga)', $sel, 2) ?>
+
+      <!-- Video & Virtual Tour -->
+      <div class="grid grid-cols-2 gap-4">
+        <?= adminInput('main_video_url', 'URL Video (YouTube/Vimeo)', $sel, 'url', true) ?>
+        <?= adminInput('virtual_tour_url', 'URL Virtual Tour (iframe)', $sel, 'url', true) ?>
+      </div>
 
       <!-- Timeline Steps -->
       <div class="col-span-2">
