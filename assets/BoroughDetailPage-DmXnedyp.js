@@ -4302,9 +4302,10 @@ function ge() {
   if (me)
     return e.jsx("div", {
       className: "min-h-screen flex items-center justify-center",
-      children: e.jsx("div", {
-        className:
-          "animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-ambra-600",
+      children: e.jsx("img", {
+        src: "/logo%20png.png",
+        alt: "",
+        className: "animate-spin h-12 w-12",
       }),
     });
   if (!s) return e.jsx(w0, { to: Z.BOROUGHS, replace: !0 });
