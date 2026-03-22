@@ -137,6 +137,8 @@ CREATE TABLE IF NOT EXISTS `restaurants` (
   `is_verified`          TINYINT(1)      DEFAULT 0,
   `b2b_open_for_contact` TINYINT(1)      DEFAULT 0,
   `b2b_interests`        TEXT            DEFAULT NULL,
+  `main_video_url`       TEXT            DEFAULT NULL,
+  `virtual_tour_url`     TEXT            DEFAULT NULL,
   `cover_image`          VARCHAR(500)    DEFAULT NULL,
   `is_active`            TINYINT(1)      DEFAULT 1,
   `is_featured`          TINYINT(1)      DEFAULT 0,
@@ -145,3 +147,7 @@ CREATE TABLE IF NOT EXISTS `restaurants` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `slug` (`slug`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Add virtual_tour_url and main_video_url to restaurants if missing (migration)
+ALTER TABLE `restaurants` ADD COLUMN IF NOT EXISTS `main_video_url` TEXT DEFAULT NULL AFTER `booking_url`;
+ALTER TABLE `restaurants` ADD COLUMN IF NOT EXISTS `virtual_tour_url` TEXT DEFAULT NULL AFTER `main_video_url`;
