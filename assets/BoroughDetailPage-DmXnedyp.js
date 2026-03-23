@@ -4434,6 +4434,56 @@ function ge() {
               ],
             }),
           }),
+          (() => {
+            const sv = s.main_video_url || "";
+            if (!sv) return null;
+            const isYT = sv && (sv.includes("youtube.com") || sv.includes("youtu.be"));
+            const isVim = sv && sv.includes("vimeo.com");
+            const isIfr = isYT || isVim;
+            const isLoc = sv && !isIfr && /\.(mp4|webm|ogg|mov)($|\?)/i.test(sv);
+            return e.jsxs("section", {
+              className: "mb-12",
+              children: [
+                e.jsxs("h2", {
+                  className: "font-display text-xl font-bold text-warm-900 mb-4 flex items-center gap-2",
+                  children: [
+                    e.jsx(O, { size: 22, className: "text-ambra-600" }),
+                    "Scopri ",
+                    s.name,
+                  ],
+                }),
+                e.jsx(A.div, {
+                  initial: n ? void 0 : { opacity: 0, y: 20 },
+                  whileInView: { opacity: 1, y: 0 },
+                  viewport: { once: !0 },
+                  transition: { duration: 0.5 },
+                  className: "relative aspect-video rounded-2xl overflow-hidden glass-strong",
+                  children: isIfr
+                    ? e.jsx("iframe", {
+                        src: sv + (sv.includes("?") ? "&" : "?") + "rel=0",
+                        title: `Scopri ${s.name}`,
+                        className: "absolute inset-0 w-full h-full",
+                        allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",
+                        allowFullScreen: !0,
+                      })
+                    : isLoc
+                    ? e.jsx("video", {
+                        src: sv,
+                        className: "absolute inset-0 w-full h-full object-cover",
+                        controls: !0,
+                      })
+                    : e.jsxs("div", {
+                        className: "absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-warm-900 to-warm-700 text-white",
+                        children: [
+                          e.jsx(O, { size: 64, weight: "fill", className: "mb-4 opacity-80" }),
+                          e.jsx("h3", { className: "text-2xl font-bold mb-2", children: "Scopri il Borgo" }),
+                          e.jsx("p", { className: "text-sm text-white/70", children: "Prossimamente disponibile" }),
+                        ],
+                      }),
+                }),
+              ],
+            });
+          })(),
           e.jsxs("section", {
             className: "mb-12",
             children: [
