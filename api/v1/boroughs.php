@@ -7,6 +7,9 @@ $method = $_SERVER['REQUEST_METHOD'];
 $id     = $_GET['id'] ?? null;
 $slug   = $_GET['slug'] ?? null;
 
+// Auto-migration: ensure cover_video_url column exists
+ensureTableColumns($db, 'boroughs', ['cover_video_url' => 'TEXT DEFAULT NULL']);
+
 // ── Helper: costruisce un borough completo con tutti gli array ──────────────
 function buildBorough(PDO $db, array $row): array {
     $bid = $row['id'];
