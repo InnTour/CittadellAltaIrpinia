@@ -31,6 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'companies_count'  => (int)($_POST['companies_count'] ?? 0),
         'hero_image_index' => (int)($_POST['hero_image_index'] ?? 0),
         'hero_image_alt'   => trim($_POST['hero_image_alt']   ?? ''),
+        'cover_video_url'  => trim($_POST['cover_video_url']  ?? ''),
     ];
     if ($coverPath) $fields['cover_image'] = $coverPath;
 
@@ -143,7 +144,8 @@ require '_layout.php';
         echo adminInput('companies_count', 'N. aziende', $sel, 'number');
         echo adminInput('hero_image_index', 'Indice immagine hero (0-24)', $sel, 'number');
         echo adminInput('hero_image_alt', 'Alt immagine hero', $sel, 'text', true);
-        echo adminInput('main_video_url', 'URL Video YouTube embed', $sel, 'text', true);
+        echo adminInput('cover_video_url', 'Video copertina YouTube embed (alternativa a immagine)', $sel, 'text', true);
+        echo adminInput('main_video_url', 'URL Video YouTube embed (sezione Scopri)', $sel, 'text', true);
         echo adminInput('virtual_tour_url', 'URL Tour Virtuale embed', $sel, 'text', true);
         ?>
       </div>

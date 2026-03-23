@@ -4235,6 +4235,7 @@ function ge() {
           }
           if (!be.main_video_url) be.main_video_url = "";
           if (!be.virtual_tour_url) be.virtual_tour_url = "";
+          if (!be.cover_video_url) be.cover_video_url = "";
           if (!be.highlights) be.highlights = [];
           if (!be.notable_products) be.notable_products = [];
           if (!be.notable_experiences) be.notable_experiences = [];
@@ -4323,32 +4324,35 @@ function ge() {
     id: "main-content",
     className: "min-h-screen",
     children: [
-      e.jsxs("section", {
-        className: "relative w-full h-[75vh] overflow-hidden bg-warm-900",
-        children: [
-          s.main_video_url
-            ? e.jsx("iframe", {
-                src: s.main_video_url + (s.main_video_url.includes("?") ? "&" : "?") + "controls=0&showinfo=0&rel=0&modestbranding=1",
-                title: `Copertina ${s.name}`,
-                className: "absolute inset-0 w-full h-full pointer-events-none",
-                style: { border: "none", transform: "scale(1.3)" },
-                allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",
-                allowFullScreen: !0,
-              })
-            : s.hero_image?.src ? e.jsx("img", {
-                src: s.hero_image.src,
-                alt: s.hero_image.alt || s.name,
-                className: "absolute inset-0 w-full h-full object-cover",
-                onError: (ev) => { ev.target.style.display = "none"; },
-              })
-            : e.jsx("div", {
-                className: "absolute inset-0 w-full h-full bg-gradient-to-br from-ambra-200 to-warm-300",
-              }),
-          e.jsx("div", {
-            className: "absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-white/60 pointer-events-none",
-          }),
-        ],
-      }),
+      (() => {
+        const coverVid = s.cover_video_url || s.main_video_url || "";
+        return e.jsxs("section", {
+          className: "relative w-full h-[75vh] overflow-hidden bg-warm-900",
+          children: [
+            coverVid
+              ? e.jsx("iframe", {
+                  src: coverVid + (coverVid.includes("?") ? "&" : "?") + "controls=0&showinfo=0&rel=0&modestbranding=1",
+                  title: `Copertina ${s.name}`,
+                  className: "absolute inset-0 w-full h-full pointer-events-none",
+                  style: { border: "none", transform: "scale(1.3)" },
+                  allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",
+                  allowFullScreen: !0,
+                })
+              : s.hero_image?.src ? e.jsx("img", {
+                  src: s.hero_image.src,
+                  alt: s.hero_image.alt || s.name,
+                  className: "absolute inset-0 w-full h-full object-cover",
+                  onError: (ev) => { ev.target.style.display = "none"; },
+                })
+              : e.jsx("div", {
+                  className: "absolute inset-0 w-full h-full bg-gradient-to-br from-ambra-200 to-warm-300",
+                }),
+            e.jsx("div", {
+              className: "absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-white/60 pointer-events-none",
+            }),
+          ],
+        });
+      })(),
       e.jsxs("div", {
         className: "max-w-7xl mx-auto px-4 pt-4 pb-2",
         children: [
@@ -4369,45 +4373,53 @@ function ge() {
             initial: n ? void 0 : { opacity: 0, y: 30 },
             animate: { opacity: 1, y: 0 },
             transition: { duration: 0.7 },
-            className: "flex flex-col items-center text-center mb-12",
+            className: "mb-12",
             children: e.jsxs("div", {
-              className: "max-w-3xl",
+              className: "grid md:grid-cols-[auto_1fr] gap-8 md:gap-12 items-start",
               children: [
-                e.jsx("img", {
-                  src: `/Stemmi/${s.slug.charAt(0).toUpperCase() + s.slug.slice(1)}2-Stemma.png`,
-                  alt: `Stemma di ${s.name}`,
-                  className: "w-36 h-36 md:w-44 md:h-44 object-contain mx-auto mb-6",
-                  style: { mixBlendMode: "multiply" },
-                  onError: (ev) => { ev.target.style.display = "none"; },
-                }),
-                e.jsx("span", {
-                  className: "inline-block text-sm font-semibold text-ambra-600 uppercase tracking-[0.25em] mb-3",
-                  children: s.id === "lacedonia" ? "VRCROGN\u2019" : "Il Comune",
-                }),
-                e.jsx("h1", {
-                  className: "font-display text-3xl md:text-5xl font-bold text-warm-900 mb-5",
-                  children: s.name,
-                }),
-                e.jsx("p", {
-                  className: "text-base md:text-lg text-warm-700 mb-6 leading-relaxed",
-                  children: s.id === "lacedonia" ? "Millenaria e autentica, Lacedonia sorge a 734 metri sull\u2019Alta Irpinia preservando testimonianze uniche: 150 cavit\u00e0 rupestri abitate da 13.000 anni, stratificazioni sannite, romane e medievali che plasmano ancora oggi l\u2019identit\u00e0 del paese. Patria di San Gerardo Maiella e di Francesco De Sanctis, il paese intreccia spiritualit\u00e0, sapere e radicata cultura contadina: gastronomia tipica, riti agrari e un ecosistema naturale di straordinaria ricchezza. Il MAVI conserva 1.801 scatti etnografici di Frank Cancian. InnTour ne restituisce l\u2019anima attraverso tecnologie immersive, scansioni 3D e avatar AI." : s.description,
-                }),
                 e.jsxs("div", {
-                  className: "flex items-center justify-center gap-4 text-warm-600 text-sm flex-wrap",
+                  className: "flex flex-col items-center text-center",
                   children: [
-                    e.jsxs("span", {
-                      className: "flex items-center gap-1.5",
-                      children: [e.jsx($, { size: 16 }), s.province, ", ", s.region],
+                    e.jsx("img", {
+                      src: `/Stemmi/${s.slug.charAt(0).toUpperCase() + s.slug.slice(1)}2-Stemma.png`,
+                      alt: `Stemma di ${s.name}`,
+                      className: "w-36 h-36 md:w-44 md:h-44 object-contain mb-4",
+                      style: { mixBlendMode: "multiply" },
+                      onError: (ev) => { ev.target.style.display = "none"; },
                     }),
-                    s.population && e.jsxs("span", {
-                      className: "flex items-center gap-1.5",
-                      children: [e.jsx(z, { size: 16 }), s.population.toLocaleString("it-IT"), " abitanti"],
+                    e.jsx("span", {
+                      className: "inline-block text-xs font-semibold text-ambra-600 uppercase tracking-[0.25em] mb-2",
+                      children: s.id === "lacedonia" ? "VRCROGN\u2019" : "Il Comune",
                     }),
-                    s.altitude_meters && e.jsxs("span", {
-                      className: "flex items-center gap-1.5",
-                      children: [e.jsx(V0, { size: 16 }), s.altitude_meters, " m s.l.m."],
+                    e.jsx("h1", {
+                      className: "font-display text-2xl md:text-4xl font-bold text-warm-900 mb-3",
+                      children: s.name,
+                    }),
+                    e.jsxs("div", {
+                      className: "flex flex-col items-center gap-1 text-warm-600 text-xs",
+                      children: [
+                        e.jsxs("span", {
+                          className: "flex items-center gap-1.5",
+                          children: [e.jsx($, { size: 14 }), s.province, ", ", s.region],
+                        }),
+                        s.population && e.jsxs("span", {
+                          className: "flex items-center gap-1.5",
+                          children: [e.jsx(z, { size: 14 }), s.population.toLocaleString("it-IT"), " abitanti"],
+                        }),
+                        s.altitude_meters && e.jsxs("span", {
+                          className: "flex items-center gap-1.5",
+                          children: [e.jsx(V0, { size: 14 }), s.altitude_meters, " m s.l.m."],
+                        }),
+                      ],
                     }),
                   ],
+                }),
+                e.jsx("div", {
+                  className: "flex items-center",
+                  children: e.jsx("p", {
+                    className: "text-base md:text-lg text-warm-700 leading-relaxed",
+                    children: s.id === "lacedonia" ? "Millenaria e autentica, Lacedonia sorge a 734 metri sull\u2019Alta Irpinia preservando testimonianze uniche: 150 cavit\u00e0 rupestri abitate da 13.000 anni, stratificazioni sannite, romane e medievali che plasmano ancora oggi l\u2019identit\u00e0 del paese. Patria di San Gerardo Maiella e di Francesco De Sanctis, il paese intreccia spiritualit\u00e0, sapere e radicata cultura contadina: gastronomia tipica, riti agrari e un ecosistema naturale di straordinaria ricchezza. Il MAVI conserva 1.801 scatti etnografici di Frank Cancian. InnTour ne restituisce l\u2019anima attraverso tecnologie immersive, scansioni 3D e avatar AI." : s.description,
+                  }),
                 }),
               ],
             }),
