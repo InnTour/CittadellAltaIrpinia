@@ -4330,15 +4330,23 @@ function ge() {
         const isVimeo = coverVid && coverVid.includes("vimeo.com");
         const isIframe = isYouTube || isVimeo;
         const isLocalVideo = coverVid && !isIframe && /\.(mp4|webm|ogg|mov)($|\?)/i.test(coverVid);
+        let embedUrl = coverVid;
+        if (isYouTube) {
+          const em = coverVid.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
+          if (em) embedUrl = "https://www.youtube.com/embed/" + em[1] + "?rel=0&controls=0&showinfo=0&modestbranding=1&autoplay=1&mute=1&loop=1&playlist=" + em[1];
+        } else if (isVimeo) {
+          const em = coverVid.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+          if (em) embedUrl = "https://player.vimeo.com/video/" + em[1] + "?background=1";
+        }
         return e.jsxs("section", {
           className: "relative w-full h-[75vh] overflow-hidden bg-warm-900",
           children: [
             isIframe
               ? e.jsx("iframe", {
-                  src: coverVid + (coverVid.includes("?") ? "&" : "?") + "controls=0&showinfo=0&rel=0&modestbranding=1",
+                  src: embedUrl,
                   title: `Copertina ${s.name}`,
                   className: "absolute inset-0 w-full h-full pointer-events-none",
-                  style: { border: "none", transform: "scale(1.3)" },
+                  style: { border: "none", transform: "scale(1.5)", transformOrigin: "center center" },
                   allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",
                   allowFullScreen: !0,
                 })

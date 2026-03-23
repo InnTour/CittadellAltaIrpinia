@@ -311,10 +311,15 @@ function handleCoverUpload(string $inputName, string $entityType, string $entity
     $safeId   = preg_replace('/[^a-z0-9_-]/', '', strtolower($entityId));
     $filename = $entityType . '_' . $safeId . '_' . time() . '.' . $ext;
     $destDir  = __DIR__ . '/../uploads/';
-    if (!is_dir($destDir)) @mkdir($destDir, 0755, true);
+    if (!is_dir($destDir)) {
+        if (!mkdir($destDir, 0755, true) && !is_dir($destDir)) {
+            error_log("handleCoverUpload: impossibile creare $destDir");
+            return null;
+        }
+    }
     $dest = $destDir . $filename;
 
-    if (@move_uploaded_file($_FILES[$inputName]['tmp_name'], $dest)) {
+    if (move_uploaded_file($_FILES[$inputName]['tmp_name'], $dest)) {
         return '/api/uploads/' . $filename;
     }
     return null;
@@ -405,7 +410,12 @@ function handleMultipleImageUpload(string $inputName, string $entityType, string
 
     $allowedExt = ['jpg' => 'jpg', 'jpeg' => 'jpg', 'png' => 'png', 'gif' => 'gif', 'webp' => 'webp'];
     $destDir = __DIR__ . '/../uploads/';
-    if (!is_dir($destDir)) @mkdir($destDir, 0755, true);
+    if (!is_dir($destDir)) {
+        if (!mkdir($destDir, 0755, true) && !is_dir($destDir)) {
+            error_log("handleMultipleImageUpload: impossibile creare $destDir");
+            return $paths;
+        }
+    }
     $safeId = preg_replace('/[^a-z0-9_-]/', '', strtolower($entityId));
 
     for ($i = 0; $i < count($files['name']); $i++) {
@@ -415,7 +425,7 @@ function handleMultipleImageUpload(string $inputName, string $entityType, string
         $ext = $allowedExt[$origExt];
         $filename = $entityType . '_' . $safeId . '_' . time() . '_' . $i . '.' . $ext;
         $dest = $destDir . $filename;
-        if (@move_uploaded_file($files['tmp_name'][$i], $dest)) {
+        if (move_uploaded_file($files['tmp_name'][$i], $dest)) {
             $paths[] = '/api/uploads/' . $filename;
         }
     }
