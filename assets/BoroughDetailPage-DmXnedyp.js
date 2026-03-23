@@ -4323,26 +4323,26 @@ function ge() {
     id: "main-content",
     className: "min-h-screen",
     children: [
-      e.jsxs("section", {
-        className: "relative h-[70vh] overflow-hidden",
-        children: [
-          s.hero_image?.src ? e.jsx("img", {
-            src: s.hero_image.src,
-            alt: s.hero_image.alt || s.name,
-            className: "absolute inset-0 w-full h-full object-cover",
-            onError: (ev) => { ev.target.style.display = "none"; },
-          }) : e.jsx("div", {
-            className: "absolute inset-0 w-full h-full bg-gradient-to-br from-ambra-200 to-warm-300",
-          }),
-          e.jsx("div", {
-            className:
-              "absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/70",
-          }),
-          e.jsx("div", {
-            className:
-              "absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white/80 to-transparent",
-          }),
-        ],
+      e.jsx("section", {
+        className: "relative w-full h-[75vh] overflow-hidden",
+        children: s.main_video_url
+          ? e.jsx("iframe", {
+              src: s.main_video_url,
+              title: `Copertina ${s.name}`,
+              className: "absolute inset-0 w-full h-full",
+              style: { border: "none", objectFit: "cover", transform: "scale(1.15)" },
+              allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",
+              allowFullScreen: !0,
+            })
+          : s.hero_image?.src ? e.jsx("img", {
+              src: s.hero_image.src,
+              alt: s.hero_image.alt || s.name,
+              className: "absolute inset-0 w-full h-full object-cover",
+              onError: (ev) => { ev.target.style.display = "none"; },
+            })
+          : e.jsx("div", {
+              className: "absolute inset-0 w-full h-full bg-gradient-to-br from-ambra-200 to-warm-300",
+            }),
       }),
       e.jsxs("div", {
         className: "max-w-7xl mx-auto px-4 pt-4 pb-2",
@@ -4360,162 +4360,51 @@ function ge() {
       e.jsxs("div", {
         className: "max-w-7xl mx-auto px-4 py-8",
         children: [
-          e.jsxs("div", {
-            className: "grid lg:grid-cols-2 gap-10 items-center mb-12",
-            children: [
-              e.jsx(A.div, {
-                initial: n ? void 0 : { opacity: 0, y: 30 },
-                animate: { opacity: 1, y: 0 },
-                transition: { duration: 0.7 },
-                children: e.jsxs("div", {
+          e.jsx(A.div, {
+            initial: n ? void 0 : { opacity: 0, y: 30 },
+            animate: { opacity: 1, y: 0 },
+            transition: { duration: 0.7 },
+            className: "flex flex-col items-center text-center mb-12",
+            children: e.jsxs("div", {
+              className: "max-w-3xl",
+              children: [
+                e.jsx("img", {
+                  src: `/Stemmi/${s.slug.charAt(0).toUpperCase() + s.slug.slice(1)}2-Stemma.png`,
+                  alt: `Stemma di ${s.name}`,
+                  className: "w-24 h-24 md:w-32 md:h-32 object-contain mx-auto mb-6",
+                  onError: (ev) => { ev.target.style.display = "none"; },
+                }),
+                e.jsx("span", {
+                  className: "inline-block text-sm font-semibold text-ambra-600 uppercase tracking-[0.25em] mb-3",
+                  children: s.id === "lacedonia" ? "VRCROGN\u2019" : "Il Comune",
+                }),
+                e.jsx("h1", {
+                  className: "font-display text-3xl md:text-5xl font-bold text-warm-900 mb-5",
+                  children: s.name,
+                }),
+                e.jsx("p", {
+                  className: "text-base md:text-lg text-warm-700 mb-6 leading-relaxed",
+                  children: s.id === "lacedonia" ? "Millenaria e autentica, Lacedonia sorge a 734 metri sull\u2019Alta Irpinia preservando testimonianze uniche: 150 cavit\u00e0 rupestri abitate da 13.000 anni, stratificazioni sannite, romane e medievali che plasmano ancora oggi l\u2019identit\u00e0 del paese. Patria di San Gerardo Maiella e di Francesco De Sanctis, il paese intreccia spiritualit\u00e0, sapere e radicata cultura contadina: gastronomia tipica, riti agrari e un ecosistema naturale di straordinaria ricchezza. Il MAVI conserva 1.801 scatti etnografici di Frank Cancian. InnTour ne restituisce l\u2019anima attraverso tecnologie immersive, scansioni 3D e avatar AI." : s.description,
+                }),
+                e.jsxs("div", {
+                  className: "flex items-center justify-center gap-4 text-warm-600 text-sm flex-wrap",
                   children: [
-                    e.jsx("span", {
-                      className: "inline-block text-sm font-semibold text-ambra-600 uppercase tracking-wider mb-3",
-                      children: "Il Comune",
+                    e.jsxs("span", {
+                      className: "flex items-center gap-1.5",
+                      children: [e.jsx($, { size: 16 }), s.province, ", ", s.region],
                     }),
-                    e.jsx("h1", {
-                      className: "font-display text-3xl md:text-5xl font-bold text-warm-900 mb-5",
-                      children: s.name,
+                    s.population && e.jsxs("span", {
+                      className: "flex items-center gap-1.5",
+                      children: [e.jsx(z, { size: 16 }), s.population.toLocaleString("it-IT"), " abitanti"],
                     }),
-                    e.jsx("p", {
-                      className: "text-base md:text-lg text-warm-700 mb-6 italic leading-relaxed",
-                      children: s.description,
-                    }),
-                    e.jsxs("div", {
-                      className: "flex items-center gap-4 text-warm-600 text-sm flex-wrap",
-                      children: [
-                        e.jsxs("span", {
-                          className: "flex items-center gap-1.5",
-                          children: [e.jsx($, { size: 16 }), s.province, ", ", s.region],
-                        }),
-                        s.population && e.jsxs("span", {
-                          className: "flex items-center gap-1.5",
-                          children: [e.jsx(z, { size: 16 }), s.population.toLocaleString("it-IT"), " abitanti"],
-                        }),
-                        s.altitude_meters && e.jsxs("span", {
-                          className: "flex items-center gap-1.5",
-                          children: [e.jsx(V0, { size: 16 }), s.altitude_meters, " m s.l.m."],
-                        }),
-                      ],
+                    s.altitude_meters && e.jsxs("span", {
+                      className: "flex items-center gap-1.5",
+                      children: [e.jsx(V0, { size: 16 }), s.altitude_meters, " m s.l.m."],
                     }),
                   ],
                 }),
-              }),
-              e.jsxs("div", {
-                children: [
-                  e.jsxs("h2", {
-                    className: "font-display text-xl font-bold text-warm-900 mb-4 flex items-center gap-2",
-                    children: [
-                      e.jsx(O, { size: 22, className: "text-ambra-600" }),
-                      "Scopri ",
-                      s.name,
-                    ],
-                  }),
-                  e.jsx(A.div, {
-                    initial: n ? void 0 : { opacity: 0, y: 20 },
-                    whileInView: { opacity: 1, y: 0 },
-                    viewport: { once: !0 },
-                    transition: { duration: 0.5 },
-                    className: "relative aspect-video rounded-2xl overflow-hidden glass-strong",
-                    children: s.main_video_url
-                      ? e.jsx("iframe", {
-                          src: s.main_video_url,
-                          title: `Scopri ${s.name}`,
-                          className: "absolute inset-0 w-full h-full",
-                          allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",
-                          allowFullScreen: !0,
-                        })
-                      : e.jsxs("div", {
-                          className: "absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-warm-900 to-warm-700 text-white",
-                          children: [
-                            e.jsx(O, { size: 64, weight: "fill", className: "mb-4 opacity-80" }),
-                            e.jsx("h3", { className: "text-2xl font-bold mb-2", children: "Scopri il Borgo" }),
-                            e.jsx("p", { className: "text-sm text-white/70", children: "Prossimamente disponibile" }),
-                          ],
-                        }),
-                  }),
-                  !s.main_video_url && e.jsxs("p", {
-                    className: "text-xs text-warm-600 text-center mt-3",
-                    children: ["Scopri la storia, i paesaggi e le tradizioni di ", s.name],
-                  }),
-                ],
-              }),
-            ],
-          }),
-                    e.jsxs("section", {
-            className: "mb-12",
-            children: [
-              e.jsxs("h2", {
-                className:
-                  "font-display text-2xl font-bold text-warm-900 mb-4 flex items-center gap-2",
-                children: [
-                  e.jsx(B, { size: 24, className: "text-natura-600" }),
-                  "Esplora e Cammina ",
-                  s.name,
-                ],
-              }),
-              e.jsx(A.div, {
-                initial: n ? void 0 : { opacity: 0, y: 20 },
-                whileInView: { opacity: 1, y: 0 },
-                viewport: { once: !0 },
-                transition: { duration: 0.5 },
-                className:
-                  "relative aspect-video rounded-2xl overflow-hidden glass-strong",
-                children: s.virtual_tour_url
-                  ? window.matchMedia("(max-width:768px)").matches ||
-                    navigator.maxTouchPoints > 1
-                    ? e.jsx("div", {
-                        className:
-                          "absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-natura-800 to-natura-600",
-                        children: e.jsxs("a", {
-                          href: s.virtual_tour_url,
-                          target: "_blank",
-                          rel: "noopener noreferrer",
-                          className:
-                            "flex items-center gap-3 px-8 py-4 bg-white text-natura-700 font-bold rounded-2xl text-lg shadow-xl hover:scale-105 transition-all",
-                          children: [
-                            e.jsx("span", {
-                              className: "text-2xl",
-                              children: "\uD83C\uDF10",
-                            }),
-                            e.jsx("span", { children: "Apri il tour" }),
-                          ],
-                        }),
-                      })
-                    : e.jsx("iframe", {
-                        src: s.virtual_tour_url,
-                        title: `Passeggia a ${s.name}. Tour virtuale a 360\xB0`,
-                        className: "absolute inset-0 w-full h-full",
-                        allow: "accelerometer; gyroscope; xr-spatial-tracking",
-                        allowFullScreen: !0,
-                      })
-                  : e.jsxs("div", {
-                      className:
-                        "absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-natura-800 to-natura-600 text-white",
-                      children: [
-                        e.jsx(B, {
-                          size: 64,
-                          weight: "duotone",
-                          className: "mb-4 opacity-80",
-                        }),
-                        e.jsx("h3", {
-                          className: "text-2xl font-bold mb-2",
-                          children: "Modello Digitale 3D",
-                        }),
-                        e.jsx("p", {
-                          className: "text-sm text-white/70",
-                          children: "Tour immersivo in arrivo",
-                        }),
-                      ],
-                    }),
-              }),
-              !s.virtual_tour_url &&
-                e.jsx("p", {
-                  className: "text-xs text-warm-600 text-center mt-3",
-                  children:
-                    "Tour virtuale a 360\xB0 — Esplora il borgo in modalita immersiva a 360°",
-                }),
-            ],
+              ],
+            }),
           }),
           e.jsxs("section", {
             className: "mb-12",
@@ -4601,179 +4490,6 @@ function ge() {
               }),
             ],
           }),
-          p.length > 0 &&
-            e.jsxs("section", {
-              className: "mb-12",
-              children: [
-                e.jsxs("h2", {
-                  className:
-                    "font-display text-2xl font-bold text-warm-900 mb-6",
-                  children: "Aziende del territorio",
-                }),
-                e.jsx("div", {
-                  className: "grid md:grid-cols-3 gap-6",
-                  children: p.map((r) =>
-                    e.jsxs(
-                      L,
-                      {
-                        to: `${Z.COMPANIES}/${r.slug}`,
-                        className:
-                          "block glass-strong rounded-xl overflow-hidden hover:shadow-glass-hover transition-shadow",
-                        children: [
-                          e.jsx("img", {
-                            src: r.hero_image?.src,
-                            alt: r.hero_image?.alt,
-                            className: "w-full aspect-video object-cover",
-                          }),
-                          e.jsxs("div", {
-                            className: "p-4",
-                            children: [
-                              e.jsx("h3", {
-                                className: "font-semibold text-warm-900 mb-1",
-                                children: r.name,
-                              }),
-                              e.jsx("p", {
-                                className:
-                                  "text-xs text-ambra-600 font-medium mb-2 uppercase",
-                                children: r.type.replace("_", " "),
-                              }),
-                              e.jsx("p", {
-                                className: "text-sm text-warm-700 line-clamp-2",
-                                children: r.description_short,
-                              }),
-                            ],
-                          }),
-                        ],
-                      },
-                      r.id,
-                    ),
-                  ),
-                }),
-              ],
-            }),
-          c.length > 0 &&
-            e.jsxs("section", {
-              className: "mb-12",
-              children: [
-                e.jsxs("div", {
-                  className: "flex items-center justify-between mb-6",
-                  children: [
-                    e.jsxs("h2", {
-                      className:
-                        "font-display text-2xl font-bold text-warm-900",
-                      children: ["Prodotti da ", s.name],
-                    }),
-                    c.length > 6 &&
-                      e.jsxs(L, {
-                        to: `${Z.PRODUCTS}?borough=${s.id}`,
-                        className:
-                          "text-sm text-ambra-600 hover:text-ambra-700 font-medium",
-                        children: ["Vedi tutti (", c.length, ")"],
-                      }),
-                  ],
-                }),
-                e.jsx("div", {
-                  className:
-                    "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6",
-                  children: c
-                    .slice(0, 6)
-                    .map((r, g) => e.jsx(E0, { product: r, index: g }, r.id)),
-                }),
-              ],
-            }),
-          h.length > 0 &&
-            e.jsxs("section", {
-              className: "mb-12",
-              children: [
-                e.jsx("div", {
-                  className: "flex items-center justify-between mb-6",
-                  children: e.jsxs("h2", {
-                    className: "font-display text-2xl font-bold text-warm-900",
-                    children: ["Artigianato di ", s.name],
-                  }),
-                }),
-                e.jsx("div", {
-                  className:
-                    "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6",
-                  children: h.map((r) =>
-                    e.jsxs(
-                      L,
-                      {
-                        to: `${Z.CRAFTS}/${r.slug}`,
-                        className:
-                          "block glass-strong rounded-2xl overflow-hidden hover:shadow-glass-hover transition-shadow",
-                        children: [
-                          r.images?.[0]?.src ? e.jsx("img", {
-                            src: r.images[0].src,
-                            alt: r.images[0].alt || r.name,
-                            className: "w-full aspect-square object-cover",
-                          }) : r.cover_image ? e.jsx("img", {
-                            src: r.cover_image,
-                            alt: r.name,
-                            className: "w-full aspect-square object-cover",
-                          }) : e.jsx("div", {
-                            className: "w-full aspect-square bg-warm-200 flex items-center justify-center",
-                            children: e.jsx("span", { className: "text-warm-500 text-4xl", children: "\u{1F3FA}" }),
-                          }),
-                          e.jsxs("div", {
-                            className: "p-4",
-                            children: [
-                              e.jsx("h3", {
-                                className: "font-semibold text-warm-900 mb-1",
-                                children: r.name,
-                              }),
-                              e.jsx("p", {
-                                className:
-                                  "text-sm text-warm-700 mb-2 line-clamp-2",
-                                children: r.description_short,
-                              }),
-                              e.jsxs("div", {
-                                className: "text-lg font-bold text-ambra-700",
-                                children: [r.price.toFixed(2), "€"],
-                              }),
-                            ],
-                          }),
-                        ],
-                      },
-                      r.id,
-                    ),
-                  ),
-                }),
-              ],
-            }),
-
-                    o.length > 0 &&
-            e.jsxs("section", {
-              className: "mb-12",
-              children: [
-                e.jsxs("div", {
-                  className: "flex items-center justify-between mb-6",
-                  children: [
-                    e.jsxs("h2", {
-                      className:
-                        "font-display text-2xl font-bold text-warm-900",
-                      children: ["Esperienze a ", s.name],
-                    }),
-                    o.length > 6 &&
-                      e.jsxs(L, {
-                        to: `${Z.EXPERIENCES}?borough=${s.id}`,
-                        className:
-                          "text-sm text-natura-600 hover:text-natura-700 font-medium",
-                        children: ["Vedi tutte (", o.length, ")"],
-                      }),
-                  ],
-                }),
-                e.jsx("div", {
-                  className:
-                    "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6",
-                  children: o
-                    .slice(0, 6)
-                    .map((r, g) =>
-                      e.jsx(S0, { experience: r, index: g }, r.id),
-                    ),
-                }),
-              ],
-            }),
           e.jsxs("section", {
             className: "mb-12",
             children: [
@@ -4784,7 +4500,7 @@ function ge() {
                     className: "font-display text-2xl font-bold text-warm-900",
                     children: ["Dove mangiare a ", s.name],
                   }),
-                  apiRestaurants.length > 6 &&
+                  apiRestaurants.length > 5 &&
                     e.jsxs(L, {
                       to: `${Z.COMPANIES}?borough=${s.id}&type=ristorazione`,
                       className: "text-sm text-ambra-600 hover:text-ambra-700 font-medium",
@@ -4793,12 +4509,13 @@ function ge() {
                 ],
               }),
               e.jsx("div", {
-                className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6",
+                className: apiRestaurants.length > 4 ? "flex overflow-x-auto gap-6 pb-4 snap-x snap-mandatory" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6",
+                style: apiRestaurants.length > 4 ? { scrollbarWidth: "thin", WebkitOverflowScrolling: "touch" } : {},
                 children: apiRestaurants.length > 0
-                  ? apiRestaurants.slice(0, 6).map((r) =>
+                  ? apiRestaurants.map((r) =>
                       e.jsxs(L, {
                         to: `${Z.COMPANIES}/${r.slug}`,
-                        className: "block glass-strong rounded-xl overflow-hidden hover:shadow-glass-hover transition-shadow",
+                        className: apiRestaurants.length > 4 ? "block glass-strong rounded-xl overflow-hidden hover:shadow-glass-hover transition-shadow min-w-[280px] max-w-[280px] snap-start flex-shrink-0" : "block glass-strong rounded-xl overflow-hidden hover:shadow-glass-hover transition-shadow",
                         children: [
                           r.cover_image ? e.jsx("img", {
                             src: r.cover_image,
@@ -4858,7 +4575,7 @@ function ge() {
                     className: "font-display text-2xl font-bold text-warm-900",
                     children: ["Dove dormire a ", s.name],
                   }),
-                  apiAccommodations.length > 6 &&
+                  apiAccommodations.length > 5 &&
                     e.jsxs(L, {
                       to: `${Z.COMPANIES}?borough=${s.id}&type=alloggio`,
                       className: "text-sm text-ambra-600 hover:text-ambra-700 font-medium",
@@ -4867,12 +4584,13 @@ function ge() {
                 ],
               }),
               e.jsx("div", {
-                className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6",
+                className: apiAccommodations.length > 4 ? "flex overflow-x-auto gap-6 pb-4 snap-x snap-mandatory" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6",
+                style: apiAccommodations.length > 4 ? { scrollbarWidth: "thin", WebkitOverflowScrolling: "touch" } : {},
                 children: apiAccommodations.length > 0
-                  ? apiAccommodations.slice(0, 6).map((r) =>
+                  ? apiAccommodations.map((r) =>
                       e.jsxs(L, {
                         to: `${Z.COMPANIES}/${r.slug}`,
-                        className: "block glass-strong rounded-xl overflow-hidden hover:shadow-glass-hover transition-shadow",
+                        className: apiAccommodations.length > 4 ? "block glass-strong rounded-xl overflow-hidden hover:shadow-glass-hover transition-shadow min-w-[280px] max-w-[280px] snap-start flex-shrink-0" : "block glass-strong rounded-xl overflow-hidden hover:shadow-glass-hover transition-shadow",
                         children: [
                           r.cover_image ? e.jsx("img", {
                             src: r.cover_image,
@@ -4926,6 +4644,262 @@ function ge() {
               }),
             ],
           }),
+          e.jsxs("section", {
+            className: "mb-12",
+            children: [
+              e.jsxs("h2", {
+                className:
+                  "font-display text-2xl font-bold text-warm-900 mb-4 flex items-center gap-2",
+                children: [
+                  e.jsx(B, { size: 24, className: "text-natura-600" }),
+                  "Esplora e Cammina ",
+                  s.name,
+                ],
+              }),
+              e.jsx(A.div, {
+                initial: n ? void 0 : { opacity: 0, y: 20 },
+                whileInView: { opacity: 1, y: 0 },
+                viewport: { once: !0 },
+                transition: { duration: 0.5 },
+                className:
+                  "relative aspect-video rounded-2xl overflow-hidden glass-strong",
+                children: s.virtual_tour_url
+                  ? window.matchMedia("(max-width:768px)").matches ||
+                    navigator.maxTouchPoints > 1
+                    ? e.jsx("div", {
+                        className:
+                          "absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-natura-800 to-natura-600",
+                        children: e.jsxs("a", {
+                          href: s.virtual_tour_url,
+                          target: "_blank",
+                          rel: "noopener noreferrer",
+                          className:
+                            "flex items-center gap-3 px-8 py-4 bg-white text-natura-700 font-bold rounded-2xl text-lg shadow-xl hover:scale-105 transition-all",
+                          children: [
+                            e.jsx("span", {
+                              className: "text-2xl",
+                              children: "\uD83C\uDF10",
+                            }),
+                            e.jsx("span", { children: "Apri il tour" }),
+                          ],
+                        }),
+                      })
+                    : e.jsx("iframe", {
+                        src: s.virtual_tour_url,
+                        title: `Passeggia a ${s.name}. Tour virtuale a 360\xB0`,
+                        className: "absolute inset-0 w-full h-full",
+                        allow: "accelerometer; gyroscope; xr-spatial-tracking",
+                        allowFullScreen: !0,
+                      })
+                  : e.jsxs("div", {
+                      className:
+                        "absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-natura-800 to-natura-600 text-white",
+                      children: [
+                        e.jsx(B, {
+                          size: 64,
+                          weight: "duotone",
+                          className: "mb-4 opacity-80",
+                        }),
+                        e.jsx("h3", {
+                          className: "text-2xl font-bold mb-2",
+                          children: "Modello Digitale 3D",
+                        }),
+                        e.jsx("p", {
+                          className: "text-sm text-white/70",
+                          children: "Tour immersivo in arrivo",
+                        }),
+                      ],
+                    }),
+              }),
+              !s.virtual_tour_url &&
+                e.jsx("p", {
+                  className: "text-xs text-warm-600 text-center mt-3",
+                  children:
+                    "Tour virtuale a 360\xB0 \u2014 Esplora il borgo in modalita immersiva a 360\xB0",
+                }),
+            ],
+          }),
+          o.length > 0 &&
+            e.jsxs("section", {
+              className: "mb-12",
+              children: [
+                e.jsxs("div", {
+                  className: "flex items-center justify-between mb-6",
+                  children: [
+                    e.jsxs("h2", {
+                      className:
+                        "font-display text-2xl font-bold text-warm-900",
+                      children: ["Esperienze a ", s.name],
+                    }),
+                    o.length > 5 &&
+                      e.jsxs(L, {
+                        to: `${Z.EXPERIENCES}?borough=${s.id}`,
+                        className:
+                          "text-sm text-natura-600 hover:text-natura-700 font-medium",
+                        children: ["Vedi tutte (", o.length, ")"],
+                      }),
+                  ],
+                }),
+                e.jsx("div", {
+                  className: o.length > 4 ? "flex overflow-x-auto gap-6 pb-4 snap-x snap-mandatory" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6",
+                  style: o.length > 4 ? { scrollbarWidth: "thin", WebkitOverflowScrolling: "touch" } : {},
+                  children: o
+                    .map((r, g) =>
+                      e.jsx("div", {
+                        className: o.length > 4 ? "min-w-[300px] max-w-[300px] snap-start flex-shrink-0" : "",
+                        children: e.jsx(S0, { experience: r, index: g }),
+                      }, r.id),
+                    ),
+                }),
+              ],
+            }),
+          c.length > 0 &&
+            e.jsxs("section", {
+              className: "mb-12",
+              children: [
+                e.jsxs("div", {
+                  className: "flex items-center justify-between mb-6",
+                  children: [
+                    e.jsxs("h2", {
+                      className:
+                        "font-display text-2xl font-bold text-warm-900",
+                      children: ["Prodotti da ", s.name],
+                    }),
+                    c.length > 5 &&
+                      e.jsxs(L, {
+                        to: `${Z.PRODUCTS}?borough=${s.id}`,
+                        className:
+                          "text-sm text-ambra-600 hover:text-ambra-700 font-medium",
+                        children: ["Vedi tutti (", c.length, ")"],
+                      }),
+                  ],
+                }),
+                e.jsx("div", {
+                  className: c.length > 4 ? "flex overflow-x-auto gap-6 pb-4 snap-x snap-mandatory" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6",
+                  style: c.length > 4 ? { scrollbarWidth: "thin", WebkitOverflowScrolling: "touch" } : {},
+                  children: c
+                    .map((r, g) =>
+                      e.jsx("div", {
+                        className: c.length > 4 ? "min-w-[280px] max-w-[280px] snap-start flex-shrink-0" : "",
+                        children: e.jsx(E0, { product: r, index: g }),
+                      }, r.id),
+                    ),
+                }),
+              ],
+            }),
+          h.length > 0 &&
+            e.jsxs("section", {
+              className: "mb-12",
+              children: [
+                e.jsx("div", {
+                  className: "flex items-center justify-between mb-6",
+                  children: e.jsxs("h2", {
+                    className: "font-display text-2xl font-bold text-warm-900",
+                    children: ["Artigianato di ", s.name],
+                  }),
+                }),
+                e.jsx("div", {
+                  className: h.length > 4 ? "flex overflow-x-auto gap-6 pb-4 snap-x snap-mandatory" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6",
+                  style: h.length > 4 ? { scrollbarWidth: "thin", WebkitOverflowScrolling: "touch" } : {},
+                  children: h.map((r) =>
+                    e.jsxs(
+                      L,
+                      {
+                        to: `${Z.CRAFTS}/${r.slug}`,
+                        className: h.length > 4
+                          ? "block glass-strong rounded-2xl overflow-hidden hover:shadow-glass-hover transition-shadow min-w-[280px] max-w-[280px] snap-start flex-shrink-0"
+                          : "block glass-strong rounded-2xl overflow-hidden hover:shadow-glass-hover transition-shadow",
+                        children: [
+                          r.images?.[0]?.src ? e.jsx("img", {
+                            src: r.images[0].src,
+                            alt: r.images[0].alt || r.name,
+                            className: "w-full aspect-square object-cover",
+                          }) : r.cover_image ? e.jsx("img", {
+                            src: r.cover_image,
+                            alt: r.name,
+                            className: "w-full aspect-square object-cover",
+                          }) : e.jsx("div", {
+                            className: "w-full aspect-square bg-warm-200 flex items-center justify-center",
+                            children: e.jsx("span", { className: "text-warm-500 text-4xl", children: "\u{1F3FA}" }),
+                          }),
+                          e.jsxs("div", {
+                            className: "p-4",
+                            children: [
+                              e.jsx("h3", {
+                                className: "font-semibold text-warm-900 mb-1",
+                                children: r.name,
+                              }),
+                              e.jsx("p", {
+                                className:
+                                  "text-sm text-warm-700 mb-2 line-clamp-2",
+                                children: r.description_short,
+                              }),
+                              e.jsxs("div", {
+                                className: "text-lg font-bold text-ambra-700",
+                                children: [r.price.toFixed(2), "\u20AC"],
+                              }),
+                            ],
+                          }),
+                        ],
+                      },
+                      r.id,
+                    ),
+                  ),
+                }),
+              ],
+            }),
+          p.length > 0 &&
+            e.jsxs("section", {
+              className: "mb-12",
+              children: [
+                e.jsxs("h2", {
+                  className:
+                    "font-display text-2xl font-bold text-warm-900 mb-6",
+                  children: "Aziende del territorio",
+                }),
+                e.jsx("div", {
+                  className: p.length > 4 ? "flex overflow-x-auto gap-6 pb-4 snap-x snap-mandatory" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6",
+                  style: p.length > 4 ? { scrollbarWidth: "thin", WebkitOverflowScrolling: "touch" } : {},
+                  children: p.map((r) =>
+                    e.jsxs(
+                      L,
+                      {
+                        to: `${Z.COMPANIES}/${r.slug}`,
+                        className: p.length > 4
+                          ? "block glass-strong rounded-xl overflow-hidden hover:shadow-glass-hover transition-shadow min-w-[280px] max-w-[280px] snap-start flex-shrink-0"
+                          : "block glass-strong rounded-xl overflow-hidden hover:shadow-glass-hover transition-shadow",
+                        children: [
+                          e.jsx("img", {
+                            src: r.hero_image?.src,
+                            alt: r.hero_image?.alt,
+                            className: "w-full aspect-video object-cover",
+                          }),
+                          e.jsxs("div", {
+                            className: "p-4",
+                            children: [
+                              e.jsx("h3", {
+                                className: "font-semibold text-warm-900 mb-1",
+                                children: r.name,
+                              }),
+                              e.jsx("p", {
+                                className:
+                                  "text-xs text-ambra-600 font-medium mb-2 uppercase",
+                                children: r.type.replace("_", " "),
+                              }),
+                              e.jsx("p", {
+                                className: "text-sm text-warm-700 line-clamp-2",
+                                children: r.description_short,
+                              }),
+                            ],
+                          }),
+                        ],
+                      },
+                      r.id,
+                    ),
+                  ),
+                }),
+              ],
+            }),
           e.jsx("section", {
             className: "mb-12",
             children: e.jsxs("div", {

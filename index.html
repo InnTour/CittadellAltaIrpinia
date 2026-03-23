@@ -791,17 +791,6 @@
       }
 
       /* ══════════════════════════════════════════════════════════════════
-         SEZIONE M — NAVBAR / HEADER
-         ══════════════════════════════════════════════════════════════════ */
-      header, nav, [class*="navbar"], [class*="header"],
-      [class*="nav-"], [class*="fixed"][class*="top-0"] {
-        backdrop-filter: blur(20px) saturate(180%) !important;
-        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-        border-bottom: 1px solid rgba(255,255,255,.15) !important;
-        transition: background .35s, box-shadow .35s, backdrop-filter .35s !important;
-      }
-
-      /* ══════════════════════════════════════════════════════════════════
          SEZIONE N — FOOTER
          ══════════════════════════════════════════════════════════════════ */
       footer, .footer {
@@ -1401,30 +1390,6 @@
           }, { passive: true });
         }
 
-        /* ═══════════════════════════════════════════════════════════
-           NAVBAR SCROLL EFFECT (transparency → glass on scroll)
-           ═══════════════════════════════════════════════════════════ */
-        function initNavbarEffect() {
-          var navTicking = false;
-          window.addEventListener('scroll', function () {
-            if (!navTicking) {
-              requestAnimationFrame(function () {
-                var navEl = document.querySelector('header, nav, [class*="navbar"], [class*="fixed"][class*="top-0"]');
-                if (navEl) {
-                  if (window.scrollY > 60) {
-                    navEl.style.background = 'rgba(250,250,248,.85)';
-                    navEl.style.boxShadow = '0 4px 20px rgba(0,0,0,.08)';
-                  } else {
-                    navEl.style.background = 'rgba(250,250,248,.4)';
-                    navEl.style.boxShadow = 'none';
-                  }
-                }
-                navTicking = false;
-              });
-              navTicking = true;
-            }
-          }, { passive: true });
-        }
 
         /* ═══════════════════════════════════════════════════════════
            COUNTER ANIMATION (numeri che crescono)
@@ -1558,7 +1523,6 @@
           initReveal();
           initParallax();
           initSectionParallax();
-          initNavbarEffect();
           initCounterAnimation();
           initCardTilt();
           initHeadingShimmer();
