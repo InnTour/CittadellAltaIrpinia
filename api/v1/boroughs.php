@@ -54,6 +54,9 @@ function buildBorough(PDO $db, array $row): array {
         $row['hero_image'] = ['src' => $row['cover_image'], 'alt' => $row['hero_image_alt'] ?? $row['name']];
     }
 
+    // Cover video URL (YouTube embed) — alternativa al hero_image per la copertina
+    $row['cover_video_url'] = $row['cover_video_url'] ?? '';
+
     return $row;
 }
 
@@ -86,8 +89,8 @@ if ($method === 'POST') {
     $db->prepare("INSERT INTO boroughs
         (id, slug, name, province, region, population, altitude_meters, area_km2,
          lat, lng, main_video_url, virtual_tour_url, description, companies_count,
-         hero_image_index, hero_image_alt, cover_image)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+         hero_image_index, hero_image_alt, cover_image, cover_video_url)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
     ->execute([
         $body['id'], $body['slug'], $body['name'],
         $body['province'] ?? null, $body['region'] ?? null,
@@ -100,6 +103,7 @@ if ($method === 'POST') {
         $body['companies_count'] ?? 0,
         $body['hero_image_index'] ?? 0, $body['hero_image_alt'] ?? null,
         $body['cover_image'] ?? null,
+        $body['cover_video_url'] ?? null,
     ]);
     _saveArrays($db, $body);
     http_response_code(201);
@@ -111,7 +115,8 @@ if ($method === 'PUT' && $id) {
     $db->prepare("UPDATE boroughs SET
         slug=?, name=?, province=?, region=?, population=?, altitude_meters=?,
         area_km2=?, lat=?, lng=?, main_video_url=?, virtual_tour_url=?,
-        description=?, companies_count=?, hero_image_index=?, hero_image_alt=?, cover_image=?
+        description=?, companies_count=?, hero_image_index=?, hero_image_alt=?, cover_image=?,
+        cover_video_url=?
         WHERE id=?")
     ->execute([
         $body['slug'] ?? $id, $body['name'],
@@ -125,6 +130,7 @@ if ($method === 'PUT' && $id) {
         $body['companies_count'] ?? 0,
         $body['hero_image_index'] ?? 0, $body['hero_image_alt'] ?? null,
         $body['cover_image'] ?? null,
+        $body['cover_video_url'] ?? null,
         $id,
     ]);
     _saveArrays($db, array_merge($body, ['id' => $id]));

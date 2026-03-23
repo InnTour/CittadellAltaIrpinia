@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS `boroughs` (
   `companies_count`  INT             DEFAULT 0,
   `hero_image_index` INT             DEFAULT 0,
   `hero_image_alt`   VARCHAR(300)    DEFAULT NULL,
+  `cover_video_url`  TEXT            DEFAULT NULL,
   `created_at`       TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
   `updated_at`       TIMESTAMP       DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
