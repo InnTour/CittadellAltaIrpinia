@@ -4326,10 +4326,14 @@ function ge() {
     children: [
       (() => {
         const coverVid = s.cover_video_url || s.main_video_url || "";
+        const isYouTube = coverVid && (coverVid.includes("youtube.com") || coverVid.includes("youtu.be"));
+        const isVimeo = coverVid && coverVid.includes("vimeo.com");
+        const isIframe = isYouTube || isVimeo;
+        const isLocalVideo = coverVid && !isIframe && /\.(mp4|webm|ogg|mov)($|\?)/i.test(coverVid);
         return e.jsxs("section", {
           className: "relative w-full h-[75vh] overflow-hidden bg-warm-900",
           children: [
-            coverVid
+            isIframe
               ? e.jsx("iframe", {
                   src: coverVid + (coverVid.includes("?") ? "&" : "?") + "controls=0&showinfo=0&rel=0&modestbranding=1",
                   title: `Copertina ${s.name}`,
@@ -4337,6 +4341,12 @@ function ge() {
                   style: { border: "none", transform: "scale(1.3)" },
                   allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",
                   allowFullScreen: !0,
+                })
+              : isLocalVideo
+              ? e.jsx("video", {
+                  src: coverVid,
+                  className: "absolute inset-0 w-full h-full object-cover",
+                  autoPlay: !0, muted: !0, loop: !0, playsInline: !0,
                 })
               : s.hero_image?.src ? e.jsx("img", {
                   src: s.hero_image.src,
