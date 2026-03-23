@@ -7,6 +7,9 @@ $method = $_SERVER['REQUEST_METHOD'];
 $id     = $_GET['id'] ?? null;
 $slug   = $_GET['slug'] ?? null;
 
+// Auto-migration: ensure cover_video_url column exists
+ensureTableColumns($db, 'companies', ['cover_video_url' => 'TEXT DEFAULT NULL']);
+
 function buildCompany(PDO $db, array $row): array {
     $cid = $row['id'];
     $row['certifications']     = fetchArray($db, 'company_certifications', 'company_id', $cid);
@@ -66,6 +69,9 @@ function buildCompany(PDO $db, array $row): array {
     } elseif (!empty($row['cover_image'])) {
         $row['founder_image'] = ['src' => $row['cover_image'], 'alt' => $row['founder_name'] ?? $row['name']];
     }
+
+    // Cover video URL (YouTube embed or local video) — alternative to hero_image for cover
+    $row['cover_video_url'] = $row['cover_video_url'] ?? '';
 
     return $row;
 }

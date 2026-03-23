@@ -22,6 +22,7 @@ ensureTableColumns($db, 'accommodations', [
     'b2b_open_for_contact' => "TINYINT(1) DEFAULT 0",
     'b2b_interests'        => "TEXT DEFAULT NULL",
     'cover_image'          => "VARCHAR(500) DEFAULT NULL",
+    'cover_video_url'      => "TEXT DEFAULT NULL",
 ]);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -63,6 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'booking_url'          => trim($_POST['booking_url']          ?? ''),
         'main_video_url'       => trim($_POST['main_video_url']       ?? ''),
         'virtual_tour_url'     => trim($_POST['virtual_tour_url']     ?? ''),
+        'cover_video_url'      => trim($_POST['cover_video_url']      ?? ''),
         'contact_email'        => trim($_POST['contact_email']        ?? ''),
         'contact_phone'        => trim($_POST['contact_phone']        ?? ''),
         'website_url'          => trim($_POST['website_url']          ?? ''),
@@ -191,6 +193,7 @@ require '_layout.php';
         echo adminInput('booking_email', 'Email prenotazioni', $sel, 'email');
         echo adminInput('booking_phone', 'Telefono prenotazioni', $sel);
         echo adminInput('booking_url', 'URL prenotazione', $sel, 'url', true);
+        echo adminInput('cover_video_url', 'Video copertina (YouTube/locale)', $sel, 'text', true);
         echo adminInput('main_video_url', 'URL Video embed', $sel, 'text', true);
         echo adminInput('virtual_tour_url', 'URL Tour Virtuale embed', $sel, 'text', true);
         echo adminInput('rating', 'Valutazione', $sel, 'number', false, '0.1');

@@ -7,6 +7,9 @@ $method = $_SERVER['REQUEST_METHOD'];
 $id     = $_GET['id'] ?? null;
 $slug   = $_GET['slug'] ?? null;
 
+// Auto-migration: ensure cover_video_url column exists
+ensureTableColumns($db, 'experiences', ['cover_video_url' => 'TEXT DEFAULT NULL']);
+
 function buildExperience(PDO $db, array $row): array {
     $eid = $row['id'];
 
@@ -44,7 +47,7 @@ function buildExperience(PDO $db, array $row): array {
     $row['is_active'] = (bool)($row['is_active'] ?? false);
 
     // Scalar text fields (nullable)
-    foreach (['main_video_url', 'virtual_tour_url'] as $f) {
+    foreach (['main_video_url', 'virtual_tour_url', 'cover_video_url'] as $f) {
         $row[$f] = $row[$f] ?? null;
     }
 

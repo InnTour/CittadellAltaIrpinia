@@ -7,6 +7,9 @@ $method = $_SERVER['REQUEST_METHOD'];
 $id     = $_GET['id'] ?? null;
 $slug   = $_GET['slug'] ?? null;
 
+// Auto-migration: ensure cover_video_url column exists
+ensureTableColumns($db, 'restaurants', ['cover_video_url' => 'TEXT DEFAULT NULL']);
+
 // ── Helper: builds a complete restaurant object for the frontend ──────────
 function buildRestaurant(PDO $db, array $row): array {
     $out = [];
@@ -19,7 +22,7 @@ function buildRestaurant(PDO $db, array $row): array {
         'opening_hours', 'closing_day',
         'website_url', 'booking_url',
         'founder_name', 'founder_quote', 'tier', 'cover_image',
-        'main_video_url', 'virtual_tour_url',
+        'cover_video_url', 'main_video_url', 'virtual_tour_url',
     ] as $f) {
         $out[$f] = $row[$f] ?? null;
     }

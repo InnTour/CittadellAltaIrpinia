@@ -17,6 +17,7 @@ ensureTableColumns($db, 'restaurants', [
     'cover_image'         => "VARCHAR(500) DEFAULT NULL",
     'main_video_url'      => "TEXT DEFAULT NULL",
     'virtual_tour_url'    => "TEXT DEFAULT NULL",
+    'cover_video_url'     => "TEXT DEFAULT NULL",
 ]);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -57,6 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'booking_url'          => trim($_POST['booking_url']          ?? ''),
         'main_video_url'       => trim($_POST['main_video_url']       ?? ''),
         'virtual_tour_url'     => trim($_POST['virtual_tour_url']     ?? ''),
+        'cover_video_url'      => trim($_POST['cover_video_url']      ?? ''),
         'accepts_groups'       => isset($_POST['accepts_groups'])  ? 1 : 0,
         'max_group_size'       => (int)($_POST['max_group_size']      ?? 0),
         'certifications'       => trim($_POST['certifications']       ?? ''),
@@ -174,6 +176,7 @@ require '_layout.php';
         echo adminInput('social_linkedin', 'LinkedIn', $sel);
         echo adminInput('founder_name', 'Fondatore', $sel);
         echo adminInput('booking_url', 'URL prenotazione', $sel, 'url', true);
+        echo adminInput('cover_video_url', 'Video copertina (YouTube/locale)', $sel, 'text', true);
         echo adminInput('main_video_url', 'URL Video (YouTube/Vimeo)', $sel, 'url', true);
         echo adminInput('virtual_tour_url', 'URL Virtual Tour', $sel, 'url', true);
         echo adminInput('max_group_size', 'Max persone gruppo', $sel, 'number');

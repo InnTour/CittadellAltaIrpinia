@@ -8,6 +8,7 @@ $msg = '';
 ensureTableColumns($db, 'experiences', [
     'main_video_url'   => "TEXT DEFAULT NULL",
     'virtual_tour_url' => "TEXT DEFAULT NULL",
+    'cover_video_url'  => "TEXT DEFAULT NULL",
 ]);
 
 // ============================================================
@@ -46,6 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'is_active'           => isset($_POST['is_active']) ? 1 : 0,
         'main_video_url'      => trim($_POST['main_video_url']      ?? '') ?: null,
         'virtual_tour_url'    => trim($_POST['virtual_tour_url']    ?? '') ?: null,
+        'cover_video_url'     => trim($_POST['cover_video_url']     ?? '') ?: null,
     ];
     if ($coverPath) $f['cover_image'] = $coverPath;
 
@@ -206,6 +208,7 @@ require '_layout.php';
 
       <!-- Video & Virtual Tour -->
       <div class="grid grid-cols-2 gap-4">
+        <?= adminInput('cover_video_url', 'Video copertina (YouTube/locale)', $sel, 'text', true) ?>
         <?= adminInput('main_video_url', 'URL Video (YouTube/Vimeo)', $sel, 'url', true) ?>
         <?= adminInput('virtual_tour_url', 'URL Virtual Tour (iframe)', $sel, 'url', true) ?>
       </div>
