@@ -4323,26 +4323,31 @@ function ge() {
     id: "main-content",
     className: "min-h-screen",
     children: [
-      e.jsx("section", {
-        className: "relative w-full h-[75vh] overflow-hidden",
-        children: s.main_video_url
-          ? e.jsx("iframe", {
-              src: s.main_video_url,
-              title: `Copertina ${s.name}`,
-              className: "absolute inset-0 w-full h-full",
-              style: { border: "none", objectFit: "cover", transform: "scale(1.15)" },
-              allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",
-              allowFullScreen: !0,
-            })
-          : s.hero_image?.src ? e.jsx("img", {
-              src: s.hero_image.src,
-              alt: s.hero_image.alt || s.name,
-              className: "absolute inset-0 w-full h-full object-cover",
-              onError: (ev) => { ev.target.style.display = "none"; },
-            })
-          : e.jsx("div", {
-              className: "absolute inset-0 w-full h-full bg-gradient-to-br from-ambra-200 to-warm-300",
-            }),
+      e.jsxs("section", {
+        className: "relative w-full h-[75vh] overflow-hidden bg-warm-900",
+        children: [
+          s.main_video_url
+            ? e.jsx("iframe", {
+                src: s.main_video_url + (s.main_video_url.includes("?") ? "&" : "?") + "controls=0&showinfo=0&rel=0&modestbranding=1",
+                title: `Copertina ${s.name}`,
+                className: "absolute inset-0 w-full h-full pointer-events-none",
+                style: { border: "none", transform: "scale(1.3)" },
+                allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",
+                allowFullScreen: !0,
+              })
+            : s.hero_image?.src ? e.jsx("img", {
+                src: s.hero_image.src,
+                alt: s.hero_image.alt || s.name,
+                className: "absolute inset-0 w-full h-full object-cover",
+                onError: (ev) => { ev.target.style.display = "none"; },
+              })
+            : e.jsx("div", {
+                className: "absolute inset-0 w-full h-full bg-gradient-to-br from-ambra-200 to-warm-300",
+              }),
+          e.jsx("div", {
+            className: "absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-white/60 pointer-events-none",
+          }),
+        ],
       }),
       e.jsxs("div", {
         className: "max-w-7xl mx-auto px-4 pt-4 pb-2",
@@ -4371,7 +4376,8 @@ function ge() {
                 e.jsx("img", {
                   src: `/Stemmi/${s.slug.charAt(0).toUpperCase() + s.slug.slice(1)}2-Stemma.png`,
                   alt: `Stemma di ${s.name}`,
-                  className: "w-24 h-24 md:w-32 md:h-32 object-contain mx-auto mb-6",
+                  className: "w-36 h-36 md:w-44 md:h-44 object-contain mx-auto mb-6",
+                  style: { mixBlendMode: "multiply" },
                   onError: (ev) => { ev.target.style.display = "none"; },
                 }),
                 e.jsx("span", {
@@ -4416,35 +4422,36 @@ function ge() {
                     to: `${Z.PRODUCTS}?borough=${s.id}`,
                     className: "block group",
                     children: e.jsxs("div", {
-                      className: "relative rounded-2xl overflow-hidden glass-strong p-8 hover:shadow-glass-hover transition-all duration-300 border-2 border-transparent hover:border-ambra-400 h-full",
+                      className: "relative rounded-2xl overflow-hidden glass-strong p-5 hover:shadow-glass-hover transition-all duration-300 border-2 border-transparent hover:border-ambra-400 h-full",
                       children: [
                         e.jsx("div", {
                           className: "absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-ambra-400 via-ambra-500 to-ambra-600 rounded-t-2xl",
                         }),
-                        e.jsx("div", {
-                          className: "flex items-center justify-center w-16 h-16 rounded-2xl bg-ambra-100 text-ambra-600 mb-5 group-hover:scale-110 transition-transform",
-                          children: e.jsx(A0, { size: 32, weight: "duotone" }),
-                        }),
-                        e.jsx("h3", {
-                          className: "font-display text-2xl font-bold text-warm-900 mb-3",
-                          children: "Prodotti Tipici",
+                        e.jsxs("div", {
+                          className: "flex items-center gap-4 mb-3",
+                          children: [
+                            e.jsx("div", {
+                              className: "flex items-center justify-center w-12 h-12 rounded-xl bg-ambra-100 text-ambra-600 flex-shrink-0 group-hover:scale-110 transition-transform",
+                              children: e.jsx(A0, { size: 26, weight: "duotone" }),
+                            }),
+                            e.jsx("h3", {
+                              className: "font-display text-xl font-bold text-warm-900",
+                              children: "Prodotti Tipici",
+                            }),
+                          ],
                         }),
                         e.jsxs("p", {
-                          className: "text-warm-600 mb-4 leading-relaxed",
+                          className: "text-warm-600 text-sm leading-relaxed mb-3",
                           children: ["Scopri i sapori autentici e i prodotti artigianali di ", s.name],
                         }),
                         s.notable_products && s.notable_products.length > 0 && e.jsx("div", {
-                          className: "flex flex-wrap gap-2 mb-4",
+                          className: "flex flex-wrap gap-2",
                           children: s.notable_products.slice(0, 4).map((r) =>
                             e.jsx("span", {
-                              className: "inline-block px-3 py-1.5 bg-ambra-50 text-ambra-700 text-xs font-semibold rounded-full border border-ambra-200",
+                              className: "inline-block px-3 py-1 bg-ambra-50 text-ambra-700 text-xs font-semibold rounded-full border border-ambra-200",
                               children: r,
                             }, r)
                           ),
-                        }),
-                        e.jsxs("span", {
-                          className: "inline-flex items-center gap-2 text-ambra-600 font-semibold text-sm group-hover:gap-3 transition-all",
-                          children: ["Esplora i prodotti", " \u2192"],
                         }),
                       ],
                     }),
@@ -4453,35 +4460,36 @@ function ge() {
                     to: `${Z.EXPERIENCES}?borough=${s.id}`,
                     className: "block group",
                     children: e.jsxs("div", {
-                      className: "relative rounded-2xl overflow-hidden glass-strong p-8 hover:shadow-glass-hover transition-all duration-300 border-2 border-transparent hover:border-natura-400 h-full",
+                      className: "relative rounded-2xl overflow-hidden glass-strong p-5 hover:shadow-glass-hover transition-all duration-300 border-2 border-transparent hover:border-natura-400 h-full",
                       children: [
                         e.jsx("div", {
                           className: "absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-natura-400 via-natura-500 to-natura-600 rounded-t-2xl",
                         }),
-                        e.jsx("div", {
-                          className: "flex items-center justify-center w-16 h-16 rounded-2xl bg-natura-100 text-natura-600 mb-5 group-hover:scale-110 transition-transform",
-                          children: e.jsx($0, { size: 32, weight: "duotone" }),
-                        }),
-                        e.jsx("h3", {
-                          className: "font-display text-2xl font-bold text-warm-900 mb-3",
-                          children: "Esperienze",
+                        e.jsxs("div", {
+                          className: "flex items-center gap-4 mb-3",
+                          children: [
+                            e.jsx("div", {
+                              className: "flex items-center justify-center w-12 h-12 rounded-xl bg-natura-100 text-natura-600 flex-shrink-0 group-hover:scale-110 transition-transform",
+                              children: e.jsx($0, { size: 26, weight: "duotone" }),
+                            }),
+                            e.jsx("h3", {
+                              className: "font-display text-xl font-bold text-warm-900",
+                              children: "Esperienze",
+                            }),
+                          ],
                         }),
                         e.jsxs("p", {
-                          className: "text-warm-600 mb-4 leading-relaxed",
+                          className: "text-warm-600 text-sm leading-relaxed mb-3",
                           children: ["Vivi avventure uniche e tradizioni autentiche a ", s.name],
                         }),
                         s.notable_experiences && s.notable_experiences.length > 0 && e.jsx("div", {
-                          className: "flex flex-wrap gap-2 mb-4",
+                          className: "flex flex-wrap gap-2",
                           children: s.notable_experiences.slice(0, 4).map((r) =>
                             e.jsx("span", {
-                              className: "inline-block px-3 py-1.5 bg-natura-50 text-natura-700 text-xs font-semibold rounded-full border border-natura-200",
+                              className: "inline-block px-3 py-1 bg-natura-50 text-natura-700 text-xs font-semibold rounded-full border border-natura-200",
                               children: r,
                             }, r)
                           ),
-                        }),
-                        e.jsxs("span", {
-                          className: "inline-flex items-center gap-2 text-natura-600 font-semibold text-sm group-hover:gap-3 transition-all",
-                          children: ["Scopri le esperienze", " \u2192"],
                         }),
                       ],
                     }),
@@ -4652,7 +4660,7 @@ function ge() {
                   "font-display text-2xl font-bold text-warm-900 mb-4 flex items-center gap-2",
                 children: [
                   e.jsx(B, { size: 24, className: "text-natura-600" }),
-                  "Esplora e Cammina ",
+                  "Cammina ed Esplora ",
                   s.name,
                 ],
               }),
@@ -4753,6 +4761,58 @@ function ge() {
                 }),
               ],
             }),
+          p.length > 0 &&
+            e.jsxs("section", {
+              className: "mb-12",
+              children: [
+                e.jsxs("h2", {
+                  className:
+                    "font-display text-2xl font-bold text-warm-900 mb-6",
+                  children: "Aziende del territorio",
+                }),
+                e.jsx("div", {
+                  className: p.length > 4 ? "flex overflow-x-auto gap-6 pb-4 snap-x snap-mandatory" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6",
+                  style: p.length > 4 ? { scrollbarWidth: "thin", WebkitOverflowScrolling: "touch" } : {},
+                  children: p.map((r) =>
+                    e.jsxs(
+                      L,
+                      {
+                        to: `${Z.COMPANIES}/${r.slug}`,
+                        className: p.length > 4
+                          ? "block glass-strong rounded-xl overflow-hidden hover:shadow-glass-hover transition-shadow min-w-[280px] max-w-[280px] snap-start flex-shrink-0"
+                          : "block glass-strong rounded-xl overflow-hidden hover:shadow-glass-hover transition-shadow",
+                        children: [
+                          e.jsx("img", {
+                            src: r.hero_image?.src,
+                            alt: r.hero_image?.alt,
+                            className: "w-full aspect-video object-cover",
+                          }),
+                          e.jsxs("div", {
+                            className: "p-4",
+                            children: [
+                              e.jsx("h3", {
+                                className: "font-semibold text-warm-900 mb-1",
+                                children: r.name,
+                              }),
+                              e.jsx("p", {
+                                className:
+                                  "text-xs text-ambra-600 font-medium mb-2 uppercase",
+                                children: r.type.replace("_", " "),
+                              }),
+                              e.jsx("p", {
+                                className: "text-sm text-warm-700 line-clamp-2",
+                                children: r.description_short,
+                              }),
+                            ],
+                          }),
+                        ],
+                      },
+                      r.id,
+                    ),
+                  ),
+                }),
+              ],
+            }),
           c.length > 0 &&
             e.jsxs("section", {
               className: "mb-12",
@@ -4837,58 +4897,6 @@ function ge() {
                               e.jsxs("div", {
                                 className: "text-lg font-bold text-ambra-700",
                                 children: [r.price.toFixed(2), "\u20AC"],
-                              }),
-                            ],
-                          }),
-                        ],
-                      },
-                      r.id,
-                    ),
-                  ),
-                }),
-              ],
-            }),
-          p.length > 0 &&
-            e.jsxs("section", {
-              className: "mb-12",
-              children: [
-                e.jsxs("h2", {
-                  className:
-                    "font-display text-2xl font-bold text-warm-900 mb-6",
-                  children: "Aziende del territorio",
-                }),
-                e.jsx("div", {
-                  className: p.length > 4 ? "flex overflow-x-auto gap-6 pb-4 snap-x snap-mandatory" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6",
-                  style: p.length > 4 ? { scrollbarWidth: "thin", WebkitOverflowScrolling: "touch" } : {},
-                  children: p.map((r) =>
-                    e.jsxs(
-                      L,
-                      {
-                        to: `${Z.COMPANIES}/${r.slug}`,
-                        className: p.length > 4
-                          ? "block glass-strong rounded-xl overflow-hidden hover:shadow-glass-hover transition-shadow min-w-[280px] max-w-[280px] snap-start flex-shrink-0"
-                          : "block glass-strong rounded-xl overflow-hidden hover:shadow-glass-hover transition-shadow",
-                        children: [
-                          e.jsx("img", {
-                            src: r.hero_image?.src,
-                            alt: r.hero_image?.alt,
-                            className: "w-full aspect-video object-cover",
-                          }),
-                          e.jsxs("div", {
-                            className: "p-4",
-                            children: [
-                              e.jsx("h3", {
-                                className: "font-semibold text-warm-900 mb-1",
-                                children: r.name,
-                              }),
-                              e.jsx("p", {
-                                className:
-                                  "text-xs text-ambra-600 font-medium mb-2 uppercase",
-                                children: r.type.replace("_", " "),
-                              }),
-                              e.jsx("p", {
-                                className: "text-sm text-warm-700 line-clamp-2",
-                                children: r.description_short,
                               }),
                             ],
                           }),
