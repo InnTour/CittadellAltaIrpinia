@@ -7,6 +7,12 @@ $method = $_SERVER['REQUEST_METHOD'];
 $id     = $_GET['id'] ?? null;
 $slug   = $_GET['slug'] ?? null;
 
+// Auto-migration: ensure cover_video_url and main_video_url columns exist
+ensureTableColumns($db, 'food_products', [
+    'cover_video_url' => 'TEXT DEFAULT NULL',
+    'main_video_url'  => 'TEXT DEFAULT NULL',
+]);
+
 function buildFood(PDO $db, array $row): array {
     foreach (['weight_grams','shelf_life_days','stock_qty','min_order_qty'] as $f) {
         if (isset($row[$f])) $row[$f] = (int)$row[$f];
@@ -53,6 +59,10 @@ function buildFood(PDO $db, array $row): array {
     } else {
         $row['certifications'] = [];
     }
+
+    // Video fields
+    $row['cover_video_url'] = $row['cover_video_url'] ?? null;
+    $row['main_video_url']  = $row['main_video_url']  ?? null;
 
     return $row;
 }

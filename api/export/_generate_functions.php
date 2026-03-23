@@ -53,7 +53,10 @@ function generateBoroughs(PDO $db): string {
         $obj .= 'notable_experiences:' . jsArray($exps);
         $obj .= $restaurantsPart;
         $obj .= ',images:' . jsEntityImages($db, 'borough', $bid);
-        $obj .= ',companies_count:' . (int)($row['companies_count'] ?? 0) . '}';
+        $obj .= ',companies_count:' . (int)($row['companies_count'] ?? 0);
+        $cvUrl = $row['cover_video_url'] ?? '';
+        if ($cvUrl) $obj .= ',cover_video_url:' . jsStr($cvUrl);
+        $obj .= '}';
         $items[] = $obj;
     }
     $content = 'import{I as a}from"./images-B99skb6e.js";const i=[' . implode(',', $items) . '];export{i as b};';
@@ -111,6 +114,8 @@ function generateCompanies(PDO $db): string {
         $obj .= 'is_verified:' . (($row['is_verified'] ?? 0) ? '!0' : '!1') . ',is_active:' . (($row['is_active'] ?? 1) ? '!0' : '!1') . ',';
         $obj .= 'b2b_open_for_contact:' . (($row['b2b_open_for_contact'] ?? 0) ? '!0' : '!1') . ',b2b_interests:' . jsArray($b2b) . ',';
         $obj .= 'founder_name:' . jsStr($row['founder_name'] ?? '') . ',founder_quote:' . jsStr($row['founder_quote'] ?? '') ;
+        $cvUrl = $row['cover_video_url'] ?? '';
+        if ($cvUrl) $obj .= ',cover_video_url:' . jsStr($cvUrl);
         if ($mvUrl) $obj .= ',main_video_url:' . jsStr($mvUrl);
         if ($vtUrl) $obj .= ',virtual_tour_url:' . jsStr($vtUrl);
         $obj .= '}';
@@ -152,7 +157,10 @@ function generateExperiences(PDO $db): string {
         $obj .= 'seasonal_tags:' . jsArray($seasonal) . ',timeline_steps:' . $tlJs . ',';
         $obj .= 'borough_name:' . jsStr(getBoroughName($db, $row['borough_id'] ?? null)) . ',';
         $obj .= 'rating:' . (float)($row['rating'] ?? 0) . ',reviews_count:' . (int)($row['reviews_count'] ?? 0) . ',';
-        $obj .= 'is_active:' . (($row['is_active'] ?? 1) ? '!0' : '!1') . '}';
+        $obj .= 'is_active:' . (($row['is_active'] ?? 1) ? '!0' : '!1');
+        $cvUrl = $row['cover_video_url'] ?? '';
+        if ($cvUrl) $obj .= ',cover_video_url:' . jsStr($cvUrl);
+        $obj .= '}';
         $items[] = $obj;
     }
     $content = 'import{I as i}from"./images-B99skb6e.js";const o=[' . implode(',', $items) . '];'
@@ -194,7 +202,12 @@ function generateCrafts(PDO $db): string {
         $obj .= 'customization_options:' . $optsJs . ',images:' . jsEntityImages($db, 'craft', $cid) . ',process_steps:' . $stepsJs . ',';
         $obj .= 'borough_name:' . jsStr(getBoroughName($db, $row['borough_id'] ?? null)) . ',';
         $obj .= 'rating:' . (float)($row['rating'] ?? 0) . ',reviews_count:' . (int)($row['reviews_count'] ?? 0) . ',';
-        $obj .= 'stock_qty:' . (int)($row['stock_qty'] ?? 0) . ',is_active:' . (($row['is_active'] ?? 1) ? '!0' : '!1') . '}';
+        $obj .= 'stock_qty:' . (int)($row['stock_qty'] ?? 0) . ',is_active:' . (($row['is_active'] ?? 1) ? '!0' : '!1');
+        $cvUrl = $row['cover_video_url'] ?? '';
+        $mvUrl = $row['main_video_url'] ?? '';
+        if ($cvUrl) $obj .= ',cover_video_url:' . jsStr($cvUrl);
+        if ($mvUrl) $obj .= ',main_video_url:' . jsStr($mvUrl);
+        $obj .= '}';
         $items[] = $obj;
     }
     $content = 'import{I as i}from"./images-B99skb6e.js";const o=[' . implode(',', $items) . '];'
@@ -247,7 +260,12 @@ function generateFoodProducts(PDO $db): string {
         }
         $obj .= 'certifications:' . jsArray($certsArr) . ',';
         $obj .= 'borough_name:' . jsStr(getBoroughName($db, $row['borough_id'] ?? null)) . ',';
-        $obj .= 'is_active:!0,is_featured:' . (($row['is_featured'] ?? 0) ? '!0' : '!1') . '}';
+        $obj .= 'is_active:!0,is_featured:' . (($row['is_featured'] ?? 0) ? '!0' : '!1');
+        $cvUrl = $row['cover_video_url'] ?? '';
+        $mvUrl = $row['main_video_url'] ?? '';
+        if ($cvUrl) $obj .= ',cover_video_url:' . jsStr($cvUrl);
+        if ($mvUrl) $obj .= ',main_video_url:' . jsStr($mvUrl);
+        $obj .= '}';
         $items[] = $obj;
     }
     $content = 'const f=[' . implode(',', $items) . '];'
@@ -296,7 +314,10 @@ function generateAccommodations(PDO $db): string {
         $obj .= 'borough_name:' . jsStr(getBoroughName($db, $row['borough_id'] ?? null)) . ',';
         $obj .= 'rating:' . (float)($row['rating'] ?? 0) . ',reviews_count:' . (int)($row['reviews_count'] ?? 0) . ',';
         $obj .= 'social_links:{instagram:' . jsStr($row['social_instagram'] ?? '') . ',facebook:' . jsStr($row['social_facebook'] ?? '') . ',linkedin:' . jsStr($row['social_linkedin'] ?? '') . '},';
-        $obj .= 'is_active:!0,is_featured:' . (($row['is_featured'] ?? 0) ? '!0' : '!1') . '}';
+        $obj .= 'is_active:!0,is_featured:' . (($row['is_featured'] ?? 0) ? '!0' : '!1');
+        $cvUrl = $row['cover_video_url'] ?? '';
+        if ($cvUrl) $obj .= ',cover_video_url:' . jsStr($cvUrl);
+        $obj .= '}';
         $items[] = $obj;
     }
     $content = 'const a=[' . implode(',', $items) . '];'
@@ -339,7 +360,10 @@ function generateRestaurants(PDO $db): string {
         $obj .= 'borough_name:' . jsStr(getBoroughName($db, $row['borough_id'] ?? null)) . ',';
         $obj .= 'rating:' . (float)($row['rating'] ?? 0) . ',reviews_count:' . (int)($row['reviews_count'] ?? 0) . ',';
         $obj .= 'social_links:{instagram:' . jsStr($row['social_instagram'] ?? '') . ',facebook:' . jsStr($row['social_facebook'] ?? '') . ',linkedin:' . jsStr($row['social_linkedin'] ?? '') . '},';
-        $obj .= 'is_active:!0,is_featured:' . (($row['is_featured'] ?? 0) ? '!0' : '!1') . '}';
+        $obj .= 'is_active:!0,is_featured:' . (($row['is_featured'] ?? 0) ? '!0' : '!1');
+        $cvUrl = $row['cover_video_url'] ?? '';
+        if ($cvUrl) $obj .= ',cover_video_url:' . jsStr($cvUrl);
+        $obj .= '}';
         $items[] = $obj;
     }
     $content = 'const r=[' . implode(',', $items) . '];'

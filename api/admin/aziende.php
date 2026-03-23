@@ -4,6 +4,10 @@ requireAdminSession();
 $db = getDB();
 $msg = '';
 
+ensureTableColumns($db, 'companies', [
+    'cover_video_url' => 'TEXT DEFAULT NULL',
+]);
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id = trim($_POST['id'] ?? '');
     if (!$id) { $msg = '❌ ID obbligatorio.'; goto render; }
@@ -41,6 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'b2b_open_for_contact' => isset($_POST['b2b_open_for_contact']) ? 1 : 0,
         'founder_name'       => trim($_POST['founder_name']       ?? ''),
         'founder_quote'      => trim($_POST['founder_quote']      ?? ''),
+        'cover_video_url'    => trim($_POST['cover_video_url']    ?? ''),
         'main_video_url'     => trim($_POST['main_video_url']     ?? ''),
         'virtual_tour_url'   => trim($_POST['virtual_tour_url']   ?? ''),
         'hero_image_index'   => (int)($_POST['hero_image_index']  ?? 0),
@@ -164,6 +169,7 @@ require '_layout.php';
         <?= adminInput('founder_name', 'Fondatore', $sel) ?>
         <?= adminInput('hero_image_index', 'Indice immagine hero', $sel, 'number') ?>
         <?= adminInput('hero_image_alt', 'Alt immagine hero', $sel, 'text', true) ?>
+        <?= adminInput('cover_video_url', 'Video copertina (YouTube/locale)', $sel, 'text', true) ?>
         <?= adminInput('main_video_url', 'URL Video embed', $sel, 'text', true) ?>
         <?= adminInput('virtual_tour_url', 'URL Tour Virtuale', $sel, 'text', true) ?>
         <?= adminSelect('type', 'Tipo', $sel, ['PRODUTTORE_FOOD','ARTIGIANO','MISTO','AGRITURISMO','RISTORANTE','GUIDA_TURISTICA','COOPERATIVA']) ?>

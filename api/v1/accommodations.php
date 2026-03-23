@@ -7,6 +7,9 @@ $method = $_SERVER['REQUEST_METHOD'];
 $id     = $_GET['id'] ?? null;
 $slug   = $_GET['slug'] ?? null;
 
+// Auto-migration: ensure cover_video_url column exists
+ensureTableColumns($db, 'accommodations', ['cover_video_url' => 'TEXT DEFAULT NULL']);
+
 function buildAccommodation(PDO $db, array $row): array {
     $out = [];
 
@@ -57,8 +60,9 @@ function buildAccommodation(PDO $db, array $row): array {
     $out['booking_url']   = $row['booking_url'] ?? null;
 
     // Media
-    $out['cover_image']     = $row['cover_image'] ?? null;
-    $out['main_video_url']  = $row['main_video_url'] ?? null;
+    $out['cover_image']      = $row['cover_image'] ?? null;
+    $out['cover_video_url']  = $row['cover_video_url'] ?? null;
+    $out['main_video_url']   = $row['main_video_url'] ?? null;
     $out['virtual_tour_url'] = $row['virtual_tour_url'] ?? null;
     $out['images']          = fetchEntityImages($db, 'accommodation', $row['id']);
 

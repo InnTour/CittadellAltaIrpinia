@@ -21,6 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'origin_region'       => 'TEXT DEFAULT ""',
         'tags'                => 'TEXT DEFAULT "[]"',
         'traceability_chain'  => 'TEXT DEFAULT "[]"',
+        'cover_video_url'     => 'TEXT DEFAULT NULL',
+        'main_video_url'      => 'TEXT DEFAULT NULL',
     ] as $col => $colDef) {
         try { $db->exec("ALTER TABLE food_products ADD COLUMN `$col` $colDef"); } catch (\Exception $e) {}
     }
@@ -70,6 +72,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'origin_region'       => trim($_POST['origin_region']       ?? ''),
         'tags'                => $tagsJson,
         'traceability_chain'  => $trJson,
+        'cover_video_url'     => trim($_POST['cover_video_url']     ?? ''),
+        'main_video_url'      => trim($_POST['main_video_url']      ?? ''),
     ];
     if ($coverPath) $f['cover_image'] = $coverPath;
 
@@ -189,6 +193,8 @@ require '_layout.php';
         echo adminInput('allergens', 'Allergeni', $sel);
         echo adminInput('ingredients', 'Ingredienti', $sel, 'text', true);
         echo adminInput('shipping_notes', 'Note spedizione', $sel, 'text', true);
+        echo adminInput('cover_video_url', 'Video copertina (YouTube/locale)', $sel, 'text', true);
+        echo adminInput('main_video_url', 'URL Video embed', $sel, 'text', true);
         ?>
       </div>
 

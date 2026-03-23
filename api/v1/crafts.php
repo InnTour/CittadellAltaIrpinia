@@ -7,6 +7,12 @@ $method = $_SERVER['REQUEST_METHOD'];
 $id     = $_GET['id'] ?? null;
 $slug   = $_GET['slug'] ?? null;
 
+// Auto-migration: ensure cover_video_url and main_video_url columns exist
+ensureTableColumns($db, 'craft_products', [
+    'cover_video_url' => 'TEXT DEFAULT NULL',
+    'main_video_url'  => 'TEXT DEFAULT NULL',
+]);
+
 function buildCraft(PDO $db, array $row): array {
     $cid = $row['id'];
     $row['material_type'] = fetchArray($db, 'craft_material_types', 'craft_id', $cid);
@@ -39,6 +45,10 @@ function buildCraft(PDO $db, array $row): array {
 
     // Use getBoroughName helper
     $row['borough_name'] = getBoroughName($db, $row['borough_id'] ?? null);
+
+    // Video fields
+    $row['cover_video_url'] = $row['cover_video_url'] ?? null;
+    $row['main_video_url']  = $row['main_video_url']  ?? null;
 
     return $row;
 }

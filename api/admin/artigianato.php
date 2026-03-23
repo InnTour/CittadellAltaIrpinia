@@ -4,6 +4,11 @@ requireAdminSession();
 $db = getDB();
 $msg = '';
 
+ensureTableColumns($db, 'craft_products', [
+    'cover_video_url'  => 'TEXT DEFAULT NULL',
+    'main_video_url'   => 'TEXT DEFAULT NULL',
+]);
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id = trim($_POST['id'] ?? '');
     if (!$id) { $msg = '❌ ID obbligatorio.'; goto render; }
@@ -33,6 +38,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'reviews_count'             => (int)($_POST['reviews_count']              ?? 0),
         'stock_qty'                 => (int)($_POST['stock_qty']                  ?? 0),
         'is_active'                 => isset($_POST['is_active'])                  ? 1 : 0,
+        'cover_video_url'           => trim($_POST['cover_video_url']              ?? ''),
+        'main_video_url'            => trim($_POST['main_video_url']               ?? ''),
     ];
     if ($coverPath) $f['cover_image'] = $coverPath;
 
@@ -172,6 +179,8 @@ require '_layout.php';
         echo adminInput('reviews_count', 'Recensioni', $sel, 'number');
         echo adminInput('dimensions', 'Dimensioni', $sel, 'text', true);
         echo adminInput('technique_description', 'Tecnica lavorazione', $sel, 'text', true);
+        echo adminInput('cover_video_url', 'Video copertina (YouTube/locale)', $sel, 'text', true);
+        echo adminInput('main_video_url', 'URL Video embed', $sel, 'text', true);
         ?>
       </div>
 

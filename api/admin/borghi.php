@@ -4,6 +4,10 @@ requireAdminSession();
 $db = getDB();
 $msg = '';
 
+ensureTableColumns($db, 'boroughs', [
+    'cover_video_url' => 'TEXT DEFAULT NULL',
+]);
+
 // ── Salvataggio ────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id = trim($_POST['id'] ?? '');
