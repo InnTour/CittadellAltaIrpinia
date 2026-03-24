@@ -4236,6 +4236,16 @@ function ge() {
           if (!be.main_video_url) be.main_video_url = "";
           if (!be.virtual_tour_url) be.virtual_tour_url = "";
           if (!be.cover_video_url) be.cover_video_url = "";
+          // Fallback: merge missing fields from static data
+          if (H0 && Array.isArray(H0)) {
+            const staticB = H0.find(sb => sb.id === be.id || sb.slug === be.slug);
+            if (staticB) {
+              if (!be.hero_image || !be.hero_image.src) be.hero_image = staticB.hero_image;
+              if (!be.images || be.images.length === 0) be.images = staticB.images || [];
+              if (!be.gallery_images || be.gallery_images.length === 0) be.gallery_images = staticB.gallery_images || [];
+              if (!be.cover_video_url && staticB.cover_video_url) be.cover_video_url = staticB.cover_video_url;
+            }
+          }
           if (!be.highlights) be.highlights = [];
           if (!be.notable_products) be.notable_products = [];
           if (!be.notable_experiences) be.notable_experiences = [];
@@ -4345,8 +4355,8 @@ function ge() {
               ? e.jsx("iframe", {
                   src: embedUrl,
                   title: `Copertina ${s.name}`,
-                  className: "absolute inset-0 w-full h-full pointer-events-none",
-                  style: { border: "none", transform: "scale(1.5)", transformOrigin: "center center" },
+                  className: "pointer-events-none",
+                  style: { border: "none", position: "absolute", top: "50%", left: "50%", width: "120vw", height: "120vh", minWidth: "177.78vh", minHeight: "56.25vw", transform: "translate(-50%, -50%)" },
                   allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",
                   allowFullScreen: !0,
                 })
