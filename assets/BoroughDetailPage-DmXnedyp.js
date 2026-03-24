@@ -4348,17 +4348,18 @@ function ge() {
           const em = coverVid.match(/vimeo\.com\/(?:video\/)?(\d+)/);
           if (em) embedUrl = "https://player.vimeo.com/video/" + em[1] + "?background=1";
         }
+        const heroSrc = s.hero_image?.src || (s.images && s.images.length > 0 ? (s.images[0]?.src || s.images[0]) : null);
         return e.jsxs("section", {
-          className: "relative w-full h-[75vh] overflow-hidden bg-warm-900",
+          className: "relative w-full min-h-screen overflow-hidden",
+          style: { background: "#1a1a2e" },
           children: [
             isIframe
               ? e.jsx("iframe", {
                   src: embedUrl,
                   title: `Copertina ${s.name}`,
-                  className: "pointer-events-none",
-                  style: { border: "none", position: "absolute", top: "50%", left: "50%", width: "120vw", height: "120vh", minWidth: "177.78vh", minHeight: "56.25vw", transform: "translate(-50%, -50%)" },
-                  allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",
-                  allowFullScreen: !0,
+                  allow: "autoplay; encrypted-media",
+                  frameBorder: "0",
+                  style: { position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: "100vw", height: "56.25vw", minHeight: "100vh", minWidth: "177.78vh", border: "none", pointerEvents: "none" },
                 })
               : isLocalVideo
               ? e.jsx("video", {
@@ -4366,17 +4367,61 @@ function ge() {
                   className: "absolute inset-0 w-full h-full object-cover",
                   autoPlay: !0, muted: !0, loop: !0, playsInline: !0,
                 })
-              : s.hero_image?.src ? e.jsx("img", {
-                  src: s.hero_image.src,
-                  alt: s.hero_image.alt || s.name,
+              : heroSrc
+              ? e.jsx("img", {
+                  src: heroSrc,
+                  alt: s.hero_image?.alt || s.name,
                   className: "absolute inset-0 w-full h-full object-cover",
                   onError: (ev) => { ev.target.style.display = "none"; },
                 })
-              : e.jsx("div", {
-                  className: "absolute inset-0 w-full h-full bg-gradient-to-br from-ambra-200 to-warm-300",
-                }),
+              : null,
             e.jsx("div", {
-              className: "absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-white/60 pointer-events-none",
+              className: "absolute inset-0 bg-gradient-to-t from-stone-900/80 via-stone-900/30 to-stone-900/10",
+            }),
+            e.jsxs("div", {
+              className: "relative z-10 h-full min-h-screen flex flex-col items-center justify-center text-center px-4",
+              children: [
+                e.jsx("img", {
+                  src: `/Stemmi/${s.slug.charAt(0).toUpperCase() + s.slug.slice(1)}2-Stemma.png`,
+                  alt: `Stemma di ${s.name}`,
+                  className: "w-24 h-24 md:w-32 md:h-32 object-contain mb-6",
+                  style: { filter: "brightness(0) invert(1)", opacity: 0.9 },
+                  onError: (ev) => { ev.target.style.display = "none"; },
+                }),
+                e.jsx("span", {
+                  className: "inline-block text-xs font-semibold uppercase tracking-[0.25em] mb-3",
+                  style: { color: "rgba(245,166,35,0.9)" },
+                  children: s.id === "lacedonia" ? "VRCROGN\u2019" : "Il Comune",
+                }),
+                e.jsx("h1", {
+                  className: "font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-4 leading-tight",
+                  children: s.name,
+                }),
+                e.jsx("p", {
+                  className: "text-lg md:text-xl text-white/70 max-w-2xl mb-8 leading-relaxed",
+                  children: s.province + ", " + s.region + (s.altitude_meters ? " \u00B7 " + s.altitude_meters + " m s.l.m." : "") + (s.population ? " \u00B7 " + s.population.toLocaleString("it-IT") + " abitanti" : ""),
+                }),
+                e.jsxs("div", {
+                  className: "flex flex-wrap items-center justify-center gap-4",
+                  children: [
+                    e.jsx("a", {
+                      href: "#scopri-borgo",
+                      className: "px-8 py-4 rounded-full font-semibold text-white transition-all hover:scale-105",
+                      style: { background: "linear-gradient(135deg, #d97706, #b45309)", boxShadow: "0 8px 32px rgba(217,119,6,0.4)" },
+                      children: "Scopri il Borgo",
+                    }),
+                    s.main_video_url && e.jsx("a", {
+                      href: "#video-borgo",
+                      className: "px-8 py-4 rounded-full font-semibold text-white transition-all hover:scale-105",
+                      style: { background: "rgba(255,255,255,0.1)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.2)" },
+                      children: "Guarda il Video",
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            e.jsx("div", {
+              style: { position: "absolute", bottom: 0, left: 0, right: 0, height: 120, background: "linear-gradient(to top, #FAFAF8, transparent)", zIndex: 5 },
             }),
           ],
         });
@@ -4395,59 +4440,24 @@ function ge() {
         ],
       }),
       e.jsxs("div", {
+        id: "scopri-borgo",
         className: "max-w-7xl mx-auto px-4 py-8",
         children: [
-          e.jsx(A.div, {
-            initial: n ? void 0 : { opacity: 0, y: 30 },
+          s.description && e.jsx(A.div, {
+            initial: n ? void 0 : { opacity: 0, y: 20 },
             animate: { opacity: 1, y: 0 },
-            transition: { duration: 0.7 },
+            transition: { duration: 0.5 },
             className: "mb-12",
             children: e.jsxs("div", {
-              className: "grid md:grid-cols-[auto_1fr] gap-8 md:gap-12 items-start",
+              className: "glass-strong rounded-2xl p-6 md:p-8",
               children: [
-                e.jsxs("div", {
-                  className: "flex flex-col items-center text-center",
-                  children: [
-                    e.jsx("img", {
-                      src: `/Stemmi/${s.slug.charAt(0).toUpperCase() + s.slug.slice(1)}2-Stemma.png`,
-                      alt: `Stemma di ${s.name}`,
-                      className: "w-36 h-36 md:w-44 md:h-44 object-contain mb-4",
-                      style: { mixBlendMode: "multiply" },
-                      onError: (ev) => { ev.target.style.display = "none"; },
-                    }),
-                    e.jsx("span", {
-                      className: "inline-block text-xs font-semibold text-ambra-600 uppercase tracking-[0.25em] mb-2",
-                      children: s.id === "lacedonia" ? "VRCROGN\u2019" : "Il Comune",
-                    }),
-                    e.jsx("h1", {
-                      className: "font-display text-2xl md:text-4xl font-bold text-warm-900 mb-3",
-                      children: s.name,
-                    }),
-                    e.jsxs("div", {
-                      className: "flex flex-col items-center gap-1 text-warm-600 text-xs",
-                      children: [
-                        e.jsxs("span", {
-                          className: "flex items-center gap-1.5",
-                          children: [e.jsx($, { size: 14 }), s.province, ", ", s.region],
-                        }),
-                        s.population && e.jsxs("span", {
-                          className: "flex items-center gap-1.5",
-                          children: [e.jsx(z, { size: 14 }), s.population.toLocaleString("it-IT"), " abitanti"],
-                        }),
-                        s.altitude_meters && e.jsxs("span", {
-                          className: "flex items-center gap-1.5",
-                          children: [e.jsx(V0, { size: 14 }), s.altitude_meters, " m s.l.m."],
-                        }),
-                      ],
-                    }),
-                  ],
+                e.jsxs("h2", {
+                  className: "font-display text-xl font-bold text-warm-900 mb-4 flex items-center gap-2",
+                  children: [e.jsx($, { size: 22, className: "text-ambra-600" }), "Il Borgo"],
                 }),
-                e.jsx("div", {
-                  className: "flex items-center",
-                  children: e.jsx("p", {
-                    className: "text-base md:text-lg text-warm-700 leading-relaxed",
-                    children: s.id === "lacedonia" ? "Millenaria e autentica, Lacedonia sorge a 734 metri sull\u2019Alta Irpinia preservando testimonianze uniche: 150 cavit\u00e0 rupestri abitate da 13.000 anni, stratificazioni sannite, romane e medievali che plasmano ancora oggi l\u2019identit\u00e0 del paese. Patria di San Gerardo Maiella e di Francesco De Sanctis, il paese intreccia spiritualit\u00e0, sapere e radicata cultura contadina: gastronomia tipica, riti agrari e un ecosistema naturale di straordinaria ricchezza. Il MAVI conserva 1.801 scatti etnografici di Frank Cancian. InnTour ne restituisce l\u2019anima attraverso tecnologie immersive, scansioni 3D e avatar AI." : s.description,
-                  }),
+                e.jsx("p", {
+                  className: "text-base md:text-lg text-warm-700 leading-relaxed",
+                  children: s.id === "lacedonia" ? "Millenaria e autentica, Lacedonia sorge a 734 metri sull\u2019Alta Irpinia preservando testimonianze uniche: 150 cavit\u00e0 rupestri abitate da 13.000 anni, stratificazioni sannite, romane e medievali che plasmano ancora oggi l\u2019identit\u00e0 del paese. Patria di San Gerardo Maiella e di Francesco De Sanctis, il paese intreccia spiritualit\u00e0, sapere e radicata cultura contadina: gastronomia tipica, riti agrari e un ecosistema naturale di straordinaria ricchezza. Il MAVI conserva 1.801 scatti etnografici di Frank Cancian. InnTour ne restituisce l\u2019anima attraverso tecnologie immersive, scansioni 3D e avatar AI." : s.description,
                 }),
               ],
             }),
@@ -4460,6 +4470,7 @@ function ge() {
             const isIfr = isYT || isVim;
             const isLoc = sv && !isIfr && /\.(mp4|webm|ogg|mov)($|\?)/i.test(sv);
             return e.jsxs("section", {
+              id: "video-borgo",
               className: "mb-12",
               children: [
                 e.jsxs("h2", {
