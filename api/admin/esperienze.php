@@ -81,17 +81,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Array fields
-    $toLines = fn($s) => array_filter(array_map('trim', explode("\n", $s ?? '')));
-
     $langs = array_filter(array_map('trim', explode(',', $_POST['languages_available'] ?? '')));
     $db->prepare("DELETE FROM experience_languages WHERE experience_id=?")->execute([$id]);
     $stmtLang = $db->prepare("INSERT INTO experience_languages (experience_id, lang) VALUES (?,?)");
     foreach ($langs as $l) $stmtLang->execute([$id, $l]);
 
-    replaceArray($db, 'experience_includes',      'experience_id', $id, $toLines($_POST['includes']      ?? ''));
-    replaceArray($db, 'experience_excludes',       'experience_id', $id, $toLines($_POST['excludes']      ?? ''));
-    replaceArray($db, 'experience_bring',          'experience_id', $id, $toLines($_POST['what_to_bring'] ?? ''));
-    replaceArray($db, 'experience_seasonal_tags',  'experience_id', $id, $toLines($_POST['seasonal_tags'] ?? ''));
+    replaceArray($db, 'experience_includes',      'experience_id', $id, parseTextToArray($_POST['includes']      ?? ''));
+    replaceArray($db, 'experience_excludes',       'experience_id', $id, parseTextToArray($_POST['excludes']      ?? ''));
+    replaceArray($db, 'experience_bring',          'experience_id', $id, parseTextToArray($_POST['what_to_bring'] ?? ''));
+    replaceArray($db, 'experience_seasonal_tags',  'experience_id', $id, parseTextToArray($_POST['seasonal_tags'] ?? ''));
 
     // Timeline steps
     $db->prepare("DELETE FROM experience_timeline WHERE experience_id=?")->execute([$id]);
