@@ -4382,10 +4382,10 @@ function ge() {
               className: "relative z-10 h-full min-h-screen flex flex-col items-center justify-center text-center px-4",
               children: [
                 e.jsx("img", {
-                  src: `/Stemmi/${s.slug.charAt(0).toUpperCase() + s.slug.slice(1)}2-Stemma.png`,
+                  src: ({"andretta":"/Stemmi/Andretta-Stemma2.png","aquilonia":"/Stemmi/Aquilonia-Stemma.png","bagnoli-irpino":"/Stemmi/Bagnoli_Irpino-Stemma.png","bisaccia":"/Stemmi/Bisaccia-Stemma.png","cairano":"/Stemmi/Cairano-Stemma.png","calabritto":"/Stemmi/Calabritto-Stemma.png","calitri":"/Stemmi/Calitri-Stemma.png","caposele":"/Stemmi/Caposele-Stemma.png","cassano-irpino":"/Stemmi/Cassano_Irpino-Stemma.png","castelfranci":"/Stemmi/Castelfranci-Stemma.png","conza-della-campania":"/Stemmi/Conza_della_Campania-Stemma.png","guardia-dei-lombardi":"/Stemmi/Guardia_Lombardi-Stemma.png","lacedonia":"/Stemmi/Lacedonia2-Stemma.png","lioni":"/Stemmi/Lioni-Stemma2.png","montella":"/Stemmi/Montella-Stemma.png","monteverde":"/Stemmi/Monteverde-Stemma.svg.png","morra-de-sanctis":"/Stemmi/Morra_De_Sanctis-Stemma.png","nusco":"/Stemmi/Nusco.png","rocca-san-felice":"/Stemmi/Rocca_San_Felice-Stemma.png","sant-andrea-di-conza":"/Stemmi/Sant%27Andrea_di_Conza-Stemma2.png","sant-angelo-dei-lombardi":"/Stemmi/Sant%27Angelo_dei_Lombardi-Stemma.png","senerchia":"/Stemmi/Senerchia-Stemma.png","teora":"/Stemmi/Teora-Stemma.png","torella-dei-lombardi":"/Stemmi/Torella_dei_Lombardi-Stemma.png","villamaina":"/Stemmi/Villamaina-Stemma.png"})[s.slug]||"",
                   alt: `Stemma di ${s.name}`,
                   className: "w-24 h-24 md:w-32 md:h-32 object-contain mb-6",
-                  style: { filter: "brightness(0) invert(1)", opacity: 0.9 },
+                  style: { filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.5))", opacity: 1 },
                   onError: (ev) => { ev.target.style.display = "none"; },
                 }),
                 e.jsx("span", {
