@@ -68,8 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     processGalleryFromPost($db, 'craft', $id, 'new_images');
 
     /* --- Material Types (one per line) --- */
-    $toLines = fn($s) => array_filter(array_map('trim', explode("\n", $s ?? '')));
-    replaceArray($db, 'craft_material_types', 'craft_id', $id, $toLines($_POST['material_type'] ?? ''));
+    replaceArray($db, 'craft_material_types', 'craft_id', $id, parseTextToArray($_POST['material_type'] ?? ''));
 
     /* --- Process Steps (title + description) --- */
     $db->prepare("DELETE FROM craft_process_steps WHERE craft_id = ?")->execute([$id]);

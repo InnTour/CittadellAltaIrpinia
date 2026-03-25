@@ -57,11 +57,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Array fields
-    $toLines = fn($s) => array_filter(array_map('trim', explode("\n", $s ?? '')));
-    replaceArray($db, 'borough_highlights',            'borough_id', $id, $toLines($_POST['highlights']          ?? ''));
-    replaceArray($db, 'borough_notable_products',      'borough_id', $id, $toLines($_POST['notable_products']    ?? ''));
-    replaceArray($db, 'borough_notable_experiences',   'borough_id', $id, $toLines($_POST['notable_experiences'] ?? ''));
-    replaceArray($db, 'borough_notable_restaurants',   'borough_id', $id, $toLines($_POST['notable_restaurants'] ?? ''));
+    replaceArray($db, 'borough_highlights',            'borough_id', $id, parseTextToArray($_POST['highlights']          ?? ''));
+    replaceArray($db, 'borough_notable_products',      'borough_id', $id, parseTextToArray($_POST['notable_products']    ?? ''));
+    replaceArray($db, 'borough_notable_experiences',   'borough_id', $id, parseTextToArray($_POST['notable_experiences'] ?? ''));
+    replaceArray($db, 'borough_notable_restaurants',   'borough_id', $id, parseTextToArray($_POST['notable_restaurants'] ?? ''));
 
     // Gallery images
     processGalleryFromPost($db, 'borough', $id, 'new_images');
