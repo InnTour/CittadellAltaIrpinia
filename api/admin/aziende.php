@@ -12,6 +12,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id = trim($_POST['id'] ?? '');
     if (!$id) { $msg = '❌ ID obbligatorio.'; goto render; }
 
+    $required_fields = ['name' => 'Nome', 'borough_id' => 'ID Borgo', 'description_short' => 'Descrizione breve'];
+    foreach ($required_fields as $field => $fieldLabel) {
+        if (empty(trim($_POST[$field] ?? ''))) {
+            $msg = "❌ Il campo \"$fieldLabel\" è obbligatorio.";
+            goto render;
+        }
+    }
+    if (empty($_POST['type'] ?? '')) {
+        $msg = '❌ Il campo "Tipo" è obbligatorio.';
+        goto render;
+    }
+
     $exists = $db->prepare("SELECT id FROM companies WHERE id=?");
     $exists->execute([$id]);
 
@@ -149,12 +161,12 @@ require '_layout.php';
       <?= adminCoverImage($sel) ?>
 
       <div class="grid grid-cols-2 gap-4">
-        <?= adminInput('id', 'ID', $sel) ?>
+        <?= adminInput('id', 'ID', $sel, 'text', false, '', true) ?>
         <?= adminInput('slug', 'Slug', $sel) ?>
-        <?= adminInput('name', 'Nome', $sel, 'text', true) ?>
+        <?= adminInput('name', 'Nome', $sel, 'text', true, '', true) ?>
         <?= adminInput('legal_name', 'Ragione Sociale', $sel) ?>
         <?= adminInput('vat_number', 'P.IVA', $sel) ?>
-        <?= adminInput('borough_id', 'ID Borgo', $sel) ?>
+        <?= adminInput('borough_id', 'ID Borgo', $sel, 'text', false, '', true) ?>
         <?= adminInput('founding_year', 'Anno fondazione', $sel, 'number') ?>
         <?= adminInput('employees_count', 'Dipendenti', $sel, 'number') ?>
         <?= adminInput('contact_email', 'Email', $sel, 'email') ?>
@@ -172,13 +184,13 @@ require '_layout.php';
         <?= adminInput('cover_video_url', 'Video copertina (YouTube/locale)', $sel, 'text', true) ?>
         <?= adminInput('main_video_url', 'URL Video embed', $sel, 'text', true) ?>
         <?= adminInput('virtual_tour_url', 'URL Tour Virtuale', $sel, 'text', true) ?>
-        <?= adminSelect('type', 'Tipo', $sel, ['PRODUTTORE_FOOD','ARTIGIANO','MISTO','AGRITURISMO','RISTORANTE','GUIDA_TURISTICA','COOPERATIVA']) ?>
+        <?= adminSelect('type', 'Tipo *', $sel, ['PRODUTTORE_FOOD','ARTIGIANO','MISTO','AGRITURISMO','RISTORANTE','GUIDA_TURISTICA','COOPERATIVA']) ?>
         <?= adminSelect('tier', 'Tier', $sel, ['BASE','PREMIUM','PLATINUM']) ?>
         <?= adminImageGallery('new_images', $sel['_images'] ?? [], 'Galleria immagini azienda') ?>
       </div>
 
       <?= adminInput('tagline', 'Tagline', $sel, 'text', true) ?>
-      <?= adminTextarea('description_short', 'Descrizione breve', $sel, 2) ?>
+      <?= adminTextarea('description_short', 'Descrizione breve', $sel, 2, '', true) ?>
       <?= adminTextarea('description_long', 'Descrizione completa', $sel, 4) ?>
       <?= adminTextarea('founder_quote', 'Citazione fondatore', $sel, 2) ?>
       <?= adminTextarea('certifications', 'Certificazioni (una per riga)', $sel, 3) ?>

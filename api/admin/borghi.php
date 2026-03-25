@@ -13,6 +13,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id = trim($_POST['id'] ?? '');
     if (!$id) { $msg = '❌ ID obbligatorio.'; goto render; }
 
+    $required_fields = ['name' => 'Nome', 'province' => 'Provincia', 'description' => 'Descrizione'];
+    foreach ($required_fields as $field => $fieldLabel) {
+        if (empty(trim($_POST[$field] ?? ''))) {
+            $msg = "❌ Il campo \"$fieldLabel\" è obbligatorio.";
+            goto render;
+        }
+    }
+
     $exists = $db->prepare("SELECT id FROM boroughs WHERE id=?");
     $exists->execute([$id]);
 
@@ -135,10 +143,10 @@ require '_layout.php';
 
       <div class="grid grid-cols-2 gap-4">
         <?php
-        echo adminInput('id', 'ID (slug univoco)', $sel);
+        echo adminInput('id', 'ID (slug univoco)', $sel, 'text', false, '', true);
         echo adminInput('slug', 'Slug (auto da ID se vuoto)', $sel);
-        echo adminInput('name', 'Nome', $sel);
-        echo adminInput('province', 'Provincia', $sel);
+        echo adminInput('name', 'Nome', $sel, 'text', false, '', true);
+        echo adminInput('province', 'Provincia', $sel, 'text', false, '', true);
         echo adminInput('region', 'Regione', $sel);
         echo adminInput('population', 'Popolazione', $sel, 'number');
         echo adminInput('altitude_meters', 'Altitudine (m)', $sel, 'number');
@@ -154,7 +162,7 @@ require '_layout.php';
         ?>
       </div>
 
-      <?= adminTextarea('description', 'Descrizione', $sel, 4) ?>
+      <?= adminTextarea('description', 'Descrizione', $sel, 4, '', true) ?>
       <?= adminTextarea('highlights', 'Highlights (una per riga)', $sel, 3, 'Una voce per riga') ?>
       <?= adminTextarea('notable_products', 'Prodotti tipici (uno per riga)', $sel, 3, 'Un prodotto per riga') ?>
       <?= adminTextarea('notable_experiences', 'Esperienze (una per riga)', $sel, 3, 'Una esperienza per riga') ?>
