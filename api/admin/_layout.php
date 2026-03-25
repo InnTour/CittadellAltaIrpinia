@@ -50,6 +50,12 @@
         <a href="/api/admin/ristorazione.php" class="nav-link <?= ($pageTitle==='Ristorazione'?'active':'') ?>">
           <span>🍽️</span> Ristorazione
         </a>
+        <a href="/api/admin/bulk-import.php" class="nav-link <?= ($pageTitle==='Import Bulk CSV'?'active':'') ?>">
+          <span>📥</span> Import CSV
+        </a>
+        <a href="/api/admin/qualita-dati.php" class="nav-link <?= ($pageTitle==='Qualità Dati'?'active':'') ?>">
+          <span>✅</span> Qualità Dati
+        </a>
         <div class="border-t border-slate-700 mt-3 pt-3">
           <a href="/api/admin/utenti.php" class="nav-link <?= ($pageTitle==='Utenti'?'active':'') ?>">
             <span>👥</span> Utenti
