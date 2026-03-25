@@ -4187,7 +4187,20 @@ function ge() {
     [apiAccommodations, setApiAccommodations] = a.useState([]),
     [apiCrafts, setApiCrafts] = a.useState([]),
     [apiFoodProducts, setApiFoodProducts] = a.useState([]),
-    [apiExperiences, setApiExperiences] = a.useState([]);
+    [apiExperiences, setApiExperiences] = a.useState([]),
+    [wished, setWished] = a.useState(false);
+  async function toggleWish() {
+    const token = localStorage.getItem("mb_token");
+    if (!token) { n("/login"); return; }
+    try {
+      await fetch("/api/v1/wishlist.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+        body: JSON.stringify({ item_type: "borough", item_id: s && s.id }),
+      });
+      setWished((w) => !w);
+    } catch {}
+  }
   a.useEffect(() => {
     if (!t) return;
     fetch(`/api/v1/boroughs.php?slug=${encodeURIComponent(t)}`)
@@ -4548,8 +4561,9 @@ function ge() {
                         s.notable_products && s.notable_products.length > 0 && e.jsx("div", {
                           className: "flex flex-wrap gap-2",
                           children: s.notable_products.slice(0, 4).map((r) =>
-                            e.jsx("span", {
-                              className: "inline-block px-3 py-1 bg-ambra-50 text-ambra-700 text-xs font-semibold rounded-full border border-ambra-200",
+                            e.jsx(L, {
+                              to: "/prodotti-tipici",
+                              className: "inline-block px-3 py-1 bg-ambra-50 text-ambra-700 text-xs font-semibold rounded-full border border-ambra-200 hover:bg-ambra-100 hover:border-ambra-400 transition-colors",
                               children: r,
                             }, r)
                           ),
