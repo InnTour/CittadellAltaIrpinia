@@ -1551,5 +1551,73 @@
         }
       })();
     </script>
+    <script>
+(function() {
+  function getEntityFromURL(href) {
+    try {
+      var path = new URL(href, window.location.origin).pathname;
+      var patterns = [
+        [/^\/borghi\/([^\/]+)$/, 'borough'],
+        [/^\/aziende\/([^\/]+)$/, 'company'],
+        [/^\/esperienze\/([^\/]+)$/, 'experience'],
+        [/^\/artigianato\/([^\/]+)$/, 'craft'],
+        [/^\/prodotti\/([^\/]+)$/, 'food'],
+        [/^\/ospitalita\/([^\/]+)$/, 'accommodation'],
+        [/^\/ristorazione\/([^\/]+)$/, 'restaurant']
+      ];
+      for (var i = 0; i < patterns.length; i++) {
+        var m = path.match(patterns[i][0]);
+        if (m) return { entity_type: patterns[i][1], entity_id: m[1] };
+      }
+      var listMap = {
+        '/borghi': ['borough','_list'],
+        '/esperienze': ['experience','_list'],
+        '/ospitalita': ['accommodation','_list'],
+        '/ristorazione': ['restaurant','_list'],
+        '/aziende': ['company','_list'],
+        '/artigianato': ['craft','_list'],
+        '/prodotti': ['food','_list'],
+        '/': ['homepage','home']
+      };
+      if (listMap[path]) return { entity_type: listMap[path][0], entity_id: listMap[path][1] };
+    } catch(e) {}
+    return null;
+  }
+
+  function trackView(href) {
+    var entity = getEntityFromURL(href || window.location.href);
+    if (!entity) return;
+    var sid = sessionStorage.getItem('mb_session');
+    if (!sid) {
+      sid = 'sess_' + Math.random().toString(36).substr(2,9) + '_' + Date.now();
+      sessionStorage.setItem('mb_session', sid);
+    }
+    fetch('/api/v1/analytics.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        entity_type: entity.entity_type,
+        entity_id: entity.entity_id,
+        page_url: href || window.location.href,
+        referrer: document.referrer,
+        session_id: sid
+      })
+    }).catch(function(){});
+  }
+
+  // Track page load
+  window.addEventListener('load', function() { trackView(window.location.href); });
+
+  // Track SPA navigation (React Router usa history.pushState)
+  var _push = history.pushState.bind(history);
+  history.pushState = function(state, title, url) {
+    _push(state, title, url);
+    if (url) setTimeout(function() { trackView(window.location.href); }, 100);
+  };
+  window.addEventListener('popstate', function() {
+    setTimeout(function() { trackView(window.location.href); }, 100);
+  });
+})();
+</script>
   </body>
 </html>
