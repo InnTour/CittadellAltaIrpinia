@@ -518,37 +518,41 @@ function adminCheckbox(string $name, string $label, ?array $sel): string {
 
 function adminCoverImage(?array $sel): string {
     $html = '<div>
-        <label class="block text-xs text-slate-400 mb-1">Immagine di copertina</label>';
+        <label class="block text-xs text-slate-400 mb-1">Immagine di copertina <span class="text-slate-500 font-normal">(usata nelle card delle sezioni)</span></label>';
     if (!empty($sel['cover_image'])) {
         $src = htmlspecialchars($sel['cover_image']);
         $html .= "<div class=\"mb-2\"><img src=\"$src\" alt=\"Cover\" class=\"h-32 rounded-lg object-cover\"></div>";
     }
-    $html .= '<input type="file" name="cover_image" accept="image/*"
+    $html .= '<input type="file" name="cover_image" accept="image/jpeg,image/png,image/webp"
         class="w-full bg-slate-700 text-white rounded-lg px-3 py-2 text-sm border border-slate-600 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-emerald-600 file:text-white file:text-xs file:cursor-pointer">
+        <p class="text-xs text-slate-500 mt-1">📐 Risoluzione ottimale: <strong class="text-slate-400">800×600px</strong> (rapporto 4:3) · min 400×300px · max 5 MB · formati: JPG, PNG, WebP</p>
     </div>';
     return $html;
 }
 
 function adminImageGallery(string $inputName, array $images, string $label = 'Galleria immagini'): string {
+    $count = count($images);
     $html = "<div class=\"col-span-2\">
-        <label class=\"block text-xs text-slate-400 mb-2\">$label</label>
-        <div class=\"grid grid-cols-4 gap-2 mb-3\" id=\"gallery-preview\">";
-    foreach ($images as $i => $img) {
-        $src = htmlspecialchars($img['src'] ?? '');
-        $alt = htmlspecialchars($img['alt'] ?? '');
-        $html .= "<div class=\"relative group\">
-            <img src=\"$src\" alt=\"$alt\" class=\"h-24 w-full object-cover rounded-lg\">
-            <input type=\"hidden\" name=\"existing_images_src[]\" value=\"$src\">
-            <input type=\"text\" name=\"existing_images_alt[]\" value=\"$alt\" placeholder=\"Alt text\" class=\"w-full mt-1 bg-slate-600 text-white rounded px-2 py-1 text-xs border border-slate-500\">
-            <label class=\"absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity\">
-                <input type=\"checkbox\" name=\"remove_images[]\" value=\"$i\" class=\"hidden\"> &times;
-            </label>
-        </div>";
+        <label class=\"block text-xs text-slate-400 mb-2\">$label <span class=\"text-slate-500 font-normal\">($count immagini)</span></label>";
+    if ($count > 0) {
+        $html .= "<div class=\"grid grid-cols-4 gap-2 mb-3\">";
+        foreach ($images as $i => $img) {
+            $src = htmlspecialchars($img['src'] ?? '');
+            $alt = htmlspecialchars($img['alt'] ?? '');
+            $html .= "<div class=\"relative group\">
+                <img src=\"$src\" alt=\"$alt\" class=\"h-24 w-full object-cover rounded-lg\">
+                <input type=\"hidden\" name=\"existing_images_src[]\" value=\"$src\">
+                <input type=\"text\" name=\"existing_images_alt[]\" value=\"$alt\" placeholder=\"Descrizione immagine\" class=\"w-full mt-1 bg-slate-600 text-white rounded px-2 py-1 text-xs border border-slate-500\">
+                <label class=\"absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity\" title=\"Rimuovi\">
+                    <input type=\"checkbox\" name=\"remove_images[]\" value=\"$i\" class=\"hidden\"> &times;
+                </label>
+            </div>";
+        }
+        $html .= "</div>";
     }
-    $html .= "</div>
-        <input type=\"file\" name=\"{$inputName}[]\" multiple accept=\"image/*\"
+    $html .= "<input type=\"file\" name=\"{$inputName}[]\" multiple accept=\"image/jpeg,image/png,image/webp\"
             class=\"w-full bg-slate-700 text-white rounded-lg px-3 py-2 text-sm border border-slate-600 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-emerald-600 file:text-white file:text-xs file:cursor-pointer\">
-        <p class=\"text-xs text-slate-500 mt-1\">Puoi selezionare più immagini. Le nuove si aggiungono a quelle esistenti.</p>
+        <p class=\"text-xs text-slate-500 mt-1\">📐 Risoluzione ottimale: <strong class=\"text-slate-400\">1200×900px</strong> (4:3) per le card · <strong class=\"text-slate-400\">1920×1080px</strong> (16:9) per gli hero · max 8 MB/file · JPG, PNG, WebP · La <strong class=\"text-slate-400\">prima immagine</strong> viene usata come anteprima nelle card.</p>
     </div>";
     return $html;
 }
