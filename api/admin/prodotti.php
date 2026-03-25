@@ -8,6 +8,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id = trim($_POST['id'] ?? '');
     if (!$id) { $msg = '❌ ID obbligatorio.'; goto render; }
 
+    $required_fields = ['name' => 'Nome', 'category' => 'Categoria', 'producer_id' => 'ID Produttore', 'borough_id' => 'ID Borgo'];
+    foreach ($required_fields as $field => $fieldLabel) {
+        if (empty(trim($_POST[$field] ?? ''))) {
+            $msg = "❌ Il campo \"$fieldLabel\" è obbligatorio.";
+            goto render;
+        }
+    }
+    if (!isset($_POST['price']) || trim($_POST['price']) === '') {
+        $msg = '❌ Il campo "Prezzo" è obbligatorio.';
+        goto render;
+    }
+
     $exists = $db->prepare("SELECT id FROM food_products WHERE id=?");
     $exists->execute([$id]);
 
@@ -174,13 +186,13 @@ require '_layout.php';
 
       <div class="grid grid-cols-2 gap-4">
         <?php
-        echo adminInput('id', 'ID', $sel);
+        echo adminInput('id', 'ID', $sel, 'text', false, '', true);
         echo adminInput('slug', 'Slug', $sel);
-        echo adminInput('name', 'Nome', $sel, 'text', true);
-        echo adminInput('producer_id', 'ID Produttore (azienda)', $sel);
-        echo adminInput('borough_id', 'ID Borgo', $sel);
-        echo adminInput('category', 'Categoria (es. FORMAGGI)', $sel);
-        echo adminInput('price', 'Prezzo €', $sel, 'number');
+        echo adminInput('name', 'Nome', $sel, 'text', true, '', true);
+        echo adminInput('producer_id', 'ID Produttore (azienda)', $sel, 'text', false, '', true);
+        echo adminInput('borough_id', 'ID Borgo', $sel, 'text', false, '', true);
+        echo adminInput('category', 'Categoria (es. FORMAGGI)', $sel, 'text', false, '', true);
+        echo adminInput('price', 'Prezzo €', $sel, 'number', false, '0.01', true);
         echo adminInput('unit', 'Unità (es. pezzo ca. 1.2 kg)', $sel);
         echo adminInput('weight_grams', 'Peso grammi', $sel, 'number');
         echo adminInput('shelf_life_days', 'Shelf life giorni', $sel, 'number');

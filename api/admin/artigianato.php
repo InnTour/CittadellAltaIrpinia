@@ -13,6 +13,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id = trim($_POST['id'] ?? '');
     if (!$id) { $msg = '❌ ID obbligatorio.'; goto render; }
 
+    $required_fields = ['name' => 'Nome', 'artisan_id' => 'ID Artigiano/Azienda', 'borough_id' => 'ID Borgo'];
+    foreach ($required_fields as $field => $fieldLabel) {
+        if (empty(trim($_POST[$field] ?? ''))) {
+            $msg = "❌ Il campo \"$fieldLabel\" è obbligatorio.";
+            goto render;
+        }
+    }
+    if (!isset($_POST['price']) || trim($_POST['price']) === '') {
+        $msg = '❌ Il campo "Prezzo" è obbligatorio.';
+        goto render;
+    }
+
     $exists = $db->prepare("SELECT id FROM craft_products WHERE id=?");
     $exists->execute([$id]);
 
@@ -56,8 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     processGalleryFromPost($db, 'craft', $id, 'new_images');
 
     /* --- Material Types (one per line) --- */
-    $toLines = fn($s) => array_filter(array_map('trim', explode("\n", $s ?? '')));
-    replaceArray($db, 'craft_material_types', 'craft_id', $id, $toLines($_POST['material_type'] ?? ''));
+    replaceArray($db, 'craft_material_types', 'craft_id', $id, parseTextToArray($_POST['material_type'] ?? ''));
 
     /* --- Process Steps (title + description) --- */
     $db->prepare("DELETE FROM craft_process_steps WHERE craft_id = ?")->execute([$id]);
@@ -165,12 +176,12 @@ require '_layout.php';
 
       <div class="grid grid-cols-2 gap-4">
         <?php
-        echo adminInput('id', 'ID', $sel);
-        echo adminInput('name', 'Nome', $sel);
+        echo adminInput('id', 'ID', $sel, 'text', false, '', true);
+        echo adminInput('name', 'Nome', $sel, 'text', false, '', true);
         echo adminInput('slug', 'Slug', $sel);
-        echo adminInput('artisan_id', 'ID Artigiano/Azienda', $sel);
-        echo adminInput('borough_id', 'ID Borgo', $sel);
-        echo adminInput('price', 'Prezzo €', $sel, 'number');
+        echo adminInput('artisan_id', 'ID Artigiano/Azienda', $sel, 'text', false, '', true);
+        echo adminInput('borough_id', 'ID Borgo', $sel, 'text', false, '', true);
+        echo adminInput('price', 'Prezzo €', $sel, 'number', false, '0.01', true);
         echo adminInput('lead_time_days', 'Giorni consegna', $sel, 'number');
         echo adminInput('weight_grams', 'Peso (g)', $sel, 'number');
         echo adminInput('production_series_qty', 'Quantità serie', $sel, 'number');

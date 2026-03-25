@@ -4187,7 +4187,20 @@ function ge() {
     [apiAccommodations, setApiAccommodations] = a.useState([]),
     [apiCrafts, setApiCrafts] = a.useState([]),
     [apiFoodProducts, setApiFoodProducts] = a.useState([]),
-    [apiExperiences, setApiExperiences] = a.useState([]);
+    [apiExperiences, setApiExperiences] = a.useState([]),
+    [wished, setWished] = a.useState(false);
+  async function toggleWish() {
+    const token = localStorage.getItem("mb_token");
+    if (!token) { n("/login"); return; }
+    try {
+      await fetch("/api/v1/wishlist.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+        body: JSON.stringify({ item_type: "borough", item_id: s && s.id }),
+      });
+      setWished((w) => !w);
+    } catch(e) { setWished((w) => !w); }
+  }
   a.useEffect(() => {
     if (!t) return;
     fetch(`/api/v1/boroughs.php?slug=${encodeURIComponent(t)}`)
@@ -4416,6 +4429,26 @@ function ge() {
                       style: { background: "rgba(255,255,255,0.1)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.2)" },
                       children: "Guarda il Video",
                     }),
+                    e.jsx("button", {
+                      onClick: toggleWish,
+                      title: wished ? "Rimuovi dai preferiti" : "Aggiungi ai preferiti",
+                      className: "w-14 h-14 rounded-full flex items-center justify-center transition-all hover:scale-110",
+                      style: { background: "rgba(255,255,255,0.1)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.2)" },
+                      children: e.jsx("svg", {
+                        xmlns: "http://www.w3.org/2000/svg",
+                        viewBox: "0 0 24 24",
+                        fill: wished ? "#ef4444" : "none",
+                        stroke: wished ? "#ef4444" : "white",
+                        strokeWidth: 2,
+                        width: 24,
+                        height: 24,
+                        children: e.jsx("path", {
+                          strokeLinecap: "round",
+                          strokeLinejoin: "round",
+                          d: "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z",
+                        }),
+                      }),
+                    }),
                   ],
                 }),
               ],
@@ -4548,8 +4581,9 @@ function ge() {
                         s.notable_products && s.notable_products.length > 0 && e.jsx("div", {
                           className: "flex flex-wrap gap-2",
                           children: s.notable_products.slice(0, 4).map((r) =>
-                            e.jsx("span", {
-                              className: "inline-block px-3 py-1 bg-ambra-50 text-ambra-700 text-xs font-semibold rounded-full border border-ambra-200",
+                            e.jsx(L, {
+                              to: "/prodotti-tipici",
+                              className: "inline-block px-3 py-1 bg-ambra-50 text-ambra-700 text-xs font-semibold rounded-full border border-ambra-200 hover:bg-ambra-100 hover:border-ambra-400 transition-colors",
                               children: r,
                             }, r)
                           ),

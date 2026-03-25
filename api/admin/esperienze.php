@@ -18,6 +18,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id = trim($_POST['id'] ?? '');
     if (!$id) { $msg = '❌ ID obbligatorio.'; goto render; }
 
+    $required_fields = ['title' => 'Titolo', 'provider_id' => 'ID Azienda', 'borough_id' => 'ID Borgo'];
+    foreach ($required_fields as $field => $fieldLabel) {
+        if (empty(trim($_POST[$field] ?? ''))) {
+            $msg = "❌ Il campo \"$fieldLabel\" è obbligatorio.";
+            goto render;
+        }
+    }
+    if (empty($_POST['category'] ?? '')) {
+        $msg = '❌ Il campo "Categoria" è obbligatorio.';
+        goto render;
+    }
+    if (!isset($_POST['price_per_person']) || trim($_POST['price_per_person']) === '') {
+        $msg = '❌ Il campo "Prezzo/persona" è obbligatorio.';
+        goto render;
+    }
+    if (empty(trim($_POST['duration_minutes'] ?? '')) || (int)($_POST['duration_minutes']) <= 0) {
+        $msg = '❌ Il campo "Durata (min)" è obbligatorio e deve essere maggiore di 0.';
+        goto render;
+    }
+
     $exists = $db->prepare("SELECT id FROM experiences WHERE id=?");
     $exists->execute([$id]);
 
@@ -61,17 +81,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Array fields
-    $toLines = fn($s) => array_filter(array_map('trim', explode("\n", $s ?? '')));
-
     $langs = array_filter(array_map('trim', explode(',', $_POST['languages_available'] ?? '')));
     $db->prepare("DELETE FROM experience_languages WHERE experience_id=?")->execute([$id]);
     $stmtLang = $db->prepare("INSERT INTO experience_languages (experience_id, lang) VALUES (?,?)");
     foreach ($langs as $l) $stmtLang->execute([$id, $l]);
 
-    replaceArray($db, 'experience_includes',      'experience_id', $id, $toLines($_POST['includes']      ?? ''));
-    replaceArray($db, 'experience_excludes',       'experience_id', $id, $toLines($_POST['excludes']      ?? ''));
-    replaceArray($db, 'experience_bring',          'experience_id', $id, $toLines($_POST['what_to_bring'] ?? ''));
-    replaceArray($db, 'experience_seasonal_tags',  'experience_id', $id, $toLines($_POST['seasonal_tags'] ?? ''));
+    replaceArray($db, 'experience_includes',      'experience_id', $id, parseTextToArray($_POST['includes']      ?? ''));
+    replaceArray($db, 'experience_excludes',       'experience_id', $id, parseTextToArray($_POST['excludes']      ?? ''));
+    replaceArray($db, 'experience_bring',          'experience_id', $id, parseTextToArray($_POST['what_to_bring'] ?? ''));
+    replaceArray($db, 'experience_seasonal_tags',  'experience_id', $id, parseTextToArray($_POST['seasonal_tags'] ?? ''));
 
     // Timeline steps
     $db->prepare("DELETE FROM experience_timeline WHERE experience_id=?")->execute([$id]);
@@ -177,18 +195,18 @@ require '_layout.php';
 
       <!-- Main fields grid -->
       <div class="grid grid-cols-2 gap-4">
-        <?= adminInput('id', 'ID', $sel) ?>
+        <?= adminInput('id', 'ID', $sel, 'text', false, '', true) ?>
         <?= adminInput('slug', 'Slug', $sel) ?>
-        <?= adminInput('title', 'Titolo', $sel, 'text', true) ?>
+        <?= adminInput('title', 'Titolo', $sel, 'text', true, '', true) ?>
         <?= adminInput('tagline', 'Tagline', $sel, 'text', true) ?>
-        <?= adminInput('provider_id', 'ID Azienda', $sel) ?>
-        <?= adminInput('borough_id', 'ID Borgo', $sel) ?>
+        <?= adminInput('provider_id', 'ID Azienda', $sel, 'text', false, '', true) ?>
+        <?= adminInput('borough_id', 'ID Borgo', $sel, 'text', false, '', true) ?>
         <?= adminInput('lat', 'Latitudine', $sel, 'number') ?>
         <?= adminInput('lng', 'Longitudine', $sel, 'number') ?>
-        <?= adminInput('duration_minutes', 'Durata (min)', $sel, 'number') ?>
+        <?= adminInput('duration_minutes', 'Durata (min)', $sel, 'number', false, '', true) ?>
         <?= adminInput('max_participants', 'Max partecipanti', $sel, 'number') ?>
         <?= adminInput('min_participants', 'Min partecipanti', $sel, 'number') ?>
-        <?= adminInput('price_per_person', 'Prezzo/persona', $sel, 'number', false, '0.01') ?>
+        <?= adminInput('price_per_person', 'Prezzo/persona', $sel, 'number', false, '0.01', true) ?>
         <?= adminInput('rating', 'Rating (0-5)', $sel, 'number', false, '0.1') ?>
         <?= adminInput('reviews_count', 'N. recensioni', $sel, 'number') ?>
         <?= adminSelect('category', 'Categoria', $sel, ['GASTRONOMIA','CULTURA','NATURA','ARTIGIANATO','BENESSERE','AVVENTURA']) ?>

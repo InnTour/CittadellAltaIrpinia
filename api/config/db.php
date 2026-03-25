@@ -469,23 +469,27 @@ function parseJsonOrText(?string $value, string $separator = ','): array {
 // Admin Form Helpers — Componenti UI riutilizzabili
 // ============================================================
 
-function adminInput(string $name, string $label, ?array $sel, string $type = 'text', bool $full = false, string $step = ''): string {
+function adminInput(string $name, string $label, ?array $sel, string $type = 'text', bool $full = false, string $step = '', bool $required = false): string {
     $value = htmlspecialchars($sel[$name] ?? '');
     $cls = $full ? 'col-span-2' : '';
     $stepAttr = $step ? " step=\"$step\"" : ($type === 'number' ? ' step="any"' : '');
+    $requiredAttr = $required ? ' required' : '';
+    $requiredMark = $required ? '<span class="text-red-400 ml-1">*</span>' : '';
     return "<div class=\"$cls\">
-        <label class=\"block text-xs text-slate-400 mb-1\">$label</label>
-        <input type=\"$type\" name=\"$name\" value=\"$value\"$stepAttr
+        <label class=\"block text-xs text-slate-400 mb-1\">$label$requiredMark</label>
+        <input type=\"$type\" name=\"$name\" value=\"$value\"$stepAttr$requiredAttr
           class=\"w-full bg-slate-700 text-white rounded-lg px-3 py-2 text-sm border border-slate-600 focus:outline-none focus:border-emerald-500\">
     </div>";
 }
 
-function adminTextarea(string $name, string $label, ?array $sel, int $rows = 3, string $help = ''): string {
+function adminTextarea(string $name, string $label, ?array $sel, int $rows = 3, string $help = '', bool $required = false): string {
     $value = htmlspecialchars($sel[$name] ?? '');
     $helpHtml = $help ? "<p class=\"text-xs text-slate-500 mt-1\">$help</p>" : '';
+    $requiredAttr = $required ? ' required' : '';
+    $requiredMark = $required ? '<span class="text-red-400 ml-1">*</span>' : '';
     return "<div>
-        <label class=\"block text-xs text-slate-400 mb-1\">$label</label>
-        <textarea name=\"$name\" rows=\"$rows\"
+        <label class=\"block text-xs text-slate-400 mb-1\">$label$requiredMark</label>
+        <textarea name=\"$name\" rows=\"$rows\"$requiredAttr
           class=\"w-full bg-slate-700 text-white rounded-lg px-3 py-2 text-sm border border-slate-600 focus:outline-none focus:border-emerald-500\">$value</textarea>
         $helpHtml
     </div>";
