@@ -1,42 +1,77 @@
 # SITEMAP COMPLETA - MetaBorghi/CittadellAltaIrpinia
 
+**Platform:** React SPA (Single Page Application) con anchor-based navigation
+**Backend:** PHP REST API v1 + MySQL + Admin CMS
+**Company:** InnTour S.r.l. (Startup Innovativa)
+**Architecture:** REST API, Static data export, Admin panel management
+
+---
+
 ## PARTE FRONTEND - APPLICAZIONE WEB
 
-### Home & Sezioni Principali
+### Home & Sezioni Principali (Anchor-Based Navigation)
+
+L'intera applicazione è una **Single Page Application (SPA)** con navigazione tramite anchor links (#). La homepage contiene tutte le sezioni principali.
 
 ```
-/ (HomePage)
+/ (HomePage - Anchor Navigation)
+├── #borghi (Borghi Section) → Lists 9 boroughs
+│   ├── Links to: Individual borgo details via API
+│   ├── Shows: Maps view, highlights, related content
+│   └── Cross-links to: Companies, Experiences, Products in each borough
+│
+├── #esperienze (Esperienze Section) → Lists 6 experiences
+│   ├── Filterable by: GASTRONOMIA, CULTURA, NATURA, ARTIGIANATO, BENESSERE, AVVENTURA
+│   ├── Links to: Experience details via API
+│   └── Shows: Provider, location, difficulty, duration, price
+│
+├── #mappa (Map Section) → Interactive map with all borghi
+│   ├── Displays: Geolocation of all content
+│   └── Links to: Borgo details from map pins
+│
+├── #chi-siamo (About Us) → Platform information
+├── #prenota (Call-to-Action) → Booking/engagement section
+└── #contatti (Footer/Contacts) → Contact form, social links, hours
+
+Navigation Menu:
+├── Borghi → #borghi
+├── Esperienze → #esperienze
+├── Mappa → #mappa
+├── Chi Siamo → #chi-siamo
+├── Contatti → #contatti
+└── Prenota (CTA Button) → #prenota
+```
+
+### Sezione BORGHI (9 Piccoli Comuni Montani)
+
+**9 Borghi Available:**
+1. **Lacedonia** - Population 2,200, Altitude 730m
+2. **Calitri** - Population 4,500, Altitude 530m (Ceramic arts center)
+3. **Bisaccia** - Population 3,800, Altitude 860m (Archaeological)
+4. **Andretta** - Population 1,700, Altitude 850m (Artisan ceramics)
+5. **Monteverde** - Population 750, Altitude 730m (Castle views)
+6. **Aquilonia** - Population 1,600, Altitude 740m (Ethnographic museum)
+7. **Cairano** - Population 350, Altitude 820m (Smallest, contemporary art)
+8. **Conza della Campania** - Population 1,400, Altitude 580m (Lake oasis)
+9. **Nusco** - Population 3,800, Altitude 914m (Highest, cathedral)
+
+```
+#borghi (BoroughsPage - Anchor Section)
+├── Displays:
+│   ├── All 9 borghi with highlights
+│   ├── Population, altitude, province info
+│   ├── Hero images and coordinates
+│   └── Notable content per borough
+│
 ├── Links to:
-│   ├── /borghi (BoroughsPage)
-│   ├── /aziende (CompaniesPage)
-│   ├── /esperienze (ExperiencesPage)
-│   ├── /artigianato (CraftsPage)
-│   ├── /prodotti-food (ProductsPage)
-│   ├── /ospitalita (AccommodationsPage)
-│   ├── /ristorazione (RestaurantsPage)
-│   ├── /comuni
-│   ├── /contatti
-│   ├── /b2b
-│   └── /faq
-```
-
-### Sezione BORGHI (Piccoli Comuni Montani)
-
-```
-/borghi (BoroughsPage - List View)
-├── Links to:
-│   ├── /borghi/:slug (BoroughDetailPage)
-│   ├── Individual borghi detail pages:
-│   │   ├── /borghi/lacedonia
-│   │   ├── /borghi/villarosa
-│   │   └── [other borghi]
-│   ├── Hero section references partner content:
-│   │   ├── Companies in each borough
-│   │   ├── Experiences in each borough
-│   │   ├── Products from each borough
-│   │   ├── Restaurants in each borough
-│   │   └── Accommodations in each borough
-│   └── Navigation back to /
+│   ├── Individual borgo details via API
+│   ├── Related Companies (aziende)
+│   ├── Related Experiences
+│   ├── Related Products
+│   ├── Related Restaurants
+│   └── Related Accommodations
+│
+└── Navigation back to home (#)
 ```
 
 ### Sezione AZIENDE (Companies/Businesses)
@@ -56,22 +91,38 @@
 └── Navigation back to /
 ```
 
-### Sezione ESPERIENZE (Activities/Experiences)
+### Sezione ESPERIENZE (6 Esperienze per Categoria)
+
+**6 Experiences by Category:**
+1. **ARTIGIANATO** - Ceramica Calitri (craft workshop, €45, 3 hours)
+2. **NATURA** - Sentiero Ofanto (hiking, €25, 5 hours)
+3. **GASTRONOMIA** - Sapori d'Irpinia (gastronomy tour, €65, 4 hours)
+4. **CULTURA** - Notte al Castello (castle visit, €20, 2 hours)
+5. **BENESSERE** - Yoga all'Alba (yoga session, €30, 2 hours)
+6. **AVVENTURA** - Kayak Lago Conza (water sports, €40, 3 hours)
 
 ```
-/esperienze (ExperiencesPage - List View)
+#esperienze (ExperiencesPage - Anchor Section)
 ├── Shows:
-│   ├── All experiences with filters
-│   ├── Category filters (trekking, cooking, etc.)
-│   ├── Difficulty levels
-│   └── Seasonal availability
+│   ├── All 6 experiences with filters
+│   ├── Category filters (GASTRONOMIA, CULTURA, NATURA, ARTIGIANATO, BENESSERE, AVVENTURA)
+│   ├── Difficulty levels (FACILE, MEDIO, DIFFICILE)
+│   ├── Price, duration, max participants
+│   ├── Rating and reviews
+│   └── Seasonal availability tags
+│
 ├── Links to:
-│   ├── /esperienze/:slug (ExperienceDetailPage)
-│   └── Related content:
-│       ├── Experience provider (company/azienda)
-│       ├── Location (borough)
-│       └── Associated products
-└── Navigation back to /
+│   ├── Individual experience details via API
+│   ├── Experience provider/company info
+│   ├── Location (specific borough)
+│   ├── Cancellation policy
+│   └── Languages available
+│
+└── Related content:
+    ├── What's included/excluded
+    ├── What to bring
+    ├── Timeline steps/itinerary
+    └── Similar experiences
 ```
 
 ### Sezione ARTIGIANATO (Crafts)
@@ -356,6 +407,169 @@ GET    /api/v1/analytics/conversions → Conversion tracking
 ├── seed_lacedonia.php → Seed Lacedonia data (testing)
 ├── _layout.php        → Admin layout template
 └── _footer.php        → Admin footer template
+```
+
+---
+
+## API ENDPOINTS (REST v1)
+
+### Base URL: `/api/v1/`
+
+All endpoints use standard HTTP methods: **GET** (read), **POST** (create), **PUT** (update), **DELETE** (destroy).
+Authentication required for mutations (POST/PUT/DELETE) via JWT token.
+
+#### Borghi (Towns)
+```
+GET    /api/v1/boroughs.php              → List all boroughs
+GET    /api/v1/boroughs.php?id={id}     → Single borough by ID
+GET    /api/v1/boroughs.php?slug={slug} → Single borough by slug
+POST   /api/v1/boroughs.php             → Create borough (auth required)
+PUT    /api/v1/boroughs.php?id={id}     → Update borough (auth required)
+DELETE /api/v1/boroughs.php?id={id}     → Delete borough with cascading (auth required)
+
+Response includes: highlights, notable_products, notable_experiences,
+                  notable_restaurants, gallery_images, coordinates,
+                  hero_image, cover_video_url, main_video_url
+```
+
+#### Aziende (Companies)
+```
+GET    /api/v1/companies.php                      → List all companies
+GET    /api/v1/companies.php?id={id}             → Single company
+GET    /api/v1/companies.php?slug={slug}         → Single company by slug
+GET    /api/v1/companies.php?borough={borough_id} → Companies in borough
+POST   /api/v1/companies.php                     → Create (auth required)
+PUT    /api/v1/companies.php?id={id}             → Update (auth required)
+DELETE /api/v1/companies.php?id={id}             → Delete (auth required)
+
+Response includes: certifications, b2b_interests, awards, social_links,
+                  coordinates, gallery_images, tier (BASE/PREMIUM/PLATINUM),
+                  founder info, cover_video_url
+```
+
+#### Esperienze (Experiences)
+```
+GET    /api/v1/experiences.php                              → List all
+GET    /api/v1/experiences.php?id={id}                     → Single
+GET    /api/v1/experiences.php?slug={slug}                 → By slug
+GET    /api/v1/experiences.php?category={GASTRONOMIA|...}  → By category
+GET    /api/v1/experiences.php?borough={borough_id}        → By borough
+GET    /api/v1/experiences.php?category={CAT}&borough={ID} → Combined
+POST   /api/v1/experiences.php                             → Create
+PUT    /api/v1/experiences.php?id={id}                     → Update
+DELETE /api/v1/experiences.php?id={id}                     → Delete
+
+Categories: GASTRONOMIA, CULTURA, NATURA, ARTIGIANATO, BENESSERE, AVVENTURA
+Response includes: languages_available, includes, excludes, what_to_bring,
+                  seasonal_tags, timeline_steps, difficulty_level, ratings
+```
+
+#### Artigianato (Craft Products)
+```
+GET    /api/v1/crafts.php                    → List all crafts
+GET    /api/v1/crafts.php?id={id}           → Single craft
+GET    /api/v1/crafts.php?slug={slug}       → By slug
+GET    /api/v1/crafts.php?borough={id}      → By borough
+POST   /api/v1/crafts.php                   → Create
+PUT    /api/v1/crafts.php?id={id}           → Update
+DELETE /api/v1/crafts.php?id={id}           → Delete
+
+Response includes: material_types, customization_options, process_steps,
+                  gallery_images, dimensions, price, lead_time_days
+```
+
+#### Prodotti Food (Food Products)
+```
+GET    /api/v1/food_products.php                    → List all
+GET    /api/v1/food_products.php?id={id}           → Single product
+GET    /api/v1/food_products.php?slug={slug}       → By slug
+GET    /api/v1/food_products.php?borough={id}      → By borough
+GET    /api/v1/food_products.php?category={cat}    → By category
+POST   /api/v1/food_products.php                   → Create
+PUT    /api/v1/food_products.php?id={id}           → Update
+DELETE /api/v1/food_products.php?id={id}           → Delete
+
+Response includes: producer info, certifications (DOP, IGP), ingredients,
+                  storage_instructions, price, stock_qty
+```
+
+#### Ospitalità (Accommodations)
+```
+GET    /api/v1/accommodations.php                    → List all
+GET    /api/v1/accommodations.php?id={id}           → Single
+GET    /api/v1/accommodations.php?slug={slug}       → By slug
+GET    /api/v1/accommodations.php?borough={id}      → By borough
+POST   /api/v1/accommodations.php                   → Create
+PUT    /api/v1/accommodations.php?id={id}           → Update
+DELETE /api/v1/accommodations.php?id={id}           → Delete
+
+Response includes: rooms_count, beds_count, amenities, price_per_night,
+                  certifications, founder_info, contact info, social links
+```
+
+#### Ristorazione (Restaurants)
+```
+GET    /api/v1/restaurants.php                    → List all
+GET    /api/v1/restaurants.php?id={id}           → Single
+GET    /api/v1/restaurants.php?slug={slug}       → By slug
+GET    /api/v1/restaurants.php?borough={id}      → By borough
+POST   /api/v1/restaurants.php                   → Create
+PUT    /api/v1/restaurants.php?id={id}           → Update
+DELETE /api/v1/restaurants.php?id={id}           → Delete
+
+Response includes: cuisines, dietary_options, certifications, tier,
+                  booking_url, social_links, cover_video_url
+```
+
+#### Comuni (Municipalities B2G)
+```
+GET    /api/v1/municipalities.php              → List all
+GET    /api/v1/municipalities.php?id={id}     → Single
+GET    /api/v1/municipalities.php?status={st} → By status
+POST   /api/v1/municipalities.php              → Create
+PUT    /api/v1/municipalities.php?id={id}     → Update
+DELETE /api/v1/municipalities.php?id={id}     → Delete
+```
+
+#### Authentication & Users
+```
+POST   /api/v1/auth.php?action=register       → Register new user
+POST   /api/v1/auth.php?action=login          → Login (returns JWT)
+GET    /api/v1/auth.php?action=me             → Get current user
+POST   /api/v1/auth.php?action=refresh        → Refresh JWT token
+GET    /api/v1/users.php                      → List users (admin)
+GET    /api/v1/users.php?id={id}              → Single user profile
+PUT    /api/v1/users.php?id={id}              → Update profile
+PUT    /api/v1/users.php?action=password      → Change password
+DELETE /api/v1/users.php?id={id}              → Deactivate user
+```
+
+#### Prenotazioni (Bookings)
+```
+GET    /api/v1/bookings.php                      → List user's bookings
+GET    /api/v1/bookings.php?id={id}              → Single booking
+GET    /api/v1/bookings.php?status={status}     → Filter by status
+POST   /api/v1/bookings.php                      → Create booking
+PUT    /api/v1/bookings.php?id={id}              → Update booking
+DELETE /api/v1/bookings.php?id={id}              → Cancel booking
+
+Status values: PENDING, CONFIRMED, CANCELLED, COMPLETED
+```
+
+#### Wishlist
+```
+GET    /api/v1/wishlist.php                                      → Get wishlist
+GET    /api/v1/wishlist.php?item_type={type}                    → Filter by type
+POST   /api/v1/wishlist.php                                      → Add to wishlist
+DELETE /api/v1/wishlist.php?item_type={type}&item_id={id}       → Remove
+```
+
+#### Analytics
+```
+POST   /api/v1/analytics.php                    → Track page view (public)
+GET    /api/v1/analytics.php                    → Get stats (auth required)
+GET    /api/v1/analytics.php?period={days}     → Stats for N days
+GET    /api/v1/analytics.php?type={type}       → Stats by entity type
 ```
 
 ---
