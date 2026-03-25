@@ -1462,8 +1462,15 @@
            CARD TILT EFFECT (3D hover su card)
            ═══════════════════════════════════════════════════════════ */
         function initCardTilt() {
+          var cachedCards = [];
+          var cardCacheTime = 0;
           document.addEventListener('mousemove', function (e) {
-            var cards = document.querySelectorAll('[class*="card"]:not(.leaflet-container), [class*="Card"]:not(.leaflet-container), article');
+            var now = Date.now();
+            if (now - cardCacheTime > 2000) {
+              cachedCards = Array.from(document.querySelectorAll('[class*="card"]:not(.leaflet-container), [class*="Card"]:not(.leaflet-container), article'));
+              cardCacheTime = now;
+            }
+            var cards = cachedCards;
             cards.forEach(function (card) {
               var rect = card.getBoundingClientRect();
               if (e.clientX >= rect.left && e.clientX <= rect.right &&

@@ -4199,7 +4199,7 @@ function ge() {
         body: JSON.stringify({ item_type: "borough", item_id: s && s.id }),
       });
       setWished((w) => !w);
-    } catch {}
+    } catch(e) { setWished((w) => !w); }
   }
   a.useEffect(() => {
     if (!t) return;
