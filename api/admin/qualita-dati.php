@@ -101,8 +101,9 @@ foreach ($entities as $table => $meta) {
     if ($total > $complete) {
         $notCompleteExpr = "NOT ($completeExpr)";
         try {
+            // Seleziona tutti i campi in un'unica query, evitando N+1
             $incStmt = $db->query(
-                "SELECT `$idCol` AS id, `$nameCol` AS name
+                "SELECT *
                  FROM `$table`
                  WHERE $notCompleteExpr
                  ORDER BY `$idCol` ASC
@@ -114,16 +115,7 @@ foreach ($entities as $table => $meta) {
         }
 
         // Determina quali campi mancano per ogni record
-        foreach ($rows as $r) {
-            // Fetch riga completa per analisi campi
-            try {
-                $detailStmt = $db->prepare("SELECT * FROM `$table` WHERE `$idCol` = ?");
-                $detailStmt->execute([$r['id']]);
-                $full = $detailStmt->fetch(PDO::FETCH_ASSOC);
-            } catch (PDOException $e) {
-                $full = [];
-            }
-
+        foreach ($rows as $full) {
             $missingFields = [];
             foreach ($fields as $f) {
                 if (!isset($full[$f]) || $full[$f] === null || $full[$f] === '') {
@@ -134,8 +126,8 @@ foreach ($entities as $table => $meta) {
             $incompleteRows[] = [
                 'table'         => $table,
                 'label'         => $meta['label'],
-                'id'            => $r['id'],
-                'name'          => $r['name'] ?? '(senza nome)',
+                'id'            => $full[$idCol],
+                'name'          => $full[$nameCol] ?? '(senza nome)',
                 'page'          => $meta['page'],
                 'missingFields' => $missingFields,
             ];
