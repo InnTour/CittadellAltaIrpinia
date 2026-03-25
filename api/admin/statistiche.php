@@ -32,6 +32,31 @@ try {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 }
 
+// Export CSV
+if (($_GET['export'] ?? '') === 'csv') {
+    $csvPeriod = (int)($_GET['period'] ?? 30);
+    $csvPeriod = max(1, min(365, $csvPeriod));
+    $csvFrom   = date('Y-m-d', strtotime("-{$csvPeriod} days"));
+
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename="statistiche-' . date('Y-m-d') . '.csv"');
+    $out = fopen('php://output', 'w');
+    fprintf($out, chr(0xEF).chr(0xBB).chr(0xBF)); // BOM UTF-8
+
+    fputcsv($out, ['Tipo entità', 'ID entità', 'Data', 'Visualizzazioni', 'Visitatori unici']);
+
+    $stmt = $db->prepare(
+        "SELECT entity_type, entity_id, stat_date, views_count, unique_views
+         FROM daily_stats WHERE stat_date >= ? ORDER BY stat_date DESC, views_count DESC"
+    );
+    $stmt->execute([$csvFrom]);
+    while ($row = $stmt->fetch(PDO::FETCH_NUM)) {
+        fputcsv($out, $row);
+    }
+    fclose($out);
+    exit;
+}
+
 $period = (int)($_GET['period'] ?? 30);
 $period = max(1, min(365, $period));
 $dateFrom = date('Y-m-d', strtotime("-{$period} days"));
@@ -143,6 +168,17 @@ require '_layout.php';
     <?= $label ?>
   </a>
   <?php endforeach; ?>
+</div>
+
+<!-- Export CSV -->
+<div class="mb-6 flex items-center gap-3">
+  <a href="statistiche.php?export=csv&period=<?= $period ?>"
+     class="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-700 hover:bg-slate-600 text-slate-200 text-sm font-semibold rounded-full border border-slate-600 transition-all">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+    </svg>
+    Scarica CSV (<?= $period ?> giorni)
+  </a>
 </div>
 
 <div class="grid md:grid-cols-2 gap-6 mb-8">
