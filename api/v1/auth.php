@@ -167,9 +167,113 @@ if ($action === 'logout') {
     exit;
 }
 
+// ── GOOGLE SIGN-IN ────────────────────────────────────────────────
+if ($action === 'google-signin' && $method === 'POST') {
+    $body    = getJsonBody();
+    $idToken = trim($body['id_token'] ?? '');
+
+    if (!$idToken) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Token Google mancante']);
+        exit;
+    }
+
+    // Verifica il token con Google
+    $ch = curl_init('https://oauth2.googleapis.com/tokeninfo?id_token=' . urlencode($idToken));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($httpCode !== 200 || !$response) {
+        http_response_code(401);
+        echo json_encode(['error' => 'Token Google non valido o scaduto']);
+        exit;
+    }
+
+    $gUser = json_decode($response, true);
+    if (empty($gUser['sub']) || empty($gUser['email'])) {
+        http_response_code(401);
+        echo json_encode(['error' => 'Risposta Google non valida']);
+        exit;
+    }
+
+    $googleId = $gUser['sub'];
+    $email    = $gUser['email'];
+    $name     = $gUser['name'] ?? explode('@', $email)[0];
+    $avatar   = $gUser['picture'] ?? null;
+
+    ensureOauthColumns($db);
+
+    // Cerca utente per google_id o email
+    $stmt = $db->prepare("SELECT * FROM admin_users WHERE google_id = ? OR email = ? LIMIT 1");
+    $stmt->execute([$googleId, $email]);
+    $user = $stmt->fetch();
+
+    if ($user) {
+        // Collega google_id se non già presente
+        if (!$user['google_id']) {
+            $db->prepare("UPDATE admin_users SET google_id = ?, oauth_provider = 'google', avatar_url = COALESCE(avatar_url, ?), last_login_at = NOW() WHERE id = ?")
+               ->execute([$googleId, $avatar, $user['id']]);
+            $user['google_id']      = $googleId;
+            $user['oauth_provider'] = 'google';
+        } else {
+            $db->prepare("UPDATE admin_users SET last_login_at = NOW() WHERE id = ?")->execute([$user['id']]);
+        }
+    } else {
+        // Nuovo utente via Google
+        $userId = bin2hex(random_bytes(16));
+        $db->prepare("INSERT INTO admin_users
+                        (id, name, email, password_hash, role, google_id, oauth_provider, avatar_url, is_active, email_verified)
+                      VALUES (?, ?, ?, '', 'registrato', ?, 'google', ?, 1, 1)")
+           ->execute([$userId, $name, $email, $googleId, $avatar]);
+
+        $user = [
+            'id'             => $userId,
+            'name'           => $name,
+            'email'          => $email,
+            'role'           => 'registrato',
+            'phone'          => null,
+            'bio'            => null,
+            'avatar_url'     => $avatar,
+            'borough_id'     => null,
+            'company_id'     => null,
+            'is_active'      => 1,
+            'email_verified' => 1,
+            'last_login_at'  => null,
+            'created_at'     => null,
+        ];
+    }
+
+    $token = jwtEncode([
+        'sub'   => $user['id'],
+        'email' => $user['email'],
+        'name'  => $user['name'],
+        'role'  => $user['role'],
+    ]);
+
+    echo json_encode([
+        'ok'    => true,
+        'token' => $token,
+        'user'  => _buildUserProfile($user),
+    ]);
+    exit;
+}
+
 // ── Fallback ──────────────────────────────────────────────────────
 http_response_code(400);
-echo json_encode(['error' => 'Azione non valida. Usa: register, login, me, refresh, logout']);
+echo json_encode(['error' => 'Azione non valida. Usa: register, login, me, refresh, logout, google-signin']);
+
+// ── Helper: aggiunge colonne OAuth se non esistono ────────────────
+function ensureOauthColumns(PDO $db): void {
+    static $done = false;
+    if ($done) return;
+    $done = true;
+    try { $db->exec("ALTER TABLE admin_users ADD COLUMN google_id VARCHAR(100) DEFAULT NULL"); } catch (PDOException $e) {}
+    try { $db->exec("ALTER TABLE admin_users ADD COLUMN oauth_provider VARCHAR(50) DEFAULT NULL"); } catch (PDOException $e) {}
+    try { $db->exec("ALTER TABLE admin_users ADD INDEX idx_google_id (google_id)"); } catch (PDOException $e) {}
+}
 
 // ── Helper: costruisce profilo utente per la risposta ─────────────
 function _buildUserProfile(array $u): array {
