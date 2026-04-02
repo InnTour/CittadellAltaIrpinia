@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Scraper per sistemairpinia.provincia.avellino.it
-Estrae: borghi, eventi, itinerari
+Scraper v3 — sistemairpinia.provincia.avellino.it
+URL dei 25 comuni hardcoded, scraping diretto + eventi + itinerari.
 
 Dipendenze:
     pip install playwright beautifulsoup4 lxml
@@ -11,42 +11,87 @@ Utilizzo:
     python scraper_sistemairpinia.py
 
 Output:
-    borghi.json, eventi.json, itinerari.json
+    borghi_raw.json, eventi_raw.json, itinerari_raw.json
 """
 
 import asyncio
 import json
 import re
-import time
-import sys
-from pathlib import Path
-from urllib.parse import urljoin, urlparse
-
+from urllib.parse import urljoin
 from playwright.async_api import async_playwright
 from bs4 import BeautifulSoup
 
 BASE_URL = "https://sistemairpinia.provincia.avellino.it"
 
-# I 25 comuni dell'Alta Irpinia che ci interessano
-ALTA_IRPINIA_COMUNI = {
-    "andretta", "aquilonia", "bisaccia", "cairano", "calitri",
-    "conza della campania", "conza-della-campania",
-    "guardia lombardi", "guardia-lombardi", "guardia dei lombardi",
-    "lacedonia", "lioni", "monteverde", "morra de sanctis", "morra-de-sanctis",
-    "nusco", "rocca san felice", "rocca-san-felice",
-    "sant'angelo dei lombardi", "sant-angelo-dei-lombardi",
-    "sant'andrea di conza", "sant-andrea-di-conza",
-    "torella dei lombardi", "torella-dei-lombardi",
-    "villamaina", "gesualdo", "frigento", "flumeri",
-    "greci", "zungoli", "savignano irpino", "vallata",
-    "scampitella", "trevico", "vallesaccarda",
-    "castelbaronia", "carife", "san sossio baronia",
-    "chiusano san domenico", "paternopoli"
+# URL esatte dei 25 comuni (pattern /index.php/it/comuni/{slug})
+COMUNI_URLS = {
+    "andretta":                 f"{BASE_URL}/index.php/it/comuni/andretta",
+    "aquilonia":                f"{BASE_URL}/index.php/it/comuni/aquilonia",
+    "bagnoli-irpino":           f"{BASE_URL}/index.php/it/comuni/bagnoli-irpino",
+    "bisaccia":                 f"{BASE_URL}/index.php/it/comuni/bisaccia",
+    "cairano":                  f"{BASE_URL}/index.php/it/comuni/cairano",
+    "calabritto":               f"{BASE_URL}/index.php/it/comuni/calabritto",
+    "calitri":                  f"{BASE_URL}/index.php/it/comuni/calitri",
+    "caposele":                 f"{BASE_URL}/index.php/it/comuni/caposele",
+    "cassano-irpino":           f"{BASE_URL}/index.php/it/comuni/cassano-irpino",
+    "castelfranci":             f"{BASE_URL}/index.php/it/comuni/castelfranci",
+    "conza-della-campania":     f"{BASE_URL}/index.php/it/comuni/conza-della-campania",
+    "guardia-dei-lombardi":     f"{BASE_URL}/index.php/it/comuni/guardia-lombardi",
+    "lacedonia":                f"{BASE_URL}/index.php/it/comuni/lacedonia",
+    "lioni":                    f"{BASE_URL}/index.php/it/comuni/lioni",
+    "montella":                 f"{BASE_URL}/index.php/it/comuni/montella",
+    "monteverde":               f"{BASE_URL}/index.php/it/comuni/monteverde",
+    "morra-de-sanctis":         f"{BASE_URL}/index.php/it/comuni/morra-de-sanctis",
+    "nusco":                    f"{BASE_URL}/index.php/it/comuni/nusco",
+    "rocca-san-felice":         f"{BASE_URL}/index.php/it/comuni/rocca-san-felice",
+    "sant-andrea-di-conza":     f"{BASE_URL}/index.php/it/comuni/santandrea-di-conza",
+    "sant-angelo-dei-lombardi": f"{BASE_URL}/index.php/it/comuni/santangelo-lombardi",
+    "senerchia":                f"{BASE_URL}/index.php/it/comuni/senerchia",
+    "teora":                    f"{BASE_URL}/index.php/it/comuni/teora",
+    "torella-dei-lombardi":     f"{BASE_URL}/index.php/it/comuni/torella-dei-lombardi",
+    "villamaina":               f"{BASE_URL}/index.php/it/comuni/villamaina",
 }
 
-# ============================================================
-# Utility
-# ============================================================
+# Conservato per compatibilità (non più usato per i borghi)
+ALTA_IRPINIA = {
+    "andretta":                ["andretta"],
+    "aquilonia":               ["aquilonia"],
+    "bisaccia":                ["bisaccia"],
+    "cairano":                 ["cairano"],
+    "calitri":                 ["calitri"],
+    "conza-della-campania":    ["conza della campania", "conza"],
+    "guardia-dei-lombardi":    ["guardia lombardi", "guardia dei lombardi"],
+    "lacedonia":               ["lacedonia"],
+    "lioni":                   ["lioni"],
+    "monteverde":              ["monteverde"],
+    "morra-de-sanctis":        ["morra de sanctis", "morra"],
+    "nusco":                   ["nusco"],
+    "rocca-san-felice":        ["rocca san felice"],
+    "sant-angelo-dei-lombardi":["sant angelo dei lombardi", "sant'angelo dei lombardi"],
+    "sant-andrea-di-conza":    ["sant andrea di conza", "sant'andrea di conza"],
+    "torella-dei-lombardi":    ["torella dei lombardi", "torella lombardi"],
+    # Aggiungi altri se necessario
+    "villamaina":              ["villamaina"],
+    "gesualdo":                ["gesualdo"],
+    "frigento":                ["frigento"],
+    "flumeri":                 ["flumeri"],
+    "greci":                   ["greci"],
+    "zungoli":                 ["zungoli"],
+    "vallata":                 ["vallata"],
+    "castelbaronia":           ["castelbaronia"],
+    "trevico":                 ["trevico"],
+}
+
+# Pattern URL da provare per ogni comune
+URL_PATTERNS = [
+    "{base}/it/comuni/{slug}",
+    "{base}/it/borghi/{slug}",
+    "{base}/it/borghi-e-centri-storici/{slug}",
+    "{base}/it/{slug}",
+    "{base}/en/cities/{slug}",
+    "{base}/en/villages/{slug}",
+    "{base}/en/comuni/{slug}",
+]
 
 def clean(text: str) -> str:
     if not text:
@@ -55,462 +100,343 @@ def clean(text: str) -> str:
     return text.strip()
 
 def save_json(data, filename: str):
-    path = Path(filename)
-    with open(path, 'w', encoding='utf-8') as f:
+    with open(filename, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
     print(f"  → Salvato: {filename} ({len(data)} elementi)")
 
-# ============================================================
-# Browser setup
-# ============================================================
-
-async def get_page_html(page, url: str, wait_selector: str = None, delay: float = 1.5) -> str:
-    """Carica una pagina e restituisce l'HTML dopo il rendering JS."""
+async def get_html(page, url: str, delay: float = 1.2) -> str:
     try:
-        await page.goto(url, wait_until="networkidle", timeout=30000)
-        if wait_selector:
-            try:
-                await page.wait_for_selector(wait_selector, timeout=5000)
-            except:
-                pass
+        await page.goto(url, wait_until="networkidle", timeout=25000)
         await asyncio.sleep(delay)
         return await page.content()
     except Exception as e:
-        print(f"  ⚠️  Errore caricamento {url}: {e}")
         return ""
 
-# ============================================================
-# Scoperta URL listing
-# ============================================================
+async def find_comune_url(page, slug: str, names: list):
+    """Prova i pattern URL, poi fa una ricerca sul sito."""
 
-async def discover_listing_urls(page) -> dict:
-    """Trova le URL delle sezioni borghi, eventi, itinerari."""
-    print("\n[1/4] Analisi navigazione sito...")
-    html = await get_page_html(page, BASE_URL)
+    # 1. Prova URL dirette
+    for pattern in URL_PATTERNS:
+        url = pattern.format(base=BASE_URL, slug=slug)
+        try:
+            resp = await page.goto(url, timeout=10000, wait_until="domcontentloaded")
+            if resp and resp.status == 200:
+                text = (await page.content()).lower()
+                if any(n.lower() in text for n in names):
+                    print(f"    ✓ URL trovata: {url}")
+                    return url
+        except:
+            pass
+        await asyncio.sleep(0.3)
+
+    # 2. Ricerca italiana
+    for name in names:
+        search_url = f"{BASE_URL}/it/search?search_api_fulltext={quote(name)}"
+        try:
+            html = await get_html(page, search_url, delay=0.8)
+            if html:
+                soup = BeautifulSoup(html, 'lxml')
+                for a in soup.find_all('a', href=True):
+                    href = a['href']
+                    link_text = a.get_text(strip=True).lower()
+                    if name.lower() in link_text or name.lower() in href.lower():
+                        full = urljoin(BASE_URL, href)
+                        if full.startswith(BASE_URL) and len(href) > 2:
+                            print(f"    ✓ Trovata via ricerca: {full}")
+                            return full
+        except:
+            pass
+
+    # 3. Ricerca inglese
+    for name in names:
+        search_url = f"{BASE_URL}/en/search?search_api_fulltext={quote(name)}"
+        try:
+            html = await get_html(page, search_url, delay=0.8)
+            if html:
+                soup = BeautifulSoup(html, 'lxml')
+                for a in soup.find_all('a', href=True):
+                    href = a['href']
+                    link_text = a.get_text(strip=True).lower()
+                    if name.lower() in link_text or name.lower() in href.lower():
+                        full = urljoin(BASE_URL, href)
+                        if full.startswith(BASE_URL) and len(href) > 2:
+                            print(f"    ✓ Trovata via ricerca EN: {full}")
+                            return full
+        except:
+            pass
+
+    print(f"    ✗ URL non trovata per: {slug}")
+    return None
+
+def parse_comune(html: str, url: str, slug: str) -> dict:
     soup = BeautifulSoup(html, 'lxml')
 
-    nav_links = {}
-    for a in soup.find_all('a', href=True):
-        href = a['href'].lower()
-        text = clean(a.get_text()).lower()
-        full = urljoin(BASE_URL, a['href'])
-
-        if any(kw in href or kw in text for kw in ['borg', 'villag', 'comu']):
-            nav_links['borghi'] = full
-        elif any(kw in href or kw in text for kw in ['event']):
-            nav_links['eventi'] = full
-        elif any(kw in href or kw in text for kw in ['itinerar', 'percors']):
-            nav_links['itinerari'] = full
-
-    # Fallback URL standard Drupal/Irpinia
-    defaults = {
-        'borghi':    [
-            f"{BASE_URL}/it/borghi",
-            f"{BASE_URL}/it/comuni",
-            f"{BASE_URL}/en/villages",
-            f"{BASE_URL}/en/cities",
-            f"{BASE_URL}/it/borghi-e-centri-storici",
-        ],
-        'eventi':    [
-            f"{BASE_URL}/it/eventi",
-            f"{BASE_URL}/en/events",
-            f"{BASE_URL}/it/calendar",
-        ],
-        'itinerari': [
-            f"{BASE_URL}/it/itinerari",
-            f"{BASE_URL}/en/itineraries",
-            f"{BASE_URL}/it/percorsi",
-        ],
-    }
-
-    result = {}
-    for section, fallbacks in defaults.items():
-        if section in nav_links:
-            result[section] = nav_links[section]
-        else:
-            # Prova i fallback
-            for url in fallbacks:
-                try:
-                    resp = await page.goto(url, timeout=10000)
-                    if resp and resp.status < 400:
-                        result[section] = url
-                        break
-                except:
-                    continue
-            if section not in result:
-                result[section] = fallbacks[0]  # usa il primo come default
-
-    print(f"  Borghi   → {result.get('borghi', 'N/D')}")
-    print(f"  Eventi   → {result.get('eventi', 'N/D')}")
-    print(f"  Itinerari→ {result.get('itinerari', 'N/D')}")
-    return result
-
-# ============================================================
-# Scraping borghi
-# ============================================================
-
-async def scrape_borghi_list(page, listing_url: str) -> list:
-    """Raccoglie tutti i link alle pagine dettaglio borghi."""
-    print(f"\n  Listing borghi: {listing_url}")
-    links = set()
-    current_url = listing_url
-
-    # Gestisce paginazione
-    while current_url:
-        html = await get_page_html(page, current_url, delay=1.0)
-        soup = BeautifulSoup(html, 'lxml')
-
-        # Cerca link a pagine comuni
-        for a in soup.find_all('a', href=True):
-            href = a['href']
-            full = urljoin(BASE_URL, href)
-            # Pattern tipici Drupal: /it/comuni/nome, /it/borghi/nome, /it/node/123
-            if re.search(r'/(comuni|borgh|villag|cities|node)/[a-z0-9\-]+', href, re.I):
-                if full.startswith(BASE_URL):
-                    links.add(full)
-
-        # Paginazione
-        next_link = soup.find('a', {'rel': 'next'}) or soup.find('a', string=re.compile(r'›|next|succ', re.I))
-        if next_link and next_link.get('href'):
-            next_url = urljoin(BASE_URL, next_link['href'])
-            if next_url != current_url and next_url not in links:
-                current_url = next_url
-            else:
-                break
-        else:
-            break
-
-    print(f"  Trovati {len(links)} link borghi")
-    return sorted(links)
-
-def parse_borgo_detail(html: str, url: str) -> dict:
-    """Estrae tutti i dati da una pagina dettaglio borgo."""
-    soup = BeautifulSoup(html, 'lxml')
-
-    # Titolo
-    title = ""
-    for sel in ['h1.page-title', 'h1.node-title', 'h1', '.field-name-title']:
+    name = ""
+    for sel in ['h1.page-title', 'h1.node-title', 'h1', '.field-name-title h1']:
         el = soup.select_one(sel)
         if el:
-            title = clean(el.get_text())
+            name = clean(el.get_text())
             break
 
-    # Descrizione / corpo principale
-    description = ""
+    description_parts = []
     for sel in [
         '.field-name-body .field-item',
         '.field-name-field-descrizione .field-item',
         '.field-type-text-with-summary .field-item',
-        'article .body',
+        'article .content p',
         '.node-content p',
-        'main p'
+        '.region-content p',
+        'main article p',
     ]:
         els = soup.select(sel)
         if els:
-            description = clean(' '.join(e.get_text() for e in els))
-            break
+            texts = [clean(e.get_text()) for e in els if len(clean(e.get_text())) > 30]
+            if texts:
+                description_parts = texts
+                break
 
-    # Immagini
+    description = '\n\n'.join(description_parts)
+    if not description:
+        paras = [clean(p.get_text()) for p in soup.find_all('p') if len(clean(p.get_text())) > 40]
+        description = '\n\n'.join(paras[:8])
+
     images = []
     for img in soup.select('img[src]'):
         src = img.get('src', '')
-        if src and not src.endswith('.gif') and 'placeholder' not in src:
-            full_src = urljoin(BASE_URL, src)
-            alt = img.get('alt', '')
-            images.append({'src': full_src, 'alt': clean(alt)})
+        if src and not any(x in src for x in ['.gif', 'placeholder', 'logo', 'icon', 'banner']):
+            full = urljoin(BASE_URL, src)
+            alt = clean(img.get('alt', ''))
+            if full not in [i['src'] for i in images]:
+                images.append({'src': full, 'alt': alt})
 
-    # Campi strutturati (field-name-* pattern Drupal)
     fields = {}
-    for field_div in soup.select('[class*="field-name-"]'):
-        classes = field_div.get('class', [])
-        field_name = next((c.replace('field-name-', '') for c in classes if c.startswith('field-name-')), None)
-        if field_name and field_name not in ('body', 'title'):
-            label_el = field_div.select_one('.field-label')
-            value_els = field_div.select('.field-item')
-            if value_els:
-                values = [clean(v.get_text()) for v in value_els if clean(v.get_text())]
-                label = clean(label_el.get_text()).rstrip(':') if label_el else field_name
-                if values:
-                    fields[label or field_name] = values if len(values) > 1 else values[0]
+    for div in soup.select('[class*="field-name-"]'):
+        cls_list = div.get('class', [])
+        field_name = next((c.replace('field-name-', '') for c in cls_list if c.startswith('field-name-')), None)
+        if not field_name or field_name in ('body', 'title'):
+            continue
+        label_el = div.select_one('.field-label')
+        val_els = div.select('.field-item')
+        if val_els:
+            vals = [clean(v.get_text()) for v in val_els if clean(v.get_text())]
+            label = clean(label_el.get_text()).rstrip(':') if label_el else field_name
+            if vals:
+                fields[label or field_name] = vals if len(vals) > 1 else vals[0]
 
-    # Dati numerici da testo
-    pop_match = re.search(r'popolazione[:\s]+([0-9.,]+)', description + ' '.join(str(v) for v in fields.values()), re.I)
-    alt_match = re.search(r'altitudine[:\s]+([0-9]+)\s*m', description + ' '.join(str(v) for v in fields.values()), re.I)
+    full_text = soup.get_text()
+    pop = re.search(r'(?:popolazione|abitanti)[:\s]+([0-9][0-9.,]+)', full_text, re.I)
+    alt = re.search(r'(?:altitudine|altezza|quota)[:\s]+([0-9]+)\s*m', full_text, re.I)
+    area = re.search(r'(?:superficie|area)[:\s]+([0-9]+[.,]?[0-9]*)\s*km', full_text, re.I)
+
+    lists = []
+    for ul in soup.find_all(['ul', 'ol']):
+        parents = [p.name for p in ul.parents]
+        if any(p in parents for p in ['nav', 'header', 'footer']):
+            continue
+        items = [clean(li.get_text()) for li in ul.find_all('li') if len(clean(li.get_text())) > 5]
+        if 2 <= len(items) <= 25:
+            lists.extend(items)
+
+    sections = []
+    for h in soup.select('h2, h3'):
+        t = clean(h.get_text())
+        if t and len(t) > 3 and t not in sections:
+            sections.append(t)
 
     return {
+        'slug': slug,
         'url': url,
-        'name': title,
+        'name': name,
         'description': description,
-        'images': images[:10],
+        'sections': sections[:15],
         'fields': fields,
-        'population_text': pop_match.group(1) if pop_match else '',
-        'altitude_text': alt_match.group(1) if alt_match else '',
-        'raw_text': clean(soup.get_text())[:2000],  # per analisi
+        'images': images[:15],
+        'population_raw': pop.group(1) if pop else '',
+        'altitude_raw': alt.group(1) if alt else '',
+        'area_raw': area.group(1) if area else '',
+        'list_items': lists[:30],
+        'raw_text': clean(full_text)[:4000],
     }
 
-async def scrape_borghi(page, listing_url: str) -> list:
-    """Scraping completo di tutti i borghi."""
-    print(f"\n[2/4] Scraping borghi...")
-    detail_links = await scrape_borghi_list(page, listing_url)
-
+async def scrape_borghi(page) -> list:
+    print("\n[2/4] Scraping 25 comuni (URL hardcoded)...")
     borghi = []
-    total = len(detail_links)
-
-    for i, url in enumerate(detail_links, 1):
-        print(f"  [{i}/{total}] {url}")
-        html = await get_page_html(page, url, delay=1.2)
-        if html:
-            data = parse_borgo_detail(html, url)
-            if data['name']:
-                borghi.append(data)
-                print(f"    ✓ {data['name']}")
-            else:
-                print(f"    ✗ Nome non trovato")
-        else:
-            print(f"    ✗ Pagina non caricata")
-
+    total = len(COMUNI_URLS)
+    for i, (slug, url) in enumerate(COMUNI_URLS.items(), 1):
+        print(f"\n  [{i}/{total}] {slug}")
+        html = await get_html(page, url, delay=1.2)
+        if not html:
+            print("    ✗ Pagina non caricata")
+            continue
+        data = parse_comune(html, url, slug)
+        borghi.append(data)
+        print(f"    ✓ {data['name']} | desc={len(data['description'])} chars | img={len(data['images'])} | campi={len(data['fields'])}")
     return borghi
 
-# ============================================================
-# Scraping eventi
-# ============================================================
+EVENTI_LISTING_URLS = [
+    f"{BASE_URL}/index.php/it/eventi",
+    f"{BASE_URL}/index.php/it/calendario",
+    f"{BASE_URL}/index.php/it/manifestazioni",
+    f"{BASE_URL}/index.php/en/events",
+    f"{BASE_URL}/it/manifestazioni",
+    f"{BASE_URL}/en/events",
+    f"{BASE_URL}/it/agenda",
+]
 
-def parse_event_detail(html: str, url: str) -> dict:
-    """Estrae dati da una pagina evento."""
+def parse_event(html: str, url: str) -> dict:
     soup = BeautifulSoup(html, 'lxml')
-
-    title = ""
-    for sel in ['h1.page-title', 'h1.node-title', 'h1']:
-        el = soup.select_one(sel)
-        if el:
-            title = clean(el.get_text())
-            break
-
-    description = ""
-    for sel in ['.field-name-body .field-item', '.field-type-text-with-summary .field-item', 'article p', 'main p']:
-        els = soup.select(sel)
-        if els:
-            description = clean(' '.join(e.get_text() for e in els))
-            break
-
-    # Date
-    date_start = ""
-    date_end = ""
-    for sel in ['.date-display-single', '.field-name-field-data', '.field-name-field-date', '.event-date', 'time']:
-        el = soup.select_one(sel)
-        if el:
-            date_start = clean(el.get_text())
-            dt = el.get('datetime', '')
-            if dt:
-                date_start = dt
-            break
-
-    # Luogo
-    location = ""
-    for sel in ['.field-name-field-luogo', '.field-name-field-location', '.field-name-field-comune', '.location']:
-        el = soup.select_one(sel)
-        if el:
-            location = clean(el.get_text())
-            break
-
-    # Categoria
-    category = ""
-    for sel in ['.field-name-field-categoria', '.field-name-field-category', '.field-name-field-tipo']:
-        el = soup.select_one(sel)
-        if el:
-            category = clean(el.get_text())
-            break
-
-    images = []
-    for img in soup.select('img[src]'):
-        src = img.get('src', '')
-        if src and not src.endswith('.gif') and 'placeholder' not in src:
-            images.append(urljoin(BASE_URL, src))
-
+    title = clean(soup.select_one('h1').get_text()) if soup.select_one('h1') else ''
+    desc_els = soup.select('.field-name-body .field-item') or soup.select('article p') or soup.select('main p')
+    description = clean(' '.join(e.get_text() for e in desc_els[:5]))
+    full_text = soup.get_text()
+    date_m = re.search(r'\d{1,2}[/\-\.]\d{1,2}[/\-\.]\d{2,4}', full_text)
+    location_el = soup.select_one('.field-name-field-luogo, .field-name-field-comune, .location')
+    cat_el = soup.select_one('.field-name-field-categoria, .field-name-field-tipo, .field-name-field-category')
+    images = [urljoin(BASE_URL, img['src']) for img in soup.select('img[src]')
+              if img['src'] and 'placeholder' not in img['src'] and not img['src'].endswith('.gif')]
     return {
         'url': url,
         'title': title,
         'description': description,
-        'date_start': date_start,
-        'date_end': date_end,
-        'location': location,
-        'category': category,
-        'images': images[:5],
+        'date': date_m.group(0) if date_m else '',
+        'location': clean(location_el.get_text()) if location_el else '',
+        'category': clean(cat_el.get_text()) if cat_el else '',
+        'images': images[:3],
     }
 
-async def scrape_eventi(page, listing_url: str) -> list:
-    """Scraping completo degli eventi."""
-    print(f"\n[3/4] Scraping eventi...")
-    html = await get_page_html(page, listing_url, delay=1.5)
-    soup = BeautifulSoup(html, 'lxml')
-
+async def scrape_eventi(page) -> list:
+    print("\n[3/4] Scraping eventi...")
+    listing_url = None
+    for url in EVENTI_LISTING_URLS:
+        try:
+            resp = await page.goto(url, timeout=10000, wait_until="domcontentloaded")
+            if resp and resp.status == 200:
+                listing_url = url
+                print(f"  Listing eventi: {url}")
+                break
+        except:
+            pass
+    if not listing_url:
+        print("  ✗ Pagina eventi non trovata")
+        return []
     event_links = set()
-    for a in soup.find_all('a', href=True):
-        href = a['href']
-        full = urljoin(BASE_URL, href)
-        if re.search(r'/(event|eventi|node)/[a-z0-9\-]+', href, re.I) and full.startswith(BASE_URL):
-            event_links.add(full)
-
-    # Paginazione
-    while True:
-        next_link = soup.find('a', {'rel': 'next'}) or soup.find('a', string=re.compile(r'›|next|succ', re.I))
-        if not next_link:
+    current = listing_url
+    visited = set()
+    while current and current not in visited:
+        visited.add(current)
+        html = await get_html(page, current, delay=1.0)
+        if not html:
             break
-        next_url = urljoin(BASE_URL, next_link['href'])
-        html = await get_page_html(page, next_url, delay=1.0)
         soup = BeautifulSoup(html, 'lxml')
-        prev_count = len(event_links)
         for a in soup.find_all('a', href=True):
             href = a['href']
             full = urljoin(BASE_URL, href)
-            if re.search(r'/(event|eventi|node)/[a-z0-9\-]+', href, re.I) and full.startswith(BASE_URL):
-                event_links.add(full)
-        if len(event_links) == prev_count:
-            break
-
-    print(f"  Trovati {len(event_links)} eventi")
+            if re.search(r'/(event|eventi|nodo|node)/[a-z0-9\-]+', href, re.I):
+                if full.startswith(BASE_URL) and full != listing_url:
+                    event_links.add(full)
+        next_a = soup.find('a', {'rel': 'next'}) or soup.find('a', title=re.compile(r'pag|next|succ', re.I))
+        current = urljoin(BASE_URL, next_a['href']) if next_a else None
+    print(f"  Trovati {len(event_links)} link eventi")
     eventi = []
     for i, url in enumerate(sorted(event_links), 1):
         print(f"  [{i}/{len(event_links)}] {url}")
-        html = await get_page_html(page, url, delay=1.0)
+        html = await get_html(page, url, delay=0.8)
         if html:
-            data = parse_event_detail(html, url)
+            data = parse_event(html, url)
             if data['title']:
                 eventi.append(data)
-
     return eventi
 
-# ============================================================
-# Scraping itinerari
-# ============================================================
+ITINERARIO_LISTING_URLS = [
+    f"{BASE_URL}/index.php/it/itinerari",
+    f"{BASE_URL}/index.php/it/percorsi",
+    f"{BASE_URL}/index.php/it/esperienze",
+    f"{BASE_URL}/index.php/en/itineraries",
+    f"{BASE_URL}/index.php/en/experiences",
+    f"{BASE_URL}/index.php/it/tour",
+]
 
-def parse_itinerary_detail(html: str, url: str) -> dict:
-    """Estrae dati da una pagina itinerario."""
+def parse_itinerary(html: str, url: str) -> dict:
     soup = BeautifulSoup(html, 'lxml')
-
-    title = ""
-    for sel in ['h1.page-title', 'h1.node-title', 'h1']:
-        el = soup.select_one(sel)
-        if el:
-            title = clean(el.get_text())
-            break
-
-    description = ""
-    for sel in ['.field-name-body .field-item', '.field-type-text-with-summary .field-item', 'article p', 'main p']:
-        els = soup.select(sel)
-        if els:
-            description = clean(' '.join(e.get_text() for e in els))
-            break
-
-    # Tappe / punti interesse
+    title = clean(soup.select_one('h1').get_text()) if soup.select_one('h1') else ''
+    desc_els = soup.select('.field-name-body .field-item') or soup.select('article p') or soup.select('main p')
+    description = clean(' '.join(e.get_text() for e in desc_els[:6]))
+    full_text = soup.get_text()
+    km_m = re.search(r'(\d+(?:[.,]\d+)?)\s*km', full_text)
+    dur_m = re.search(r'(\d+(?:[.,]\d+)?)\s*(ore|h\b|minuti|min\b)', full_text, re.I)
+    diff_el = soup.select_one('.field-name-field-difficolta, .field-name-field-difficulty')
     tappe = []
-    for sel in ['.field-name-field-tappe', '.views-row', '.stop', '.tappa', 'ol li', 'ul.tappe li']:
-        els = soup.select(sel)
-        if els:
-            tappe = [clean(e.get_text()) for e in els if len(clean(e.get_text())) > 5]
-            if tappe:
-                break
-
-    # Difficoltà
-    difficulty = ""
-    for sel in ['.field-name-field-difficolta', '.field-name-field-difficulty', '.difficulty']:
-        el = soup.select_one(sel)
-        if el:
-            difficulty = clean(el.get_text())
+    for sel in ['.field-name-field-tappe li', '.tappe li', 'ol li', 'ul.steps li']:
+        items = soup.select(sel)
+        if items:
+            tappe = [clean(i.get_text()) for i in items if len(clean(i.get_text())) > 5]
             break
-
-    # Lunghezza / durata
-    length = ""
-    duration = ""
-    all_text = soup.get_text()
-    km_m = re.search(r'(\d+(?:[.,]\d+)?)\s*km', all_text)
-    if km_m:
-        length = km_m.group(0)
-    dur_m = re.search(r'(\d+(?:[.,]\d+)?)\s*(ore|h\b|minuti)', all_text, re.I)
-    if dur_m:
-        duration = dur_m.group(0)
-
-    # Tipo (natura, cultura, enogastronomia...)
-    tipo = ""
-    for sel in ['.field-name-field-tipo', '.field-name-field-category', '.field-name-field-categoria']:
-        el = soup.select_one(sel)
-        if el:
-            tipo = clean(el.get_text())
-            break
-
-    images = []
-    for img in soup.select('img[src]'):
-        src = img.get('src', '')
-        if src and not src.endswith('.gif') and 'placeholder' not in src:
-            images.append(urljoin(BASE_URL, src))
-
+    tipo_el = soup.select_one('.field-name-field-tipo, .field-name-field-category, .field-name-field-categoria')
+    images = [urljoin(BASE_URL, img['src']) for img in soup.select('img[src]')
+              if img['src'] and 'placeholder' not in img['src'] and not img['src'].endswith('.gif')]
     return {
         'url': url,
         'title': title,
         'description': description,
         'tappe': tappe[:15],
-        'difficulty': difficulty,
-        'length': length,
-        'duration': duration,
-        'tipo': tipo,
-        'images': images[:5],
+        'length_km': km_m.group(0) if km_m else '',
+        'duration': dur_m.group(0) if dur_m else '',
+        'difficulty': clean(diff_el.get_text()) if diff_el else '',
+        'tipo': clean(tipo_el.get_text()) if tipo_el else '',
+        'images': images[:4],
     }
 
-async def scrape_itinerari(page, listing_url: str) -> list:
-    """Scraping completo degli itinerari."""
-    print(f"\n[4/4] Scraping itinerari...")
-    html = await get_page_html(page, listing_url, delay=1.5)
-    soup = BeautifulSoup(html, 'lxml')
-
+async def scrape_itinerari(page) -> list:
+    print("\n[4/4] Scraping itinerari...")
+    listing_url = None
+    for url in ITINERARIO_LISTING_URLS:
+        try:
+            resp = await page.goto(url, timeout=10000, wait_until="domcontentloaded")
+            if resp and resp.status == 200:
+                listing_url = url
+                print(f"  Listing itinerari: {url}")
+                break
+        except:
+            pass
+    if not listing_url:
+        print("  ✗ Pagina itinerari non trovata")
+        return []
     itinerary_links = set()
-    for a in soup.find_all('a', href=True):
-        href = a['href']
-        full = urljoin(BASE_URL, href)
-        if re.search(r'/(itinerar|percors|route|node)/[a-z0-9\-]+', href, re.I) and full.startswith(BASE_URL):
-            itinerary_links.add(full)
-
-    # Paginazione
-    while True:
-        next_link = soup.find('a', {'rel': 'next'}) or soup.find('a', string=re.compile(r'›|next|succ', re.I))
-        if not next_link:
+    current = listing_url
+    visited = set()
+    while current and current not in visited:
+        visited.add(current)
+        html = await get_html(page, current, delay=1.0)
+        if not html:
             break
-        next_url = urljoin(BASE_URL, next_link['href'])
-        html = await get_page_html(page, next_url, delay=1.0)
         soup = BeautifulSoup(html, 'lxml')
-        prev_count = len(itinerary_links)
         for a in soup.find_all('a', href=True):
             href = a['href']
             full = urljoin(BASE_URL, href)
-            if re.search(r'/(itinerar|percors|route|node)/[a-z0-9\-]+', href, re.I) and full.startswith(BASE_URL):
-                itinerary_links.add(full)
-        if len(itinerary_links) == prev_count:
-            break
-
-    print(f"  Trovati {len(itinerary_links)} itinerari")
+            if re.search(r'/(itinerar|percors|esperienz|tour|node)/[a-z0-9\-]+', href, re.I):
+                if full.startswith(BASE_URL) and full != listing_url:
+                    itinerary_links.add(full)
+        next_a = soup.find('a', {'rel': 'next'}) or soup.find('a', title=re.compile(r'pag|next|succ', re.I))
+        current = urljoin(BASE_URL, next_a['href']) if next_a else None
+    print(f"  Trovati {len(itinerary_links)} link itinerari")
     itinerari = []
     for i, url in enumerate(sorted(itinerary_links), 1):
         print(f"  [{i}/{len(itinerary_links)}] {url}")
-        html = await get_page_html(page, url, delay=1.0)
+        html = await get_html(page, url, delay=0.8)
         if html:
-            data = parse_itinerary_detail(html, url)
+            data = parse_itinerary(html, url)
             if data['title']:
                 itinerari.append(data)
-
     return itinerari
-
-# ============================================================
-# MAIN
-# ============================================================
 
 async def main():
     print("=" * 60)
-    print("  Scraper — sistemairpinia.provincia.avellino.it")
+    print("  Scraper v2 — sistemairpinia.provincia.avellino.it")
     print("=" * 60)
-
     async with async_playwright() as p:
         browser = await p.chromium.launch(
             headless=True,
-            args=['--no-sandbox', '--disable-setuid-sandbox']
+            args=['--no-sandbox', '--disable-blink-features=AutomationControlled']
         )
         context = await browser.new_context(
             viewport={"width": 1280, "height": 900},
@@ -520,41 +446,25 @@ async def main():
                 "Chrome/120.0.0.0 Safari/537.36"
             ),
             locale="it-IT",
-            extra_http_headers={
-                "Accept-Language": "it-IT,it;q=0.9,en;q=0.8",
-                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-            }
+            extra_http_headers={"Accept-Language": "it-IT,it;q=0.9"},
         )
         page = await context.new_page()
-
-        # 1. Scopri URL delle sezioni
-        urls = await discover_listing_urls(page)
-
-        # 2. Scraping borghi
-        borghi = await scrape_borghi(page, urls.get('borghi', f"{BASE_URL}/it/borghi"))
-        save_json(borghi, 'borghi_raw.json')
-
-        # 3. Scraping eventi
-        eventi = await scrape_eventi(page, urls.get('eventi', f"{BASE_URL}/it/eventi"))
-        save_json(eventi, 'eventi_raw.json')
-
-        # 4. Scraping itinerari
-        itinerari = await scrape_itinerari(page, urls.get('itinerari', f"{BASE_URL}/it/itinerari"))
-        save_json(itinerari, 'itinerari_raw.json')
-
+        print("\n[1/4] Apertura sito...")
+        await get_html(page, BASE_URL, delay=2.0)
+        borghi    = await scrape_borghi(page)
+        eventi    = await scrape_eventi(page)
+        itinerari = await scrape_itinerari(page)
         await browser.close()
-
+    save_json(borghi,    'borghi_raw.json')
+    save_json(eventi,    'eventi_raw.json')
+    save_json(itinerari, 'itinerari_raw.json')
     print("\n" + "=" * 60)
     print(f"  COMPLETATO")
     print(f"  Borghi:    {len(borghi)}")
     print(f"  Eventi:    {len(eventi)}")
     print(f"  Itinerari: {len(itinerari)}")
     print("=" * 60)
-    print("\nFile generati:")
-    print("  borghi_raw.json")
-    print("  eventi_raw.json")
-    print("  itinerari_raw.json")
-    print("\nInvia questi 3 file e procediamo con l'integrazione nel DB.")
+    print("\nInvia i 3 file JSON e procediamo con l'integrazione nel DB.")
 
 if __name__ == '__main__':
     asyncio.run(main())
