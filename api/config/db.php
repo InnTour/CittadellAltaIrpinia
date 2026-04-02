@@ -11,7 +11,7 @@ define('DB_PASS', '8TTusangol!');
 define('DB_CHARSET',  'utf8mb4');
 
 // Token API per autenticazione endpoint di scrittura e export
-define('API_TOKEN',   'kshdfertwyuejmfhdgetw285&%$£9WED');
+define('API_TOKEN',   'kshdfertwyuejmfhdgetw285l5459WED');
 
 // JWT Secret — used for user authentication tokens
 define('JWT_SECRET',  'mb_jwt_s3cr3t_k3y_2024!@#InnTour');
