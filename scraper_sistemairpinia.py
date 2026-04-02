@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Scraper v2 per sistemairpinia.provincia.avellino.it
-Cerca i 25 borghi dell'Alta Irpinia + eventi + itinerari.
+Scraper v3 — sistemairpinia.provincia.avellino.it
+URL dei 25 comuni hardcoded, scraping diretto + eventi + itinerari.
 
 Dipendenze:
     pip install playwright beautifulsoup4 lxml
@@ -17,15 +17,42 @@ Output:
 import asyncio
 import json
 import re
-from pathlib import Path
-from urllib.parse import urljoin, quote
+from urllib.parse import urljoin
 from playwright.async_api import async_playwright
 from bs4 import BeautifulSoup
 
 BASE_URL = "https://sistemairpinia.provincia.avellino.it"
 
-# I 25 comuni dell'Alta Irpinia nel nostro sistema
-# slug → nomi da cercare (varie grafie)
+# URL esatte dei 25 comuni (pattern /index.php/it/comuni/{slug})
+COMUNI_URLS = {
+    "andretta":                 f"{BASE_URL}/index.php/it/comuni/andretta",
+    "aquilonia":                f"{BASE_URL}/index.php/it/comuni/aquilonia",
+    "bagnoli-irpino":           f"{BASE_URL}/index.php/it/comuni/bagnoli-irpino",
+    "bisaccia":                 f"{BASE_URL}/index.php/it/comuni/bisaccia",
+    "cairano":                  f"{BASE_URL}/index.php/it/comuni/cairano",
+    "calabritto":               f"{BASE_URL}/index.php/it/comuni/calabritto",
+    "calitri":                  f"{BASE_URL}/index.php/it/comuni/calitri",
+    "caposele":                 f"{BASE_URL}/index.php/it/comuni/caposele",
+    "cassano-irpino":           f"{BASE_URL}/index.php/it/comuni/cassano-irpino",
+    "castelfranci":             f"{BASE_URL}/index.php/it/comuni/castelfranci",
+    "conza-della-campania":     f"{BASE_URL}/index.php/it/comuni/conza-della-campania",
+    "guardia-dei-lombardi":     f"{BASE_URL}/index.php/it/comuni/guardia-lombardi",
+    "lacedonia":                f"{BASE_URL}/index.php/it/comuni/lacedonia",
+    "lioni":                    f"{BASE_URL}/index.php/it/comuni/lioni",
+    "montella":                 f"{BASE_URL}/index.php/it/comuni/montella",
+    "monteverde":               f"{BASE_URL}/index.php/it/comuni/monteverde",
+    "morra-de-sanctis":         f"{BASE_URL}/index.php/it/comuni/morra-de-sanctis",
+    "nusco":                    f"{BASE_URL}/index.php/it/comuni/nusco",
+    "rocca-san-felice":         f"{BASE_URL}/index.php/it/comuni/rocca-san-felice",
+    "sant-andrea-di-conza":     f"{BASE_URL}/index.php/it/comuni/santandrea-di-conza",
+    "sant-angelo-dei-lombardi": f"{BASE_URL}/index.php/it/comuni/santangelo-lombardi",
+    "senerchia":                f"{BASE_URL}/index.php/it/comuni/senerchia",
+    "teora":                    f"{BASE_URL}/index.php/it/comuni/teora",
+    "torella-dei-lombardi":     f"{BASE_URL}/index.php/it/comuni/torella-dei-lombardi",
+    "villamaina":               f"{BASE_URL}/index.php/it/comuni/villamaina",
+}
+
+# Conservato per compatibilità (non più usato per i borghi)
 ALTA_IRPINIA = {
     "andretta":                ["andretta"],
     "aquilonia":               ["aquilonia"],
@@ -168,10 +195,10 @@ def parse_comune(html: str, url: str, slug: str) -> dict:
                 description_parts = texts
                 break
 
-    description = ' '.join(description_parts)
+    description = '\n\n'.join(description_parts)
     if not description:
         paras = [clean(p.get_text()) for p in soup.find_all('p') if len(clean(p.get_text())) > 40]
-        description = ' '.join(paras[:8])
+        description = '\n\n'.join(paras[:8])
 
     images = []
     for img in soup.select('img[src]'):
@@ -203,43 +230,54 @@ def parse_comune(html: str, url: str, slug: str) -> dict:
 
     lists = []
     for ul in soup.find_all(['ul', 'ol']):
+        parents = [p.name for p in ul.parents]
+        if any(p in parents for p in ['nav', 'header', 'footer']):
+            continue
         items = [clean(li.get_text()) for li in ul.find_all('li') if len(clean(li.get_text())) > 5]
-        if 2 <= len(items) <= 20:
+        if 2 <= len(items) <= 25:
             lists.extend(items)
+
+    sections = []
+    for h in soup.select('h2, h3'):
+        t = clean(h.get_text())
+        if t and len(t) > 3 and t not in sections:
+            sections.append(t)
 
     return {
         'slug': slug,
         'url': url,
         'name': name,
         'description': description,
+        'sections': sections[:15],
         'fields': fields,
-        'images': images[:12],
+        'images': images[:15],
         'population_raw': pop.group(1) if pop else '',
         'altitude_raw': alt.group(1) if alt else '',
         'area_raw': area.group(1) if area else '',
-        'list_items': lists[:20],
-        'raw_text': clean(full_text)[:3000],
+        'list_items': lists[:30],
+        'raw_text': clean(full_text)[:4000],
     }
 
 async def scrape_borghi(page) -> list:
-    print("\n[2/4] Scraping borghi Alta Irpinia...")
+    print("\n[2/4] Scraping 25 comuni (URL hardcoded)...")
     borghi = []
-    for slug, names in ALTA_IRPINIA.items():
-        print(f"\n  • {slug}")
-        url = await find_comune_url(page, slug, names)
-        if not url:
-            continue
-        html = await get_html(page, url, delay=1.0)
+    total = len(COMUNI_URLS)
+    for i, (slug, url) in enumerate(COMUNI_URLS.items(), 1):
+        print(f"\n  [{i}/{total}] {slug}")
+        html = await get_html(page, url, delay=1.2)
         if not html:
+            print("    ✗ Pagina non caricata")
             continue
         data = parse_comune(html, url, slug)
         borghi.append(data)
-        print(f"    nome={data['name']} | desc={len(data['description'])} chars | img={len(data['images'])}")
+        print(f"    ✓ {data['name']} | desc={len(data['description'])} chars | img={len(data['images'])} | campi={len(data['fields'])}")
     return borghi
 
 EVENTI_LISTING_URLS = [
-    f"{BASE_URL}/it/eventi",
-    f"{BASE_URL}/it/calendario-eventi",
+    f"{BASE_URL}/index.php/it/eventi",
+    f"{BASE_URL}/index.php/it/calendario",
+    f"{BASE_URL}/index.php/it/manifestazioni",
+    f"{BASE_URL}/index.php/en/events",
     f"{BASE_URL}/it/manifestazioni",
     f"{BASE_URL}/en/events",
     f"{BASE_URL}/it/agenda",
@@ -310,12 +348,12 @@ async def scrape_eventi(page) -> list:
     return eventi
 
 ITINERARIO_LISTING_URLS = [
-    f"{BASE_URL}/it/itinerari",
-    f"{BASE_URL}/it/percorsi",
-    f"{BASE_URL}/it/esperienze",
-    f"{BASE_URL}/en/itineraries",
-    f"{BASE_URL}/en/experiences",
-    f"{BASE_URL}/it/tour",
+    f"{BASE_URL}/index.php/it/itinerari",
+    f"{BASE_URL}/index.php/it/percorsi",
+    f"{BASE_URL}/index.php/it/esperienze",
+    f"{BASE_URL}/index.php/en/itineraries",
+    f"{BASE_URL}/index.php/en/experiences",
+    f"{BASE_URL}/index.php/it/tour",
 ]
 
 def parse_itinerary(html: str, url: str) -> dict:
