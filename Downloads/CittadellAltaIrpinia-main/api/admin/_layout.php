@@ -101,6 +101,9 @@ $_navShow = function(string $page) use ($_layoutIsAdmin, $_operatorPage): bool {
           <a href="/api/admin/utenti.php" class="nav-link <?= ($pageTitle==='Utenti'?'active':'') ?>">
             <span>👥</span> Utenti
           </a>
+          <a href="/api/admin/sondaggi.php" class="nav-link <?= ($pageTitle==='Sondaggi'?'active':'') ?>">
+            <span>📋</span> Sondaggi
+          </a>
           <a href="/api/admin/comuni.php" class="nav-link <?= ($pageTitle==='Comuni B2G'?'active':'') ?>">
             <span>🏛️</span> Comuni B2G
           </a>
