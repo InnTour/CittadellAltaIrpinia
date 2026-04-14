@@ -4094,43 +4094,49 @@ const P1 = [
     id: "flights",
     label: "Voli",
     icon: e.jsx(C, { size: 20 }),
-    color: "text-warm-600 hover:text-cielo-600 hover:bg-cielo-50",
-    activeColor: "text-cielo-700 bg-cielo-100 shadow-sm",
+    color: "text-warm-500 hover:text-warm-900 hover:bg-warm-100/60",
+    activeColor: "text-white shadow-md",
+    activeStyle: { background: "linear-gradient(135deg, #00D084 0%, #00B4D8 100%)", boxShadow: "0 4px 14px rgba(0,208,132,.35)" },
   },
   {
     id: "trains",
     label: "Treni",
     icon: e.jsx("span", { children: "\uD83D\uDE86" }),
-    color: "text-warm-600 hover:text-ambra-600 hover:bg-ambra-50",
-    activeColor: "text-ambra-700 bg-ambra-100 shadow-sm",
+    color: "text-warm-500 hover:text-warm-900 hover:bg-warm-100/60",
+    activeColor: "text-white shadow-md",
+    activeStyle: { background: "linear-gradient(135deg, #00B4D8 0%, #29ABE2 100%)", boxShadow: "0 4px 14px rgba(0,180,216,.35)" },
   },
   {
     id: "car_rental",
     label: "Noleggio auto",
     icon: e.jsx(k, { size: 20 }),
-    color: "text-warm-600 hover:text-energia-600 hover:bg-energia-50",
-    activeColor: "text-energia-700 bg-energia-100 shadow-sm",
+    color: "text-warm-500 hover:text-warm-900 hover:bg-warm-100/60",
+    activeColor: "text-white shadow-md",
+    activeStyle: { background: "linear-gradient(135deg, #D4A855 0%, #C4622D 100%)", boxShadow: "0 4px 14px rgba(196,98,45,.35)" },
   },
   {
     id: "transfers",
     label: "Transfer",
     icon: e.jsx("span", { children: "\uD83D\uDE95" }),
-    color: "text-warm-600 hover:text-natura-600 hover:bg-natura-50",
-    activeColor: "text-natura-700 bg-natura-100 shadow-sm",
+    color: "text-warm-500 hover:text-warm-900 hover:bg-warm-100/60",
+    activeColor: "text-white shadow-md",
+    activeStyle: { background: "linear-gradient(135deg, #4A90C4 0%, #00B4D8 100%)", boxShadow: "0 4px 14px rgba(74,144,196,.35)" },
   },
   {
     id: "blablacar_bus",
     label: "Bus",
     icon: e.jsx("span", { children: "🚌" }),
-    color: "text-warm-600 hover:text-natura-600 hover:bg-natura-50",
-    activeColor: "text-natura-700 bg-natura-100 shadow-sm",
+    color: "text-warm-500 hover:text-warm-900 hover:bg-warm-100/60",
+    activeColor: "text-white shadow-md",
+    activeStyle: { background: "linear-gradient(135deg, #2D5A27 0%, #00D084 100%)", boxShadow: "0 4px 14px rgba(0,208,132,.3)" },
   },
   {
     id: "blablacar_carpool",
     label: "Carpooling",
     icon: e.jsx("span", { children: "🚗" }),
-    color: "text-warm-600 hover:text-cielo-600 hover:bg-cielo-50",
-    activeColor: "text-cielo-700 bg-cielo-100 shadow-sm",
+    color: "text-warm-500 hover:text-warm-900 hover:bg-warm-100/60",
+    activeColor: "text-white shadow-md",
+    activeStyle: { background: "linear-gradient(135deg, #00D084 0%, #4A90C4 100%)", boxShadow: "0 4px 14px rgba(74,144,196,.3)" },
   },
 ];
 const Z1_TRAINS = [
@@ -4717,20 +4723,19 @@ function R1({ boroughName: t = "Nusco", className: s }) {
   const [n, p] = a.useState("flights"),
     c = V();
   return e.jsxs("section", {
-    className: w("py-16 md:py-24 relative overflow-hidden", s),
+    className: w("py-16 md:py-24", s),
     "aria-labelledby": "travel-title",
     children: [
-      e.jsx("div", {
-        className: "absolute inset-0 pointer-events-none",
-        style: { background: "linear-gradient(135deg, rgba(0,208,132,.04) 0%, rgba(0,180,216,.04) 50%, rgba(240,255,0,.03) 100%)", zIndex: 0 },
-        "aria-hidden": "true",
-      }),
-      e.jsx("div", {
-        className: "absolute top-0 left-0 right-0 h-1 pointer-events-none",
-        style: { background: "linear-gradient(90deg, #00D084, #00B4D8, #F0FF00)", opacity: 0.7, zIndex: 1 },
-        "aria-hidden": "true",
-      }),
-      e.jsxs("div", { className: "relative", style: { zIndex: 2 }, children: [
+      e.jsxs("div", {
+        className: "rounded-3xl overflow-hidden relative",
+        style: { background: "linear-gradient(160deg, rgba(0,208,132,.06) 0%, rgba(0,180,216,.06) 60%, rgba(240,255,0,.04) 100%)", border: "1px solid rgba(0,208,132,.14)", boxShadow: "0 4px 40px rgba(0,208,132,.07)" },
+        children: [
+          e.jsx("div", {
+            className: "absolute top-0 left-0 right-0 h-0.5 pointer-events-none",
+            style: { background: "linear-gradient(90deg, #00D084 0%, #00B4D8 50%, #F0FF00 100%)" },
+            "aria-hidden": "true",
+          }),
+          e.jsxs("div", { className: "px-6 md:px-10 py-10 md:py-14", children: [
       e.jsx(Q, {
         title: `Come arrivare a ${t}`,
         subtitle:
@@ -4742,7 +4747,8 @@ function R1({ boroughName: t = "Nusco", className: s }) {
         role: "tablist",
         "aria-label": "Servizi di viaggio",
         children: e.jsx("div", {
-          className: "inline-flex gap-2 p-1.5 rounded-2xl glass-strong",
+          className: "inline-flex flex-wrap justify-center gap-2 p-2 rounded-2xl",
+          style: { background: "rgba(255,255,255,0.7)", backdropFilter: "blur(16px)", border: "1px solid rgba(0,208,132,0.12)", boxShadow: "0 2px 20px rgba(0,208,132,0.08)" },
           children: P1.map((o) =>
             e.jsxs(
               "button",
@@ -4753,13 +4759,13 @@ function R1({ boroughName: t = "Nusco", className: s }) {
                 id: `tab-${o.id}`,
                 onClick: () => p(o.id),
                 className: w(
-                  "flex items-center gap-2 px-5 py-2.5 rounded-xl font-body font-semibold text-sm transition-all duration-200",
+                  "flex items-center gap-2 px-4 py-2 rounded-xl font-body font-semibold text-sm transition-all duration-200",
                   n === o.id ? o.activeColor : o.color,
                 ),
+                style: n === o.id ? o.activeStyle : undefined,
                 children: [
                   o.icon,
                   e.jsx("span", {
-                    className: "hidden sm:inline",
                     children: o.label,
                   }),
                 ],
@@ -4789,6 +4795,7 @@ function R1({ boroughName: t = "Nusco", className: s }) {
         },
         n,
       ),
+      ] }),
       ] }),
     ],
   });
