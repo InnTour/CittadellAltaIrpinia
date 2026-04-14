@@ -4322,7 +4322,7 @@ function V1_TRAINS({ onSearch: r }) {
     ],
   });
 }
-function T1({ className: t }) {
+function TR1({ className: t }) {
   const addTravelItem = D((i) => i.addTravelItem);
   const addToast = M((i) => i.addToast);
   const toggleCartSidebar = M((i) => i.toggleCartSidebar);
