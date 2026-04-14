@@ -4100,7 +4100,7 @@ const P1 = [
   {
     id: "trains",
     label: "Treni",
-    icon: e.jsx("span", { children: "🚂" }),
+    icon: e.jsx("span", { children: "\uD83D\uDE86" }),
     color: "text-warm-600 hover:text-ambra-600 hover:bg-ambra-50",
     activeColor: "text-ambra-700 bg-ambra-100 shadow-sm",
   },
@@ -4114,7 +4114,7 @@ const P1 = [
   {
     id: "transfers",
     label: "Transfer",
-    icon: e.jsx(S, { size: 20 }),
+    icon: e.jsx("span", { children: "\uD83D\uDE95" }),
     color: "text-warm-600 hover:text-natura-600 hover:bg-natura-50",
     activeColor: "text-natura-700 bg-natura-100 shadow-sm",
   },
