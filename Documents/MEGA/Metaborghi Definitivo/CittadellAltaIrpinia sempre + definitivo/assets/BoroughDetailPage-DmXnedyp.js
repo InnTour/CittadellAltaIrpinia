@@ -4122,15 +4122,15 @@ const P1 = [
     id: "blablacar_bus",
     label: "Bus",
     icon: e.jsx("span", { children: "🚌" }),
-    color: "text-warm-600 hover:bg-[#00D084]/10",
-    activeColor: "text-white bg-[#00D084] shadow-sm",
+    color: "text-warm-600 hover:text-natura-600 hover:bg-natura-50",
+    activeColor: "text-natura-700 bg-natura-100 shadow-sm",
   },
   {
     id: "blablacar_carpool",
     label: "Carpooling",
     icon: e.jsx("span", { children: "🚗" }),
-    color: "text-warm-600 hover:bg-[#009966]/10",
-    activeColor: "text-white bg-[#009966] shadow-sm",
+    color: "text-warm-600 hover:text-cielo-600 hover:bg-cielo-50",
+    activeColor: "text-cielo-700 bg-cielo-100 shadow-sm",
   },
 ];
 const Z1_TRAINS = [
@@ -4717,9 +4717,20 @@ function R1({ boroughName: t = "Nusco", className: s }) {
   const [n, p] = a.useState("flights"),
     c = V();
   return e.jsxs("section", {
-    className: w("py-16 md:py-24", s),
+    className: w("py-16 md:py-24 relative overflow-hidden", s),
     "aria-labelledby": "travel-title",
     children: [
+      e.jsx("div", {
+        className: "absolute inset-0 pointer-events-none",
+        style: { background: "linear-gradient(135deg, rgba(0,208,132,.04) 0%, rgba(0,180,216,.04) 50%, rgba(240,255,0,.03) 100%)", zIndex: 0 },
+        "aria-hidden": "true",
+      }),
+      e.jsx("div", {
+        className: "absolute top-0 left-0 right-0 h-1 pointer-events-none",
+        style: { background: "linear-gradient(90deg, #00D084, #00B4D8, #F0FF00)", opacity: 0.7, zIndex: 1 },
+        "aria-hidden": "true",
+      }),
+      e.jsxs("div", { className: "relative", style: { zIndex: 2 }, children: [
       e.jsx(Q, {
         title: `Come arrivare a ${t}`,
         subtitle:
@@ -4778,6 +4789,7 @@ function R1({ boroughName: t = "Nusco", className: s }) {
         },
         n,
       ),
+      ] }),
     ],
   });
 }
