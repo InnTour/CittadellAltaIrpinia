@@ -3203,7 +3203,7 @@ const k1 = [
   {
     id: "mock-transfer-001",
     provider: "travelcompositor",
-    name: "Transfer Privato Napoli Aeroporto → Nusco",
+    name: "Transfer Privato Napoli Aeroporto → Lacedonia",
     vehicle_type: "Sedan (3 passeggeri)",
     image:
       "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&h=600&fit=crop",
@@ -3211,7 +3211,7 @@ const k1 = [
       location: "Napoli Capodichino Aeroporto",
       datetime: "2026-09-10T10:30:00",
     },
-    dropoff: { location: "Nusco centro", datetime: "2026-09-10T12:00:00" },
+    dropoff: { location: "Lacedonia centro", datetime: "2026-09-10T12:00:00" },
     duration_minutes: 90,
     distance_km: 85,
     price: 120,
@@ -3225,7 +3225,7 @@ const k1 = [
   {
     id: "mock-transfer-002",
     provider: "travelcompositor",
-    name: "Transfer Condiviso Napoli Aeroporto → Nusco",
+    name: "Transfer Condiviso Napoli Aeroporto → Lacedonia",
     vehicle_type: "Minibus (8 passeggeri)",
     image:
       "https://images.unsplash.com/photo-1619767886558-efdc259cde1a?w=800&h=600&fit=crop",
@@ -3233,7 +3233,7 @@ const k1 = [
       location: "Napoli Capodichino Aeroporto",
       datetime: "2026-09-10T11:00:00",
     },
-    dropoff: { location: "Nusco centro", datetime: "2026-09-10T12:45:00" },
+    dropoff: { location: "Lacedonia centro", datetime: "2026-09-10T12:45:00" },
     duration_minutes: 105,
     distance_km: 85,
     price: 45,
@@ -3243,7 +3243,7 @@ const k1 = [
   {
     id: "mock-transfer-003",
     provider: "travelcompositor",
-    name: "Transfer Luxury Napoli Aeroporto → Nusco",
+    name: "Transfer Luxury Napoli Aeroporto → Lacedonia",
     vehicle_type: "Mercedes Classe E (3 passeggeri)",
     image:
       "https://images.unsplash.com/photo-1563720360172-67b8f3dce741?w=800&h=600&fit=crop",
@@ -3251,7 +3251,7 @@ const k1 = [
       location: "Napoli Capodichino Aeroporto",
       datetime: "2026-09-10T10:30:00",
     },
-    dropoff: { location: "Nusco centro", datetime: "2026-09-10T12:00:00" },
+    dropoff: { location: "Lacedonia centro", datetime: "2026-09-10T12:00:00" },
     duration_minutes: 90,
     distance_km: 85,
     price: 180,
@@ -4393,31 +4393,56 @@ function TR1({ className: t }) {
     !loading && searched && e.jsx("div", { className: "space-y-4", children:
       filtered.map(train =>
         e.jsxs("div", {
-          className: "rounded-2xl glass-strong p-6 flex flex-col md:flex-row md:items-center gap-4",
+          className: "rounded-2xl glass-strong overflow-hidden shadow-glass transition-all duration-300 hover:-translate-y-1 hover:shadow-glass-hover",
           children: [
-            e.jsxs("div", { className: "flex items-center gap-3 flex-1", children: [
-              e.jsx("img", { src: train.carrier_logo, alt: train.carrier, className: "h-8 w-auto object-contain" }),
-              e.jsxs("div", { children: [
-                e.jsxs("span", { className: "font-display font-bold text-warm-900 text-lg", children: [train.carrier, " ", train.train_number] }),
-                e.jsx("span", { className: "ml-2 text-xs px-2 py-0.5 rounded-full font-semibold " + (train.line === "tirrenica" ? "bg-cielo-100 text-cielo-700" : "bg-energia-100 text-energia-700"), children: train.line_label }),
-                e.jsxs("div", { className: "text-sm text-warm-600 mt-0.5", children: [
-                  train.outbound.departure.station, " → ", train.outbound.arrival.station,
-                  " · ", Math.floor(train.outbound.duration_minutes / 60), "h ", train.outbound.duration_minutes % 60, "min",
-                  train.outbound.stops === 0 ? " · Diretto" : " · " + train.outbound.stops + " fermate",
+            e.jsxs("div", { className: "p-5 md:p-6", children: [
+              e.jsxs("div", { className: "flex items-center justify-between mb-4", children: [
+                e.jsxs("div", { className: "flex items-center gap-3", children: [
+                  e.jsx("div", {
+                    className: "w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xs text-white flex-shrink-0",
+                    style: { background: train.carrier === "Italo" ? "#f97316" : "#005730" },
+                    children: train.carrier === "Italo" ? "ITA" : "TRE",
+                  }),
+                  e.jsxs("div", { children: [
+                    e.jsxs("div", { className: "font-display font-bold text-warm-900", children: [train.carrier, " ", train.train_number] }),
+                    e.jsx("div", { className: "text-xs text-warm-500", children: train.class }),
+                  ] }),
                 ] }),
-                e.jsx("div", { className: "text-xs text-warm-500 mt-0.5", children: train.note_transfer }),
+                e.jsx("span", {
+                  className: "text-xs px-2 py-0.5 rounded-full font-semibold " + (train.line === "tirrenica" ? "bg-cielo-100 text-cielo-700" : "bg-energia-100 text-energia-700"),
+                  children: train.line_label,
+                }),
               ] }),
-            ] }),
-            e.jsxs("div", { className: "flex items-center gap-4", children: [
-              e.jsxs("div", { className: "text-right", children: [
-                e.jsxs("div", { className: "text-2xl font-bold text-warm-900", children: ["€", train.total_price] }),
-                e.jsx("div", { className: "text-xs text-warm-500", children: "A/R · " + train.class }),
+              e.jsxs("div", { className: "mb-3 p-3 rounded-xl bg-warm-50", children: [
+                e.jsxs("div", { className: "text-xs font-medium text-ambra-600 mb-2", children: ["🚂 Andata · ", train.outbound.date] }),
+                e.jsxs("div", { className: "flex items-center gap-3", children: [
+                  e.jsxs("div", { className: "text-center min-w-0", children: [
+                    e.jsx("div", { className: "text-lg font-bold text-warm-900 leading-none", children: train.outbound.departure.time }),
+                    e.jsx("div", { className: "text-xs text-warm-600 mt-0.5 truncate", children: train.outbound.departure.station }),
+                  ] }),
+                  e.jsxs("div", { className: "flex-1 flex flex-col items-center gap-1", children: [
+                    e.jsxs("div", { className: "text-xs text-warm-500", children: [Math.floor(train.outbound.duration_minutes / 60), "h ", train.outbound.duration_minutes % 60, "min"] }),
+                    e.jsx("div", { className: "w-full h-px bg-warm-300" }),
+                    e.jsx("div", { className: "text-xs text-warm-400", children: train.outbound.stops === 0 ? "Diretto" : train.outbound.stops + " fermate" }),
+                  ] }),
+                  e.jsxs("div", { className: "text-center min-w-0", children: [
+                    e.jsx("div", { className: "text-lg font-bold text-warm-900 leading-none", children: train.outbound.arrival.time }),
+                    e.jsx("div", { className: "text-xs text-warm-600 mt-0.5 truncate", children: train.outbound.arrival.station }),
+                  ] }),
+                ] }),
+                e.jsx("div", { className: "text-xs text-warm-400 mt-2 italic", children: "ℹ️ " + train.note_transfer }),
               ] }),
-              e.jsx("button", {
-                onClick: () => handleAdd(train),
-                className: "px-5 py-2.5 bg-ambra-600 hover:bg-ambra-700 text-white rounded-xl font-semibold text-sm transition-colors shadow-sm whitespace-nowrap",
-                children: "Aggiungi →",
-              }),
+              e.jsxs("div", { className: "flex items-end justify-between pt-3 border-t border-warm-200/50", children: [
+                e.jsxs("div", { children: [
+                  e.jsxs("div", { className: "text-2xl font-bold text-warm-900", children: ["€", train.total_price] }),
+                  e.jsxs("div", { className: "text-xs text-warm-500", children: ["A/R · ", train.passengers, " passeggeri"] }),
+                ] }),
+                e.jsx("button", {
+                  onClick: () => handleAdd(train),
+                  className: "px-5 py-2.5 bg-ambra-600 hover:bg-ambra-700 text-white rounded-xl font-semibold text-sm transition-colors shadow-sm whitespace-nowrap",
+                  children: "Aggiungi →",
+                }),
+              ] }),
             ] }),
           ],
         }, train.id)
