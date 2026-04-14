@@ -8,9 +8,9 @@
 
 ## 1. Obiettivo
 
-Abilitare il widget di prenotazione viaggio sulla pagina `metaborghi.org/borghi/lacedonia` sostituendo due card placeholder ("Presto disponibile") con il componente travel booking già presente nel bundle React ma non renderizzato. Aggiungere il tab **Treni italiani** (linea Tirrenica → Napoli e Adriatica → Foggia) alla sequenza esistente.
+Abilitare il widget di prenotazione viaggio sulla pagina `metaborghi.org/borghi/lacedonia` sostituendo due card placeholder ("Presto disponibile") con il componente travel booking già presente nel bundle React ma non renderizzato. Aggiungere il tab **Treni italiani** (linea Tirrenica → Napoli e Adriatica → Foggia) e **due tab BlaBlaCar distinti** (Bus intercity e Carpooling), entrambi alimentati dall'API RDEX+ BlaBlaCar Daily.
 
-**Risultato atteso:** L'utente sulla scheda Lacedonia trova in fondo alla pagina una sezione "Organizza il viaggio" con 4 tab funzionanti: Voli → Treni → Auto → Transfer.
+**Risultato atteso:** L'utente sulla scheda Lacedonia trova in fondo alla pagina una sezione "Organizza il viaggio" con **6 tab funzionanti**: Voli → Treni → Bus → Carpooling → Auto → Transfer.
 
 ---
 
@@ -87,7 +87,7 @@ e.jsx(R1, { boroughName: s?.name || "Lacedonia" })
 > **Colore:** `ambra-*` — unico token disponibile non ancora assegnato a un tab. (`cielo`=voli, `natura`=transfer, `energia`=auto)  
 > **Icona:** verificare se `Train` o `TrainSimple` di phosphor-icons è importato nel bundle; in caso contrario usare emoji 🚂 come fallback SVG inline.
 
-**Riordinare P1** risultante: `["flights", "trains", "car_rental", "transfers"]`
+**Riordinare P1** risultante: `["flights", "trains", "blablacar_bus", "blablacar_carpool", "car_rental", "transfers"]`
 
 ### 3.4 Intervento 3 — Aggiungere componente T1 (Treni)
 
@@ -404,7 +404,238 @@ function T1({ className: t }) {
 }
 ```
 
-### 3.5 Aggiornare il render di R1 per includere T1
+### 3.5 Aggiungere due tab BlaBlaCar a P1
+
+Dopo il tab `trains`, inserire in P1:
+
+```js
+{
+  id: "blablacar_bus",
+  label: "Bus",
+  icon: "🚌",
+  color: "text-warm-600 hover:text-[#00D084] hover:bg-[#00D084]/10",
+  activeColor: "text-white bg-[#00D084] shadow-sm",
+},
+{
+  id: "blablacar_carpool",
+  label: "Carpooling",
+  icon: "🚗",
+  color: "text-warm-600 hover:text-[#00D084] hover:bg-[#00D084]/10",
+  activeColor: "text-white bg-[#009966] shadow-sm",
+},
+```
+
+> **Colore:** BlaBlaCar brand green `#00D084` (Bus) e `#009966` variante scura (Carpooling) — coincidono con il brand verde MetaBorghi. Usare colori inline perché `bosco-*` non è nel Tailwind config corrente.
+
+### 3.6 Aggiungere mock data e componenti B1_BUS e B1_CARPOOL
+
+Inserire prima di `function R1(` il seguente blocco:
+
+```js
+// BlaBlaCar Bus — SCHEDULED journeys (tipo: bus intercity)
+const B1_BUS_DATA = [
+  {
+    id: "bbc-bus-001",
+    operator: "BlaBlaCar Bus",
+    type: "SCHEDULED",
+    origin: { address: "Napoli, Piazza Garibaldi", lat: 40.8518, lng: 14.2681 },
+    destination: { address: "Lacedonia area, SS7", lat: 41.0529, lng: 15.5672 },
+    departure_date: "2026-09-10T08:30:00",
+    arrival_date: "2026-09-10T10:15:00",
+    duration_minutes: 105,
+    seats: { available: 6, total: 24 },
+    price: { amount: 9, currency: "EUR" },
+    booking_url: "https://www.blablacar.it/bus",
+  },
+  {
+    id: "bbc-bus-002",
+    operator: "BlaBlaCar Bus",
+    type: "SCHEDULED",
+    origin: { address: "Roma, Tiburtina", lat: 41.9028, lng: 12.5234 },
+    destination: { address: "Foggia, Stazione", lat: 41.4636, lng: 15.5444 },
+    departure_date: "2026-09-10T07:00:00",
+    arrival_date: "2026-09-10T11:30:00",
+    duration_minutes: 270,
+    seats: { available: 2, total: 24 },
+    price: { amount: 12, currency: "EUR" },
+    booking_url: "https://www.blablacar.it/bus",
+  },
+  {
+    id: "bbc-bus-003",
+    operator: "BlaBlaCar Bus",
+    type: "SCHEDULED",
+    origin: { address: "Milano, Lampugnano", lat: 45.4654, lng: 9.1859 },
+    destination: { address: "Napoli, Piazza Garibaldi", lat: 40.8518, lng: 14.2681 },
+    departure_date: "2026-09-10T06:00:00",
+    arrival_date: "2026-09-10T14:00:00",
+    duration_minutes: 480,
+    seats: { available: 12, total: 24 },
+    price: { amount: 19, currency: "EUR" },
+    booking_url: "https://www.blablacar.it/bus",
+  },
+];
+
+// BlaBlaCar Daily — DYNAMIC carpooling (tipo: passaggi privati)
+const B1_CARPOOL_DATA = [
+  {
+    id: "bbc-cp-001",
+    operator: "BlaBlaCar Daily",
+    type: "DYNAMIC",
+    origin: { address: "Napoli, Centrale", lat: 40.8518, lng: 14.2681 },
+    destination: { address: "Lacedonia", lat: 41.0529, lng: 15.5672 },
+    departure_date: "2026-09-10T07:45:00",
+    arrival_date: "2026-09-10T09:15:00",
+    duration_minutes: 90,
+    seats: { available: 2, total: 3 },
+    price: { amount: 7, currency: "EUR" },
+    driver: { alias: "Marco R.", rating: 4.9, trips: 127 },
+    booking_url: "https://www.blablacar.it",
+  },
+  {
+    id: "bbc-cp-002",
+    operator: "BlaBlaCar Daily",
+    type: "DYNAMIC",
+    origin: { address: "Foggia, centro", lat: 41.4636, lng: 15.5444 },
+    destination: { address: "Lacedonia", lat: 41.0529, lng: 15.5672 },
+    departure_date: "2026-09-10T08:00:00",
+    arrival_date: "2026-09-10T08:50:00",
+    duration_minutes: 50,
+    seats: { available: 1, total: 4 },
+    price: { amount: 4, currency: "EUR" },
+    driver: { alias: "Giovanni S.", rating: 4.7, trips: 54 },
+    booking_url: "https://www.blablacar.it",
+  },
+  {
+    id: "bbc-cp-003",
+    operator: "BlaBlaCar Daily",
+    type: "DYNAMIC",
+    origin: { address: "Avellino, centro", lat: 40.9145, lng: 14.7905 },
+    destination: { address: "Lacedonia", lat: 41.0529, lng: 15.5672 },
+    departure_date: "2026-09-10T09:00:00",
+    arrival_date: "2026-09-10T10:05:00",
+    duration_minutes: 65,
+    seats: { available: 3, total: 4 },
+    price: { amount: 5, currency: "EUR" },
+    driver: { alias: "Sofia L.", rating: 5.0, trips: 211 },
+    booking_url: "https://www.blablacar.it",
+  },
+];
+
+function B1_BUS() {
+  const [results, setResults] = a.useState([]);
+  const [loading, setLoading] = a.useState(false);
+  const [searched, setSearched] = a.useState(false);
+
+  const handleSearch = () => {
+    setLoading(true); setSearched(true);
+    setTimeout(() => { setResults(B1_BUS_DATA); setLoading(false); }, 800);
+  };
+
+  return e.jsxs("div", { children: [
+    e.jsxs("div", { className: "glass-strong rounded-2xl p-6 mb-8", children: [
+      e.jsx("p", { className: "text-sm text-warm-600 mb-4", children: "Cerca bus intercity BlaBlaCar verso Alta Irpinia (Napoli · Foggia · Roma · Milano)" }),
+      e.jsx("button", {
+        onClick: handleSearch,
+        className: "w-full py-3 rounded-xl font-semibold text-white transition-colors shadow-sm",
+        style: { background: "#00D084" },
+        children: "Cerca bus BlaBlaCar",
+      }),
+    ]}),
+    loading && e.jsx("div", { className: "space-y-4", children: [0,1,2].map(i =>
+      e.jsx("div", { className: "rounded-2xl glass-strong p-6 animate-pulse", children: e.jsx("div", { className: "h-16 bg-warm-200 rounded" }) }, i)
+    )}),
+    !loading && searched && e.jsx("div", { className: "space-y-4", children:
+      results.map(j => e.jsxs("div", {
+        className: "rounded-2xl glass-strong p-6 flex flex-col md:flex-row md:items-center gap-4",
+        children: [
+          e.jsxs("div", { className: "flex-1", children: [
+            e.jsx("span", { className: "text-xs px-2 py-0.5 rounded-full font-semibold text-white mr-2", style: { background: "#00D084" }, children: "🚌 Bus" }),
+            e.jsx("span", { className: "font-bold text-warm-900", children: j.operator }),
+            e.jsxs("div", { className: "text-sm text-warm-700 mt-1", children: [j.origin.address, " → ", j.destination.address] }),
+            e.jsxs("div", { className: "text-xs text-warm-500 mt-0.5", children: [
+              new Date(j.departure_date).toLocaleTimeString("it", {hour:"2-digit",minute:"2-digit"}),
+              " → ",
+              new Date(j.arrival_date).toLocaleTimeString("it", {hour:"2-digit",minute:"2-digit"}),
+              " · ", Math.floor(j.duration_minutes/60), "h", j.duration_minutes%60 ? " "+j.duration_minutes%60+"min" : "",
+              " · ", j.seats.available, "/", j.seats.total, " posti",
+            ]}),
+          ]}),
+          e.jsxs("div", { className: "flex items-center gap-4", children: [
+            e.jsxs("div", { className: "text-right", children: [
+              e.jsxs("div", { className: "text-2xl font-bold text-warm-900", children: ["€", j.price.amount] }),
+              e.jsx("div", { className: "text-xs text-warm-500", children: "per persona" }),
+            ]}),
+            e.jsx("a", {
+              href: j.booking_url, target: "_blank", rel: "noopener noreferrer",
+              className: "px-5 py-2.5 rounded-xl font-semibold text-sm text-white transition-opacity hover:opacity-90 shadow-sm whitespace-nowrap",
+              style: { background: "#00D084" },
+              children: "Prenota su BlaBlaCar →",
+            }),
+          ]}),
+        ],
+      }, j.id))
+    }),
+  ]});
+}
+
+function B1_CARPOOL() {
+  const [results, setResults] = a.useState([]);
+  const [loading, setLoading] = a.useState(false);
+  const [searched, setSearched] = a.useState(false);
+
+  const handleSearch = () => {
+    setLoading(true); setSearched(true);
+    setTimeout(() => { setResults(B1_CARPOOL_DATA); setLoading(false); }, 800);
+  };
+
+  return e.jsxs("div", { children: [
+    e.jsxs("div", { className: "glass-strong rounded-2xl p-6 mb-8", children: [
+      e.jsx("p", { className: "text-sm text-warm-600 mb-4", children: "Cerca passaggi in carpooling verso Lacedonia (BlaBlaCar Daily)" }),
+      e.jsx("button", {
+        onClick: handleSearch,
+        className: "w-full py-3 rounded-xl font-semibold text-white transition-colors shadow-sm",
+        style: { background: "#009966" },
+        children: "Cerca passaggi",
+      }),
+    ]}),
+    loading && e.jsx("div", { className: "space-y-4", children: [0,1,2].map(i =>
+      e.jsx("div", { className: "rounded-2xl glass-strong p-6 animate-pulse", children: e.jsx("div", { className: "h-16 bg-warm-200 rounded" }) }, i)
+    )}),
+    !loading && searched && e.jsx("div", { className: "space-y-4", children:
+      results.map(j => e.jsxs("div", {
+        className: "rounded-2xl glass-strong p-6 flex flex-col md:flex-row md:items-center gap-4",
+        children: [
+          e.jsxs("div", { className: "flex-1", children: [
+            e.jsx("span", { className: "text-xs px-2 py-0.5 rounded-full font-semibold text-white mr-2", style: { background: "#009966" }, children: "🚗 Carpooling" }),
+            e.jsxs("span", { className: "font-bold text-warm-900", children: [j.driver.alias, " ⭐ ", j.driver.rating] }),
+            e.jsxs("div", { className: "text-sm text-warm-700 mt-1", children: [j.origin.address, " → ", j.destination.address] }),
+            e.jsxs("div", { className: "text-xs text-warm-500 mt-0.5", children: [
+              new Date(j.departure_date).toLocaleTimeString("it", {hour:"2-digit",minute:"2-digit"}),
+              " → ",
+              new Date(j.arrival_date).toLocaleTimeString("it", {hour:"2-digit",minute:"2-digit"}),
+              " · ", j.seats.available, " posti disponibili",
+            ]}),
+          ]}),
+          e.jsxs("div", { className: "flex items-center gap-4", children: [
+            e.jsxs("div", { className: "text-right", children: [
+              e.jsxs("div", { className: "text-2xl font-bold text-warm-900", children: ["€", j.price.amount] }),
+              e.jsx("div", { className: "text-xs text-warm-500", children: "per persona" }),
+            ]}),
+            e.jsx("a", {
+              href: j.booking_url, target: "_blank", rel: "noopener noreferrer",
+              className: "px-5 py-2.5 rounded-xl font-semibold text-sm text-white transition-opacity hover:opacity-90 shadow-sm whitespace-nowrap",
+              style: { background: "#009966" },
+              children: "Prenota su BlaBlaCar →",
+            }),
+          ]}),
+        ],
+      }, j.id))
+    }),
+  ]});
+}
+```
+
+### 3.7 Aggiornare il render di R1 per includere tutti i tab
 
 Trovare in `R1` il blocco condizionale:
 ```js
@@ -417,6 +648,8 @@ Sostituire con:
 ```js
 n === "flights" && e.jsx(H1, {})
 n === "trains" && e.jsx(T1, {})
+n === "blablacar_bus" && e.jsx(B1_BUS, {})
+n === "blablacar_carpool" && e.jsx(B1_CARPOOL, {})
 n === "car_rental" && e.jsx(I1, {})
 n === "transfers" && e.jsx(C1, { boroughName: t })
 ```
@@ -439,6 +672,18 @@ n === "transfers" && e.jsx(C1, { boroughName: t })
 - FR 9701: Roma Termini → Foggia 08:05–10:30 (2h 25m, €70 A/R)
 - ITA 8701: Milano C. → Foggia 07:10–12:05 (4h 55m, €118 A/R)
 - REG 5401: Bari C. → Foggia 09:15–10:20 (1h 05m, €18 A/R)
+
+### Bus BlaBlaCar (B1_BUS_DATA — nuovo)
+- Napoli Piazza Garibaldi → Lacedonia area 08:30–10:15 (1h 45m, €9)
+- Roma Tiburtina → Foggia Stazione 07:00–11:30 (4h 30m, €12)
+- Milano Lampugnano → Napoli Piazza Garibaldi 06:00–14:00 (8h, €19)
+
+### Carpooling BlaBlaCar (B1_CARPOOL_DATA — nuovo)
+- Marco R. ⭐4.9 · Napoli → Lacedonia 07:45–09:15 (1h 30m, €7, 2 posti)
+- Giovanni S. ⭐4.7 · Foggia → Lacedonia 08:00–08:50 (50min, €4, 1 posto)
+- Sofia L. ⭐5.0 · Avellino → Lacedonia 09:00–10:05 (1h 05m, €5, 3 posti)
+
+> **Booking:** entrambi i tab aprono `booking_url` in nuova tab. Nessun pagamento in-app.
 
 ### Auto (D1 — già presente)
 - Dati noleggio auto esistenti nel bundle
@@ -463,11 +708,31 @@ Il tab Transfer (C1) copre questa ultima tratta. Il testo di ogni card treno inc
 
 ```
 R1 (sezione "Organizza il viaggio")
-├── Tab 1: ✈️ Voli        (H1) — Amadeus mock, MUC/FCO → NAP
-├── Tab 2: 🚂 Treni       (T1) — Omio mock, linea Tirrenica→NAP + Adriatica→FOG  ← NUOVO
-├── Tab 3: 🚗 Auto        (I1) — Rentalcars mock, noleggio da NAP/FOG
-└── Tab 4: 🚐 Transfer    (C1) — Transfer privati NAP/FOG → Lacedonia
+├── Tab 1: ✈️ Voli        (H1)        — Amadeus mock, MUC/FCO → NAP
+├── Tab 2: 🚂 Treni       (T1)        — Omio mock, Tirrenica→NAP + Adriatica→FOG  ← NUOVO
+├── Tab 3: 🚌 Bus         (B1_BUS)    — BlaBlaCar Bus SCHEDULED (RDEX+)           ← NUOVO
+├── Tab 4: 🚗 Carpooling  (B1_CARPOOL)— BlaBlaCar Daily DYNAMIC (RDEX+)           ← NUOVO
+├── Tab 5: 🚙 Auto        (I1)        — Rentalcars mock, noleggio da NAP/FOG
+└── Tab 6: 🚐 Transfer    (C1)        — Transfer privati NAP/FOG → Lacedonia
 ```
+
+**Logica progressiva:** prima i modi per arrivare in zona (voli, treno, bus, carpooling), poi mobilità locale (noleggio auto, transfer privato).
+
+### API BlaBlaCar (RDEX+) — riferimento per futura integrazione reale
+
+```
+GET https://api.blablacarbus.com/v1/journeys
+  ?departure_lat=40.8518&departure_lng=14.2681   // Napoli
+  &arrival_lat=41.0529&arrival_lng=15.5672       // Lacedonia
+  &departure_date=2026-09-10
+  &departure_timedelta=86400
+  &count=10
+  &passenger=true
+  &type=SCHEDULED                                // Bus: SCHEDULED, Carpooling: DYNAMIC
+Authorization: Bearer {BLABLACAR_API_KEY}
+```
+
+Mock data (`B1_BUS_DATA` e `B1_CARPOOL_DATA`) rispettano la struttura RDEX+ per drop-in API swap futuro.
 
 ---
 
@@ -485,9 +750,11 @@ R1 (sezione "Organizza il viaggio")
 | Rischio | Mitigazione |
 |---------|-------------|
 | Ricompilazione bundle sovrascrive modifiche | Backup `.bak` + documentare le modifiche in questo spec |
-| Icona treno non disponibile in phosphor-icons | Usare `Train`, `TrainSimple`, o SVG inline fallback |
-| Icona treno non importata nel bundle | Verificare presenza di `Train`/`TrainSimple` phosphor; fallback: emoji 🚂 come testo nel `icon` field |
-| `addTravelItem` store non aggiornato per tipo `train` | Verificare che lo Zustand store accetti tipi arbitrari — pattern esistente lo supporta |
+| Icona treno non disponibile in phosphor-icons | Usare `Train`, `TrainSimple`, o SVG inline; fallback emoji 🚂 |
+| `addTravelItem` store non aggiornato per tipo `train` | Store Zustand accetta tipi arbitrari — pattern esistente lo supporta |
+| `bosco-*` token Tailwind non disponibile | Usare colori BlaBlaCar inline (`#00D084`, `#009966`) — già verificato assente in config |
+| Tag `<a>` vs `<button>` per booking esterno | Bus e Carpooling usano `<a href target="_blank">` — nessun handler in-app, nessun addTravelItem |
+| 6 tab potrebbero non stare su mobile | P1 renderizza con scroll orizzontale (pattern già presente in H1/I1) |
 
 ---
 
