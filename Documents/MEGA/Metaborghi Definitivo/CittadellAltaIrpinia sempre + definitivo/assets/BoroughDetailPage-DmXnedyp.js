@@ -4680,8 +4680,11 @@ function R1({ boroughName: t = "Nusco", className: s }) {
           "aria-labelledby": `tab-${n}`,
           children: [
             n === "flights" && e.jsx(H1, {}),
-            n === "transfers" && e.jsx(C1, { boroughName: t }),
+            n === "trains" && e.jsx(TR1, {}),
+            n === "blablacar_bus" && e.jsx(B1_BUS, {}),
+            n === "blablacar_carpool" && e.jsx(B1_CARPOOL, {}),
             n === "car_rental" && e.jsx(I1, {}),
+            n === "transfers" && e.jsx(C1, { boroughName: t }),
           ],
         },
         n,
