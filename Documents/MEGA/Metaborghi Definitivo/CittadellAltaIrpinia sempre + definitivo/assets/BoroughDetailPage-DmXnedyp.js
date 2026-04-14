@@ -4105,20 +4105,6 @@ const P1 = [
     activeColor: "text-ambra-700 bg-ambra-100 shadow-sm",
   },
   {
-    id: "blablacar_bus",
-    label: "Bus",
-    icon: e.jsx("span", { children: "🚌" }),
-    color: "text-warm-600 hover:bg-[#00D084]/10",
-    activeColor: "text-white bg-[#00D084] shadow-sm",
-  },
-  {
-    id: "blablacar_carpool",
-    label: "Carpooling",
-    icon: e.jsx("span", { children: "🚗" }),
-    color: "text-warm-600 hover:bg-[#009966]/10",
-    activeColor: "text-white bg-[#009966] shadow-sm",
-  },
-  {
     id: "car_rental",
     label: "Noleggio auto",
     icon: e.jsx(k, { size: 20 }),
@@ -4131,6 +4117,20 @@ const P1 = [
     icon: e.jsx(S, { size: 20 }),
     color: "text-warm-600 hover:text-natura-600 hover:bg-natura-50",
     activeColor: "text-natura-700 bg-natura-100 shadow-sm",
+  },
+  {
+    id: "blablacar_bus",
+    label: "Bus",
+    icon: e.jsx("span", { children: "🚌" }),
+    color: "text-warm-600 hover:bg-[#00D084]/10",
+    activeColor: "text-white bg-[#00D084] shadow-sm",
+  },
+  {
+    id: "blablacar_carpool",
+    label: "Carpooling",
+    icon: e.jsx("span", { children: "🚗" }),
+    color: "text-warm-600 hover:bg-[#009966]/10",
+    activeColor: "text-white bg-[#009966] shadow-sm",
   },
 ];
 const Z1_TRAINS = [
@@ -4536,6 +4536,9 @@ const B1_CARPOOL_DATA = [
   },
 ];
 function B1_BUS() {
+  const addTravelItem = D((i) => i.addTravelItem);
+  const addToast = M((i) => i.addToast);
+  const toggleCartSidebar = M((i) => i.toggleCartSidebar);
   const [results, setResults] = a.useState([]);
   const [loading, setLoading] = a.useState(false);
   const [searched, setSearched] = a.useState(false);
@@ -4544,56 +4547,87 @@ function B1_BUS() {
     setSearched(true);
     setTimeout(() => { setResults(B1_BUS_DATA); setLoading(false); }, 800);
   };
+  const handleAdd = (bus) => {
+    addTravelItem({ id: "bus-" + bus.id, type: "bus", provider: "blablacar", bus, total_price: bus.price.amount });
+    addToast({ message: bus.operator + " aggiunto al carrello — " + bus.price.amount + "€", type: "success" });
+    toggleCartSidebar();
+  };
   return e.jsxs("div", { children: [
     e.jsxs("div", { className: "glass-strong rounded-2xl p-6 mb-8", children: [
-      e.jsx("p", { className: "text-sm text-warm-600 mb-4", children: "Cerca bus intercity BlaBlaCar verso Alta Irpinia (da Napoli · Foggia · Roma · Milano)" }),
+      e.jsx("p", { className: "text-sm text-warm-600 mb-4", children: "Bus intercity verso l'Alta Irpinia — partenze da Napoli, Foggia, Roma, Milano" }),
       e.jsx("button", {
         onClick: handleSearch,
-        className: "w-full py-3 rounded-xl font-semibold text-white transition-colors shadow-sm",
-        style: { background: "#00D084" },
-        children: "Cerca bus BlaBlaCar",
+        className: "w-full py-3 rounded-xl font-semibold text-white transition-colors shadow-sm bg-natura-600 hover:bg-natura-700",
+        children: "Cerca bus disponibili",
       }),
     ] }),
     loading && e.jsx("div", { className: "space-y-4", children: [0, 1, 2].map((_, i) =>
-      e.jsx("div", { className: "rounded-2xl glass-strong p-6 animate-pulse", children: e.jsx("div", { className: "h-16 bg-warm-200 rounded" }) }, i)
+      e.jsx("div", { className: "rounded-2xl glass-strong p-6 animate-pulse", children: e.jsx("div", { className: "h-20 bg-warm-200 rounded" }) }, i)
     ) }),
     !loading && searched && e.jsx("div", { className: "space-y-4", children:
       results.map(j =>
         e.jsxs("div", {
-          className: "rounded-2xl glass-strong p-6 flex flex-col md:flex-row md:items-center gap-4",
+          className: "rounded-2xl glass-strong overflow-hidden shadow-glass transition-all duration-300 hover:-translate-y-1 hover:shadow-glass-hover",
           children: [
-            e.jsxs("div", { className: "flex-1", children: [
-              e.jsx("span", { className: "text-xs px-2 py-0.5 rounded-full font-semibold text-white mr-2", style: { background: "#00D084" }, children: "🚌 Bus" }),
-              e.jsx("span", { className: "font-bold text-warm-900", children: j.operator }),
-              e.jsxs("div", { className: "text-sm text-warm-700 mt-1", children: [j.origin.address, " → ", j.destination.address] }),
-              e.jsxs("div", { className: "text-xs text-warm-500 mt-0.5", children: [
-                new Date(j.departure_date).toLocaleTimeString("it", { hour: "2-digit", minute: "2-digit" }),
-                " → ",
-                new Date(j.arrival_date).toLocaleTimeString("it", { hour: "2-digit", minute: "2-digit" }),
-                " · ", Math.floor(j.duration_minutes / 60), "h",
-                j.duration_minutes % 60 ? " " + (j.duration_minutes % 60) + "min" : "",
-                " · ", j.seats.available, "/", j.seats.total, " posti",
+            e.jsxs("div", { className: "p-5 md:p-6", children: [
+              e.jsxs("div", { className: "flex items-center justify-between mb-4", children: [
+                e.jsxs("div", { className: "flex items-center gap-3", children: [
+                  e.jsx("div", {
+                    className: "w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg text-white flex-shrink-0 bg-natura-600",
+                    children: "🚌",
+                  }),
+                  e.jsxs("div", { children: [
+                    e.jsx("div", { className: "font-display font-bold text-warm-900", children: j.operator }),
+                    e.jsx("div", { className: "text-xs text-warm-500", children: "Bus intercity" }),
+                  ] }),
+                ] }),
+                e.jsxs("span", { className: "text-xs px-2 py-1 rounded-full font-semibold bg-natura-100 text-natura-700", children: [j.seats.available, "/", j.seats.total, " posti"] }),
               ] }),
-            ] }),
-            e.jsxs("div", { className: "flex items-center gap-4", children: [
-              e.jsxs("div", { className: "text-right", children: [
-                e.jsxs("div", { className: "text-2xl font-bold text-warm-900", children: ["€", j.price.amount] }),
-                e.jsx("div", { className: "text-xs text-warm-500", children: "per persona" }),
+              e.jsxs("div", { className: "mb-3 p-3 rounded-xl bg-warm-50", children: [
+                e.jsxs("div", { className: "flex items-center gap-3", children: [
+                  e.jsxs("div", { className: "text-center min-w-0 flex-1", children: [
+                    e.jsx("div", { className: "text-lg font-bold text-warm-900 leading-none", children: new Date(j.departure_date).toLocaleTimeString("it", { hour: "2-digit", minute: "2-digit" }) }),
+                    e.jsx("div", { className: "text-xs text-warm-600 mt-0.5", children: j.origin.address }),
+                  ] }),
+                  e.jsxs("div", { className: "flex flex-col items-center gap-1 px-2", children: [
+                    e.jsxs("div", { className: "text-xs text-warm-500", children: [Math.floor(j.duration_minutes / 60), "h", j.duration_minutes % 60 ? " " + (j.duration_minutes % 60) + "min" : ""] }),
+                    e.jsx("div", { className: "w-12 h-px bg-warm-300" }),
+                    e.jsx("div", { className: "text-xs text-warm-400", children: "→" }),
+                  ] }),
+                  e.jsxs("div", { className: "text-center min-w-0 flex-1", children: [
+                    e.jsx("div", { className: "text-lg font-bold text-warm-900 leading-none", children: new Date(j.arrival_date).toLocaleTimeString("it", { hour: "2-digit", minute: "2-digit" }) }),
+                    e.jsx("div", { className: "text-xs text-warm-600 mt-0.5", children: j.destination.address }),
+                  ] }),
+                ] }),
               ] }),
-              e.jsx("a", {
-                href: j.booking_url, target: "_blank", rel: "noopener noreferrer",
-                className: "px-5 py-2.5 rounded-xl font-semibold text-sm text-white transition-opacity hover:opacity-90 shadow-sm whitespace-nowrap",
-                style: { background: "#00D084" },
-                children: "Prenota su BlaBlaCar →",
-              }),
+              e.jsxs("div", { className: "flex items-end justify-between pt-3 border-t border-warm-200/50", children: [
+                e.jsxs("div", { children: [
+                  e.jsxs("div", { className: "text-2xl font-bold text-warm-900", children: ["€", j.price.amount] }),
+                  e.jsx("div", { className: "text-xs text-warm-500", children: "per persona" }),
+                ] }),
+                e.jsx("button", {
+                  onClick: () => handleAdd(j),
+                  className: "px-5 py-2.5 bg-natura-600 hover:bg-natura-700 text-white rounded-xl font-semibold text-sm transition-colors shadow-sm whitespace-nowrap",
+                  children: "Aggiungi →",
+                }),
+              ] }),
             ] }),
           ],
         }, j.id)
       )
     }),
+    !loading && searched && results.length === 0 && e.jsxs("div", { className: "text-center py-12", children: [
+      e.jsx("p", { className: "text-warm-600 font-body text-lg", children: "Nessun bus trovato" }),
+    ] }),
+    !loading && !searched && e.jsxs("div", { className: "text-center py-12", children: [
+      e.jsx("p", { className: "text-warm-600 font-body text-lg", children: "Cerca bus intercity per raggiungere l'Alta Irpinia" }),
+    ] }),
   ] });
 }
 function B1_CARPOOL() {
+  const addTravelItem = D((i) => i.addTravelItem);
+  const addToast = M((i) => i.addToast);
+  const toggleCartSidebar = M((i) => i.toggleCartSidebar);
   const [results, setResults] = a.useState([]);
   const [loading, setLoading] = a.useState(false);
   const [searched, setSearched] = a.useState(false);
@@ -4602,51 +4636,81 @@ function B1_CARPOOL() {
     setSearched(true);
     setTimeout(() => { setResults(B1_CARPOOL_DATA); setLoading(false); }, 800);
   };
+  const handleAdd = (cp) => {
+    addTravelItem({ id: "carpool-" + cp.id, type: "carpool", provider: "blablacar", carpool: cp, total_price: cp.price.amount });
+    addToast({ message: "Passaggio con " + cp.driver.alias + " aggiunto al carrello — " + cp.price.amount + "€", type: "success" });
+    toggleCartSidebar();
+  };
   return e.jsxs("div", { children: [
     e.jsxs("div", { className: "glass-strong rounded-2xl p-6 mb-8", children: [
-      e.jsx("p", { className: "text-sm text-warm-600 mb-4", children: "Cerca passaggi in carpooling verso Lacedonia (BlaBlaCar Daily)" }),
+      e.jsx("p", { className: "text-sm text-warm-600 mb-4", children: "Passaggi in carpooling verso Lacedonia — condividi il viaggio e risparmia" }),
       e.jsx("button", {
         onClick: handleSearch,
-        className: "w-full py-3 rounded-xl font-semibold text-white transition-colors shadow-sm",
-        style: { background: "#009966" },
-        children: "Cerca passaggi",
+        className: "w-full py-3 rounded-xl font-semibold text-white transition-colors shadow-sm bg-ambra-600 hover:bg-ambra-700",
+        children: "Cerca passaggi disponibili",
       }),
     ] }),
     loading && e.jsx("div", { className: "space-y-4", children: [0, 1, 2].map((_, i) =>
-      e.jsx("div", { className: "rounded-2xl glass-strong p-6 animate-pulse", children: e.jsx("div", { className: "h-16 bg-warm-200 rounded" }) }, i)
+      e.jsx("div", { className: "rounded-2xl glass-strong p-6 animate-pulse", children: e.jsx("div", { className: "h-20 bg-warm-200 rounded" }) }, i)
     ) }),
     !loading && searched && e.jsx("div", { className: "space-y-4", children:
       results.map(j =>
         e.jsxs("div", {
-          className: "rounded-2xl glass-strong p-6 flex flex-col md:flex-row md:items-center gap-4",
+          className: "rounded-2xl glass-strong overflow-hidden shadow-glass transition-all duration-300 hover:-translate-y-1 hover:shadow-glass-hover",
           children: [
-            e.jsxs("div", { className: "flex-1", children: [
-              e.jsx("span", { className: "text-xs px-2 py-0.5 rounded-full font-semibold text-white mr-2", style: { background: "#009966" }, children: "🚗 Carpooling" }),
-              e.jsxs("span", { className: "font-bold text-warm-900", children: [j.driver.alias, " ⭐ ", j.driver.rating] }),
-              e.jsxs("div", { className: "text-sm text-warm-700 mt-1", children: [j.origin.address, " → ", j.destination.address] }),
-              e.jsxs("div", { className: "text-xs text-warm-500 mt-0.5", children: [
-                new Date(j.departure_date).toLocaleTimeString("it", { hour: "2-digit", minute: "2-digit" }),
-                " → ",
-                new Date(j.arrival_date).toLocaleTimeString("it", { hour: "2-digit", minute: "2-digit" }),
-                " · ", j.seats.available, " posti disponibili",
+            e.jsxs("div", { className: "p-5 md:p-6", children: [
+              e.jsxs("div", { className: "flex items-center justify-between mb-4", children: [
+                e.jsxs("div", { className: "flex items-center gap-3", children: [
+                  e.jsx("div", {
+                    className: "w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg text-white flex-shrink-0 bg-ambra-600",
+                    children: "🚗",
+                  }),
+                  e.jsxs("div", { children: [
+                    e.jsxs("div", { className: "font-display font-bold text-warm-900", children: [j.driver.alias, " · ⭐ ", j.driver.rating] }),
+                    e.jsxs("div", { className: "text-xs text-warm-500", children: [j.driver.trips, " viaggi completati"] }),
+                  ] }),
+                ] }),
+                e.jsxs("span", { className: "text-xs px-2 py-1 rounded-full font-semibold bg-ambra-100 text-ambra-700", children: [j.seats.available, " ", j.seats.available === 1 ? "posto" : "posti"] }),
               ] }),
-            ] }),
-            e.jsxs("div", { className: "flex items-center gap-4", children: [
-              e.jsxs("div", { className: "text-right", children: [
-                e.jsxs("div", { className: "text-2xl font-bold text-warm-900", children: ["€", j.price.amount] }),
-                e.jsx("div", { className: "text-xs text-warm-500", children: "per persona" }),
+              e.jsxs("div", { className: "mb-3 p-3 rounded-xl bg-warm-50", children: [
+                e.jsxs("div", { className: "flex items-center gap-3", children: [
+                  e.jsxs("div", { className: "text-center min-w-0 flex-1", children: [
+                    e.jsx("div", { className: "text-lg font-bold text-warm-900 leading-none", children: new Date(j.departure_date).toLocaleTimeString("it", { hour: "2-digit", minute: "2-digit" }) }),
+                    e.jsx("div", { className: "text-xs text-warm-600 mt-0.5", children: j.origin.address }),
+                  ] }),
+                  e.jsxs("div", { className: "flex flex-col items-center gap-1 px-2", children: [
+                    e.jsxs("div", { className: "text-xs text-warm-500", children: [Math.floor(j.duration_minutes / 60), "h", j.duration_minutes % 60 ? " " + (j.duration_minutes % 60) + "min" : ""] }),
+                    e.jsx("div", { className: "w-12 h-px bg-warm-300" }),
+                    e.jsx("div", { className: "text-xs text-warm-400", children: "→" }),
+                  ] }),
+                  e.jsxs("div", { className: "text-center min-w-0 flex-1", children: [
+                    e.jsx("div", { className: "text-lg font-bold text-warm-900 leading-none", children: new Date(j.arrival_date).toLocaleTimeString("it", { hour: "2-digit", minute: "2-digit" }) }),
+                    e.jsx("div", { className: "text-xs text-warm-600 mt-0.5", children: j.destination.address }),
+                  ] }),
+                ] }),
               ] }),
-              e.jsx("a", {
-                href: j.booking_url, target: "_blank", rel: "noopener noreferrer",
-                className: "px-5 py-2.5 rounded-xl font-semibold text-sm text-white transition-opacity hover:opacity-90 shadow-sm whitespace-nowrap",
-                style: { background: "#009966" },
-                children: "Prenota su BlaBlaCar →",
-              }),
+              e.jsxs("div", { className: "flex items-end justify-between pt-3 border-t border-warm-200/50", children: [
+                e.jsxs("div", { children: [
+                  e.jsxs("div", { className: "text-2xl font-bold text-warm-900", children: ["€", j.price.amount] }),
+                  e.jsx("div", { className: "text-xs text-warm-500", children: "per persona" }),
+                ] }),
+                e.jsx("button", {
+                  onClick: () => handleAdd(j),
+                  className: "px-5 py-2.5 bg-ambra-600 hover:bg-ambra-700 text-white rounded-xl font-semibold text-sm transition-colors shadow-sm whitespace-nowrap",
+                  children: "Aggiungi →",
+                }),
+              ] }),
             ] }),
           ],
         }, j.id)
       )
     }),
+    !loading && searched && results.length === 0 && e.jsxs("div", { className: "text-center py-12", children: [
+      e.jsx("p", { className: "text-warm-600 font-body text-lg", children: "Nessun passaggio trovato" }),
+    ] }),
+    !loading && !searched && e.jsxs("div", { className: "text-center py-12", children: [
+      e.jsx("p", { className: "text-warm-600 font-body text-lg", children: "Cerca passaggi in carpooling verso Lacedonia" }),
+    ] }),
   ] });
 }
 function R1({ boroughName: t = "Nusco", className: s }) {
