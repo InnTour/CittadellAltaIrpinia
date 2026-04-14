@@ -4098,11 +4098,25 @@ const P1 = [
     activeColor: "text-cielo-700 bg-cielo-100 shadow-sm",
   },
   {
-    id: "transfers",
-    label: "Transfer",
-    icon: e.jsx(S, { size: 20 }),
-    color: "text-warm-600 hover:text-natura-600 hover:bg-natura-50",
-    activeColor: "text-natura-700 bg-natura-100 shadow-sm",
+    id: "trains",
+    label: "Treni",
+    icon: e.jsx("span", { children: "🚂" }),
+    color: "text-warm-600 hover:text-ambra-600 hover:bg-ambra-50",
+    activeColor: "text-ambra-700 bg-ambra-100 shadow-sm",
+  },
+  {
+    id: "blablacar_bus",
+    label: "Bus",
+    icon: e.jsx("span", { children: "🚌" }),
+    color: "text-warm-600 hover:bg-[#00D084]/10",
+    activeColor: "text-white bg-[#00D084] shadow-sm",
+  },
+  {
+    id: "blablacar_carpool",
+    label: "Carpooling",
+    icon: e.jsx("span", { children: "🚗" }),
+    color: "text-warm-600 hover:bg-[#009966]/10",
+    activeColor: "text-white bg-[#009966] shadow-sm",
   },
   {
     id: "car_rental",
@@ -4110,6 +4124,13 @@ const P1 = [
     icon: e.jsx(k, { size: 20 }),
     color: "text-warm-600 hover:text-energia-600 hover:bg-energia-50",
     activeColor: "text-energia-700 bg-energia-100 shadow-sm",
+  },
+  {
+    id: "transfers",
+    label: "Transfer",
+    icon: e.jsx(S, { size: 20 }),
+    color: "text-warm-600 hover:text-natura-600 hover:bg-natura-50",
+    activeColor: "text-natura-700 bg-natura-100 shadow-sm",
   },
 ];
 const Z1_TRAINS = [
