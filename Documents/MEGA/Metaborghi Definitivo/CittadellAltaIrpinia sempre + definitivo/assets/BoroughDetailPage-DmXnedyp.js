@@ -5558,56 +5558,7 @@ function ge() {
                 }),
               ],
             }),
-          e.jsx("section", {
-            className: "mb-12",
-            children: e.jsxs("div", {
-              className: "grid md:grid-cols-2 gap-8",
-              children: [
-                e.jsxs("div", {
-                  className: "glass-strong rounded-2xl p-8 md:p-10 text-center border-2 border-dashed border-ambra-200",
-                  children: [
-                    e.jsx("div", {
-                      className: "flex items-center justify-center w-14 h-14 rounded-2xl bg-ambra-100 text-ambra-600 mx-auto mb-4",
-                      children: e.jsx(H, { size: 28, weight: "duotone" }),
-                    }),
-                    e.jsx("h3", {
-                      className: "font-display text-lg font-bold text-warm-900 mb-2",
-                      children: "Prenota il tuo soggiorno",
-                    }),
-                    e.jsx("p", {
-                      className: "text-warm-500 text-sm mb-4",
-                      children: "Prenotazione diretta con le strutture del borgo",
-                    }),
-                    e.jsx("span", {
-                      className: "inline-flex items-center gap-2 px-5 py-2.5 bg-ambra-50 text-ambra-600 font-semibold rounded-full text-sm border border-ambra-200",
-                      children: "Presto disponibile",
-                    }),
-                  ],
-                }),
-                e.jsxs("div", {
-                  className: "glass-strong rounded-2xl p-8 md:p-10 text-center border-2 border-dashed border-natura-200",
-                  children: [
-                    e.jsx("div", {
-                      className: "flex items-center justify-center w-14 h-14 rounded-2xl bg-natura-100 text-natura-600 mx-auto mb-4",
-                      children: e.jsx(V0, { size: 28, weight: "duotone" }),
-                    }),
-                    e.jsx("h3", {
-                      className: "font-display text-lg font-bold text-warm-900 mb-2",
-                      children: "Organizza il viaggio",
-                    }),
-                    e.jsx("p", {
-                      className: "text-warm-500 text-sm mb-4",
-                      children: "Voli, transfer e noleggio auto per il borgo",
-                    }),
-                    e.jsx("span", {
-                      className: "inline-flex items-center gap-2 px-5 py-2.5 bg-natura-50 text-natura-600 font-semibold rounded-full text-sm border border-natura-200",
-                      children: "Presto disponibile",
-                    }),
-                  ],
-                }),
-              ],
-            }),
-          }),
+          e.jsx(R1, { boroughName: s?.name || "Lacedonia" }),
           p.length === 0 &&
             c.length === 0 &&
             o.length === 0 &&
