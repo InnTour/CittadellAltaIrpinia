@@ -31,5 +31,7 @@ CREATE TABLE IF NOT EXISTS points_of_interest (
   updated_at    TIMESTAMP    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
   PRIMARY KEY (id),
-  FOREIGN KEY (borough_id) REFERENCES boroughs(id) ON DELETE CASCADE
+  FOREIGN KEY (borough_id) REFERENCES boroughs(id) ON DELETE CASCADE,
+  KEY idx_borough_id (borough_id),
+  KEY idx_category (category)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
