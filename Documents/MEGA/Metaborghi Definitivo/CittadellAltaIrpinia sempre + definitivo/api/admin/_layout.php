@@ -71,7 +71,7 @@ $_navShow = function(string $page) use ($_layoutIsAdmin, $_operatorPage): bool {
         </a>
         <?php endif; ?>
         <?php if ($_navShow('punti-interesse.php')): ?>
-        <a href="/api/admin/punti-interesse.php" class="nav-link <?= ($pageTitle==='Punti di Interesse'?'active':'') ?>">
+        <a href="/api/admin/punti-interesse.php" class="nav-link <?= ($pageTitle==='Punti di Interesse' || basename($_SERVER['PHP_SELF'])==='punti-interesse-edit.php' ? 'active' : '') ?>">
           <span>📍</span> Punti di Interesse
         </a>
         <?php endif; ?>

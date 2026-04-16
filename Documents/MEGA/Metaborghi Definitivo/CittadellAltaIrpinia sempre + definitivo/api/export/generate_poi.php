@@ -71,9 +71,9 @@ function renderPoiHtml(array $poi, array $images): string {
     $nameEn  = htmlspecialchars($poi['name_en']  ?? $poi['name_it'] ?? '', ENT_QUOTES, 'UTF-8');
     $nameIrp = htmlspecialchars($poi['name_irp'] ?? $poi['name_it'] ?? '', ENT_QUOTES, 'UTF-8');
 
-    $descIt  = nl2br(htmlspecialchars($poi['desc_it']  ?? '', ENT_QUOTES, 'UTF-8'));
-    $descEn  = nl2br(htmlspecialchars($poi['desc_en']  ?? '', ENT_QUOTES, 'UTF-8'));
-    $descIrp = nl2br(htmlspecialchars($poi['desc_irp'] ?? '', ENT_QUOTES, 'UTF-8'));
+    $descIt  = htmlspecialchars($poi['desc_it']  ?? '', ENT_QUOTES, 'UTF-8');
+    $descEn  = htmlspecialchars($poi['desc_en']  ?? '', ENT_QUOTES, 'UTF-8');
+    $descIrp = htmlspecialchars($poi['desc_irp'] ?? '', ENT_QUOTES, 'UTF-8');
 
     $cat     = htmlspecialchars($poi['category']   ?? '', ENT_QUOTES, 'UTF-8');
     $borough = htmlspecialchars($poi['borough_id'] ?? '', ENT_QUOTES, 'UTF-8');
@@ -421,9 +421,9 @@ function setLang(lang) {
   var nm = document.getElementById('poi-name');
   if (nm) nm.textContent = nm.dataset[lang] || nm.dataset.it;
 
-  // Testi descrizione (innerHTML per mantenere <br>)
+  // Testi descrizione (textContent — sicuro contro XSS)
   document.querySelectorAll('.lang-text').forEach(function(el) {
-    el.innerHTML = el.dataset[lang] || el.dataset.it;
+    el.textContent = el.dataset[lang] || el.dataset.it;
   });
 
   // html lang attribute

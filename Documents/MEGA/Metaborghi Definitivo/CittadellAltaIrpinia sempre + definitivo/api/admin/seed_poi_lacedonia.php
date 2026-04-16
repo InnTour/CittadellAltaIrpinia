@@ -7,13 +7,15 @@ $results = []; $errors = [];
 
 function seedPoi(PDO $db, array $data, array &$results, array &$errors): void {
     try {
+        $id = $data['id'];
+        unset($data['id']); // rimuovi id dall'array per evitare duplicato
         $cols = implode(',', array_map(fn($k) => "`$k`", array_keys($data)));
         $phs  = implode(',', array_fill(0, count($data), '?'));
         $db->prepare("INSERT IGNORE INTO points_of_interest (id,$cols) VALUES (?,$phs)")
-           ->execute([$data['id'], ...array_values($data)]);
-        $results[] = "✅ {$data['name_it']}";
+           ->execute([$id, ...array_values($data)]);
+        $results[] = "✅ " . ($data['name_it'] ?? $id);
     } catch (PDOException $e) {
-        $errors[] = "❌ {$data['name_it']}: " . $e->getMessage();
+        $errors[] = "❌ " . ($data['name_it'] ?? 'POI') . ": " . $e->getMessage();
     }
 }
 
