@@ -110,6 +110,8 @@ function renderPoiHtml(array $poi, array $images): string {
         'en' => $poi['video_en'] ?? '',
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
+    $coverJson = json_encode($poi['cover_image'] ?? '');
+
     // ── Tab HTML condizionali (stringa vuota = tab nascosta) ───────────────
     $tabAudio  = $hasAudio  ? '<button class="tab" data-tab="audio">&#127911; Audio</button>'    : '';
     $tabVideo  = $hasVideo  ? '<button class="tab" data-tab="video">&#127909; Video</button>'    : '';
@@ -388,7 +390,7 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--notte);col
 var AUDIO  = {$audioJson};
 var VIDEO  = {$videoJson};
 var IMAGES = {$imgJson};
-var COVER  = '{$cover}';
+var COVER  = {$coverJson};
 
 var currentLang      = 'it';
 var currentAudioLang = 'it';
