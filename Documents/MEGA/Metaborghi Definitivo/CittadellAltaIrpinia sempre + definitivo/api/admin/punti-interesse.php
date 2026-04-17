@@ -40,9 +40,17 @@ require '_layout.php';
         <h2 class="text-2xl font-bold text-white">Punti di Interesse</h2>
         <p class="text-slate-400 text-sm mt-1">Schede POI per virtual tour Treedis</p>
       </div>
-      <a href="punti-interesse-edit.php" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
-        + Nuovo POI
-      </a>
+      <div class="flex gap-3 items-center">
+        <?php if ($filterBorough): ?>
+        <a href="/borghi/<?= htmlspecialchars($filterBorough) ?>/" target="_blank"
+           class="text-cyan-400 hover:text-cyan-300 text-sm font-medium border border-cyan-700 px-3 py-2 rounded-lg transition-colors">
+          Vedi su MetaBorghi ↗
+        </a>
+        <?php endif; ?>
+        <a href="punti-interesse-edit.php" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
+          + Nuovo POI
+        </a>
+      </div>
     </div>
 
     <?php if ($msg): ?>

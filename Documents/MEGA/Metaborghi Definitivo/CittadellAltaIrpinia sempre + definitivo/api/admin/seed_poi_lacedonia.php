@@ -65,5 +65,8 @@ foreach ($pois as $poi) {
 <h1 class="text-2xl font-bold mb-4">Seed POI Lacedonia</h1>
 <?php foreach ($results as $r): ?><p class="text-emerald-400"><?= htmlspecialchars($r) ?></p><?php endforeach; ?>
 <?php foreach ($errors as $e): ?><p class="text-red-400"><?= htmlspecialchars($e) ?></p><?php endforeach; ?>
-<p class="mt-4"><a href="punti-interesse.php?borough=lacedonia" class="text-emerald-400 underline">→ Vai ai POI di Lacedonia</a></p>
+<div class="mt-4 flex gap-4">
+  <a href="punti-interesse.php?borough=lacedonia" class="text-emerald-400 underline">→ Gestisci POI (admin)</a>
+  <a href="/borghi/lacedonia/" class="text-cyan-400 underline" target="_blank">→ Vedi Lacedonia su MetaBorghi ↗</a>
+</div>
 </body></html>
