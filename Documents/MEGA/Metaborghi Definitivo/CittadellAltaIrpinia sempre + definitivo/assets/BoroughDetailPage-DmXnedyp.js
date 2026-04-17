@@ -4811,6 +4811,7 @@ function ge() {
     [apiCrafts, setApiCrafts] = a.useState([]),
     [apiFoodProducts, setApiFoodProducts] = a.useState([]),
     [apiExperiences, setApiExperiences] = a.useState([]),
+    [apiPoi, setApiPoi] = a.useState([]),
     [wished, setWished] = a.useState(false);
   async function toggleWish() {
     const token = localStorage.getItem("mb_token");
@@ -4943,6 +4944,13 @@ function ge() {
       .then((data) => {
         const arr = Array.isArray(data) ? data : [];
         setApiExperiences(arr);
+      })
+      .catch(() => {});
+    fetch(`/api/v1/poi.php?borough=${encodeURIComponent(s.id)}`)
+      .then((r) => r.json())
+      .then((data) => {
+        const arr = Array.isArray(data) ? data : [];
+        setApiPoi(arr);
       })
       .catch(() => {});
   }, [s]);
@@ -5407,6 +5415,68 @@ function ge() {
                         }),
                       ],
                     })],
+              }),
+            ],
+          }),
+          apiPoi.length > 0 && e.jsxs("section", {
+            className: "mb-12",
+            children: [
+              e.jsxs("div", {
+                className: "flex items-center justify-between mb-6",
+                children: [
+                  e.jsxs("h2", {
+                    className: "font-display text-2xl font-bold text-warm-900",
+                    children: ["Punti di Interesse a ", s.name],
+                  }),
+                ],
+              }),
+              e.jsx("div", {
+                className: apiPoi.length > 4 ? "flex overflow-x-auto gap-6 pb-4 snap-x snap-mandatory" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6",
+                style: apiPoi.length > 4 ? { scrollbarWidth: "thin", WebkitOverflowScrolling: "touch" } : {},
+                children: apiPoi.map((r) =>
+                  e.jsx("a", {
+                    href: r.url,
+                    target: "_blank",
+                    rel: "noopener noreferrer",
+                    className: apiPoi.length > 4 ? "block glass-strong rounded-xl overflow-hidden hover:shadow-glass-hover transition-shadow min-w-[280px] max-w-[280px] snap-start flex-shrink-0" : "block glass-strong rounded-xl overflow-hidden hover:shadow-glass-hover transition-shadow",
+                    children: [
+                      r.cover_image
+                        ? e.jsx("img", {
+                            src: r.cover_image,
+                            alt: r.name_it,
+                            className: "w-full aspect-video object-cover",
+                          })
+                        : e.jsx("div", {
+                            className: "w-full aspect-video bg-gradient-to-br from-natura-100 to-natura-200 flex items-center justify-center",
+                            children: e.jsx("span", { className: "text-4xl", children: "\uD83D\uDCCD" }),
+                          }),
+                      e.jsxs("div", {
+                        className: "p-4",
+                        children: [
+                          r.category && e.jsx("p", {
+                            className: "text-xs text-verde-600 font-semibold mb-1 uppercase tracking-wide",
+                            children: r.category,
+                          }),
+                          e.jsx("h3", {
+                            className: "font-semibold text-warm-900 mb-2",
+                            children: r.name_it,
+                          }),
+                          r.desc_it && e.jsx("p", {
+                            className: "text-sm text-warm-700 line-clamp-2",
+                            children: r.desc_it,
+                          }),
+                          e.jsxs("div", {
+                            className: "flex gap-2 mt-3",
+                            children: [
+                              r.has_audio && e.jsx("span", { className: "text-xs bg-natura-50 text-natura-700 px-2 py-0.5 rounded-full border border-natura-200", children: "\uD83C\uDFA7 Audio" }),
+                              r.has_video && e.jsx("span", { className: "text-xs bg-natura-50 text-natura-700 px-2 py-0.5 rounded-full border border-natura-200", children: "\uD83C\uDFA5 Video" }),
+                            ],
+                          }),
+                        ],
+                      }),
+                    ],
+                  }, r.id)
+                ),
               }),
             ],
           }),
