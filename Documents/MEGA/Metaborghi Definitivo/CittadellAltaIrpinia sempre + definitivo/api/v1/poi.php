@@ -10,7 +10,7 @@ $borough = $_GET['borough'] ?? null;
 if ($method === 'GET') {
     if ($id) {
         $stmt = $db->prepare(
-            "SELECT p.*, b.name as borough_name
+            "SELECT p.*, b.name AS borough_name
              FROM points_of_interest p
              LEFT JOIN boroughs b ON b.id = p.borough_id
              WHERE p.id = ?"
@@ -26,7 +26,7 @@ if ($method === 'GET') {
     } else {
         if ($borough) {
             $stmt = $db->prepare(
-                "SELECT p.*, b.name as borough_name
+                "SELECT p.*, b.name AS borough_name
                  FROM points_of_interest p
                  LEFT JOIN boroughs b ON b.id = p.borough_id
                  WHERE p.borough_id = ?
@@ -35,7 +35,7 @@ if ($method === 'GET') {
             $stmt->execute([$borough]);
         } else {
             $stmt = $db->query(
-                "SELECT p.*, b.name as borough_name
+                "SELECT p.*, b.name AS borough_name
                  FROM points_of_interest p
                  LEFT JOIN boroughs b ON b.id = p.borough_id
                  ORDER BY p.borough_id, p.sort_order ASC"

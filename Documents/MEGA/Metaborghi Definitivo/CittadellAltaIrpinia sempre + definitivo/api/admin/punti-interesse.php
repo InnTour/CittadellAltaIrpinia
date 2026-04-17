@@ -15,9 +15,9 @@ if (isset($_GET['delete'])) {
 
 // ── FILTRO BOROUGH ───────────────────────────────────────────
 $filterBorough = trim($_GET['borough'] ?? '');
-$borghi = $db->query("SELECT id, name_it FROM boroughs ORDER BY name_it")->fetchAll();
+$borghi = $db->query("SELECT id, name FROM boroughs ORDER BY name")->fetchAll();
 
-$sql = "SELECT p.*, b.name_it AS borough_name FROM points_of_interest p
+$sql = "SELECT p.*, b.name AS borough_name FROM points_of_interest p
         LEFT JOIN boroughs b ON b.id = p.borough_id";
 $params = [];
 if ($filterBorough) {
@@ -64,7 +64,7 @@ require '_layout.php';
         <?php foreach ($borghi as $b): ?>
         <option value="<?= htmlspecialchars($b['id']) ?>"
                 <?= $filterBorough === $b['id'] ? 'selected' : '' ?>>
-          <?= htmlspecialchars($b['name_it']) ?>
+          <?= htmlspecialchars($b['name']) ?>
         </option>
         <?php endforeach; ?>
       </select>
