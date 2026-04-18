@@ -5442,18 +5442,13 @@ function ge() {
                     href: r.url,
                     target: "_blank",
                     rel: "noopener noreferrer",
-                    className: "block glass-strong rounded-xl overflow-hidden hover:shadow-glass-hover transition-shadow min-w-[280px] max-w-[280px] snap-start flex-shrink-0",
+                    className: "block glass-strong rounded-xl overflow-hidden hover:shadow-glass-hover transition-shadow min-w-[240px] max-w-[240px] snap-start flex-shrink-0",
                     children: [
-                      r.cover_image
-                        ? e.jsx("img", {
-                            src: r.cover_image,
-                            alt: r.name_it,
-                            className: "w-full aspect-video object-cover",
-                          })
-                        : e.jsx("div", {
-                            className: "w-full aspect-video bg-gradient-to-br from-natura-100 to-natura-200 flex items-center justify-center",
-                            children: e.jsx("span", { className: "text-4xl", children: "\uD83D\uDCCD" }),
-                          }),
+                      r.cover_image && e.jsx("img", {
+                        src: r.cover_image,
+                        alt: r.name_it,
+                        className: "w-full aspect-video object-cover",
+                      }),
                       e.jsxs("div", {
                         className: "p-4",
                         children: [
@@ -5462,15 +5457,15 @@ function ge() {
                             children: r.category,
                           }),
                           e.jsx("h3", {
-                            className: "font-semibold text-warm-900 mb-2",
+                            className: "font-semibold text-warm-900 mb-1 text-sm leading-snug",
                             children: r.name_it,
                           }),
                           r.desc_it && e.jsx("p", {
-                            className: "text-sm text-warm-700 line-clamp-2",
+                            className: "text-xs text-warm-600 line-clamp-2 mt-1",
                             children: r.desc_it,
                           }),
-                          e.jsxs("div", {
-                            className: "flex gap-2 mt-3",
+                          (r.has_audio || r.has_video) && e.jsxs("div", {
+                            className: "flex gap-1.5 mt-2",
                             children: [
                               r.has_audio && e.jsx("span", { className: "text-xs bg-natura-50 text-natura-700 px-2 py-0.5 rounded-full border border-natura-200", children: "\uD83C\uDFA7 Audio" }),
                               r.has_video && e.jsx("span", { className: "text-xs bg-natura-50 text-natura-700 px-2 py-0.5 rounded-full border border-natura-200", children: "\uD83C\uDFA5 Video" }),
