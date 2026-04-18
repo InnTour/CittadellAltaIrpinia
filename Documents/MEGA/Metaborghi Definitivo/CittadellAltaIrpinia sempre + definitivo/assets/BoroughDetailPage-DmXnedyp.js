@@ -5428,17 +5428,21 @@ function ge() {
                     className: "font-display text-2xl font-bold text-warm-900",
                     children: ["Punti di Interesse a ", s.name],
                   }),
+                  apiPoi.length > 8 && e.jsx("span", {
+                    className: "text-sm text-verde-600 font-medium",
+                    children: ["Vedi tutti (", apiPoi.length, ")"],
+                  }),
                 ],
               }),
               e.jsx("div", {
-                className: apiPoi.length > 4 ? "flex overflow-x-auto gap-6 pb-4 snap-x snap-mandatory" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6",
-                style: apiPoi.length > 4 ? { scrollbarWidth: "thin", WebkitOverflowScrolling: "touch" } : {},
-                children: apiPoi.map((r) =>
+                className: "flex overflow-x-auto gap-6 pb-4 snap-x snap-mandatory",
+                style: { scrollbarWidth: "thin", WebkitOverflowScrolling: "touch" },
+                children: apiPoi.slice(0, 8).map((r) =>
                   e.jsx("a", {
                     href: r.url,
                     target: "_blank",
                     rel: "noopener noreferrer",
-                    className: apiPoi.length > 4 ? "block glass-strong rounded-xl overflow-hidden hover:shadow-glass-hover transition-shadow min-w-[280px] max-w-[280px] snap-start flex-shrink-0" : "block glass-strong rounded-xl overflow-hidden hover:shadow-glass-hover transition-shadow",
+                    className: "block glass-strong rounded-xl overflow-hidden hover:shadow-glass-hover transition-shadow min-w-[280px] max-w-[280px] snap-start flex-shrink-0",
                     children: [
                       r.cover_image
                         ? e.jsx("img", {
