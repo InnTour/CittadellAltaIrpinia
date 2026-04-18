@@ -6,7 +6,7 @@ $db  = getDB();
 $msg = '';
 $poi = null;
 
-$borghi = $db->query("SELECT id, name_it FROM boroughs ORDER BY name_it")->fetchAll();
+$borghi = $db->query("SELECT id, name FROM boroughs ORDER BY name")->fetchAll();
 
 // ── LOAD per edit ────────────────────────────────────────────
 if (isset($_GET['edit'])) {
@@ -19,29 +19,53 @@ if (isset($_GET['edit'])) {
     }
 }
 
-// ── Upload audio locale ───────────────────────────────────────
+// ── Upload audio locale con logging ───────────────────────────
+function uploadDebug(string $msg): void {
+    $logFile = __DIR__ . '/../uploads/upload_debug.log';
+    @file_put_contents(
+        $logFile,
+        '[' . date('Y-m-d H:i:s') . '] ' . $msg . "\n",
+        FILE_APPEND
+    );
+}
+
 function uploadAudio(string $inputName, string $poiId, string $lang): ?string {
-    if (empty($_FILES[$inputName]['tmp_name']) || $_FILES[$inputName]['error'] !== UPLOAD_ERR_OK) {
+    if (!isset($_FILES[$inputName])) {
+        uploadDebug("AUDIO[$lang]: nessun file $inputName in POST");
+        return null;
+    }
+    $f = $_FILES[$inputName];
+    if (empty($f['tmp_name']) || $f['error'] !== UPLOAD_ERR_OK) {
+        uploadDebug("AUDIO[$lang]: upload error code={$f['error']} tmp={$f['tmp_name']} size={$f['size']}");
         return null;
     }
     $allowed = ['mp3', 'm4a', 'ogg', 'wav'];
-    $ext     = strtolower(pathinfo($_FILES[$inputName]['name'], PATHINFO_EXTENSION));
+    $ext     = strtolower(pathinfo($f['name'], PATHINFO_EXTENSION));
     if (!in_array($ext, $allowed, true)) {
+        uploadDebug("AUDIO[$lang]: estensione non consentita: $ext (file={$f['name']})");
         return null;
     }
     $destDir = __DIR__ . '/../uploads/audio/';
     if (!is_dir($destDir)) {
-        if (!mkdir($destDir, 0755, true) && !is_dir($destDir)) {
-            error_log("uploadAudio: impossibile creare $destDir");
+        if (!@mkdir($destDir, 0775, true) && !is_dir($destDir)) {
+            uploadDebug("AUDIO[$lang]: mkdir FALLITA su $destDir");
             return null;
         }
+        uploadDebug("AUDIO[$lang]: mkdir riuscita: $destDir");
+    }
+    if (!is_writable($destDir)) {
+        uploadDebug("AUDIO[$lang]: dir NON scrivibile: $destDir (perms=" . substr(sprintf('%o', fileperms($destDir)), -4) . ')');
+        return null;
     }
     $safeId   = preg_replace('/[^a-z0-9_-]/', '', strtolower($poiId));
     $filename = 'poi_' . $safeId . '_' . $lang . '_' . time() . '.' . $ext;
     $dest     = $destDir . $filename;
-    return move_uploaded_file($_FILES[$inputName]['tmp_name'], $dest)
-        ? '/api/uploads/audio/' . $filename
-        : null;
+    if (!move_uploaded_file($f['tmp_name'], $dest)) {
+        uploadDebug("AUDIO[$lang]: move_uploaded_file FALLITA da {$f['tmp_name']} a $dest");
+        return null;
+    }
+    uploadDebug("AUDIO[$lang]: OK salvato $dest (size={$f['size']})");
+    return '/api/uploads/audio/' . $filename;
 }
 
 // ── POST — Salvataggio ───────────────────────────────────────
@@ -211,7 +235,7 @@ require '_layout.php';
             <?php foreach ($borghi as $b): ?>
             <option value="<?= htmlspecialchars($b['id']) ?>"
                     <?= ($poi['borough_id'] ?? '') === $b['id'] ? 'selected' : '' ?>>
-              <?= htmlspecialchars($b['name_it']) ?>
+              <?= htmlspecialchars($b['name']) ?>
             </option>
             <?php endforeach; ?>
           </select>
